@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../domain/entity/place_entity.dart';
+import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 
 part 'home_state.freezed.dart';
 

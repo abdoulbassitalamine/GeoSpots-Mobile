@@ -1,11 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/collections/presentation/collections/view/widgets/collection_card.dart';
+import 'package:geo_spots/features/collections/presentation/collections/view/widgets/collections_header.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../../shared/design_system/design_system.dart';
+import '../../view_model/collections_view_model.dart';
 
 class CollectionsView extends ConsumerWidget {
   const CollectionsView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Center(child: Text('This is the Collections page'));
+    final state = ref.watch(collectionsViewModelProvider);
+
+    if (state.isLoading) {
+      return const Center(child: GSCircularLoader());
+    }
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: CollectionsHeader(
+            totalCollections: state.collections.length,
+            totalPlaces: state.totalPlaces,
+            onImportPressed: () => _showImportDialog(context, ref),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(GSSpacing.xl),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final collection = state.collections[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: GSSpacing.l),
+                child: CollectionCard(
+                  collection: collection,
+                  onTap: () => context.pushNamed(RouteNames.placesName),
+                ),
+              );
+            }, childCount: state.collections.length),
+          ),
+        ),
+      ],
+    );
+  }
+
+
+  void _showImportDialog(BuildContext context, WidgetRef ref) {
+    // TODO: Dialogue d'import GPX/KML/GeoJSON
   }
 }

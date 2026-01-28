@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../core/utils/extensions/sized_box_extension.dart';
-import '../../../domain/entity/place_entity.dart';
 
 class HomeRecentLocationsWidget extends ConsumerWidget {
   const HomeRecentLocationsWidget({super.key, required this.recentPlaces});
@@ -27,7 +29,9 @@ class HomeRecentLocationsWidget extends ConsumerWidget {
               ),
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () {
+                context.pushNamed(RouteNames.placesName);
+              },
               child: Text(
                 'Voir tout',
                 style: context.bodyDefaultSmall.copyWith(
@@ -53,6 +57,10 @@ class HomeRecentLocationsWidget extends ConsumerWidget {
                 description: place.description,
                 tags: place.tags,
                 date: place.date,
+                onTap: () => context.pushNamed(
+                  RouteNames.placeDetailsName,
+                  pathParameters: {RouteNames.placeIdParam: place.id},
+                ),
               ),
             );
           },

@@ -10,6 +10,7 @@ class GSFilledButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.text,
+    this.icon,
     this.isLoading = false,
     this.enabled = true,
     this.color,
@@ -20,6 +21,7 @@ class GSFilledButton extends StatelessWidget {
 
   final VoidCallback onPressed;
   final String text;
+  final IconData? icon;
   final bool isLoading;
   final bool enabled;
   final Color? color;
@@ -35,7 +37,7 @@ class GSFilledButton extends StatelessWidget {
 
     final foregroundColor = !enabled
         ? GSColorTokens.textDisabled
-        : textColor ?? GSColors.neutral1000;
+        : textColor ?? GSColors.neutral000;
 
     return SizedBox(
       width: fullWidth ? double.infinity : null,
@@ -47,7 +49,9 @@ class GSFilledButton extends StatelessWidget {
           disabledBackgroundColor: GSColorTokens.backgroundDisabled,
           disabledForegroundColor: GSColorTokens.textDisabled,
           elevation: 0,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(GSRadius.s),
+          ),
           padding:
               padding ??
               const EdgeInsets.symmetric(
@@ -64,12 +68,22 @@ class GSFilledButton extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
                 ),
               )
-            : Text(
-                text[0].toUpperCase() + text.substring(1).toLowerCase(),
-                style: GSTypographyTokens.buttonMedium.copyWith(
-                  color: foregroundColor,
-                  fontSize: GSFontScale.sf03,
-                ),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 20),
+                    const SizedBox(width: GSSpacing.m),
+                  ],
+                  Text(
+                    text[0].toUpperCase() + text.substring(1).toLowerCase(),
+                    style: GSTypographyTokens.buttonMedium.copyWith(
+                      color: foregroundColor,
+                      fontSize: GSFontScale.sf03,
+                    ),
+                  ),
+                ],
               ),
       ),
     );
