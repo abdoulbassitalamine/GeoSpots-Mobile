@@ -9,6 +9,7 @@ class GSOutlinedButton extends StatelessWidget {
     super.key,
     required this.onPressed,
     required this.text,
+    this.icon,
     this.isLoading = false,
     this.enabled = true,
     this.borderColor,
@@ -19,6 +20,7 @@ class GSOutlinedButton extends StatelessWidget {
 
   final VoidCallback onPressed;
   final String text;
+  final IconData? icon;
   final bool isLoading;
   final bool enabled;
   final Color? borderColor;
@@ -33,7 +35,7 @@ class GSOutlinedButton extends StatelessWidget {
         : textColor ?? GSColorTokens.textPrimary;
 
     final border = !enabled
-        ? BorderSide(color: GSColorTokens.borderPrimary, width: 2)
+        ? const BorderSide(color: GSColorTokens.borderPrimary, width: 2)
         : BorderSide(color: borderColor ?? GSColorTokens.textPrimary, width: 2);
 
     return SizedBox(
@@ -45,9 +47,10 @@ class GSOutlinedButton extends StatelessWidget {
           disabledForegroundColor: GSColorTokens.textDisabled,
           side: border,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(0),
+            borderRadius: BorderRadius.circular(GSRadius.s),
           ),
-          padding: padding ??
+          padding:
+              padding ??
               const EdgeInsets.symmetric(
                 horizontal: GSSpacing.xl4,
                 vertical: GSSpacing.xl,
@@ -55,20 +58,30 @@ class GSOutlinedButton extends StatelessWidget {
         ),
         child: isLoading
             ? SizedBox(
-          height: 20,
-          width: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
-          ),
-        )
-            : Text(
-          text[0].toUpperCase() + text.substring(1).toLowerCase(),
-          style: GSTypographyTokens.buttonMedium.copyWith(
-            color: foregroundColor,
-            fontSize: GSFontScale.sf03,
-          ),
-        ),
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
+                ),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 20),
+                    const SizedBox(width: GSSpacing.m),
+                  ],
+                  Text(
+                    text[0].toUpperCase() + text.substring(1).toLowerCase(),
+                    style: GSTypographyTokens.buttonMedium.copyWith(
+                      color: foregroundColor,
+                      fontSize: GSFontScale.sf03,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

@@ -14,6 +14,7 @@ class CollectionsPage extends ConsumerWidget {
       onRefresh: () async {
         await CollectionsDomain.invalidate(ref);
       },
+      padding: EdgeInsets.zero,
       child: const CollectionsView(),
     );
   }

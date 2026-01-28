@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:geo_spots/features/welcome/presentation/route/route_data.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -34,7 +35,7 @@ GoRouter appRouter(Ref ref) {
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     debugLogDiagnostics: !kReleaseMode,
-    initialLocation: RouteNames.signIn,
+    initialLocation: RouteNames.home,
     observers: [],
     refreshListenable: Listenable.merge([authenticationNotifier]),
     redirect: (context, state) async {
@@ -50,6 +51,8 @@ GoRouter appRouter(Ref ref) {
 
       // Authentication routes
       ...ref.read(authenticationRoutesProvider),
+
+      ...ref.read(placesRoutesProvider),
 
       // Main app shell with bottom navigation
       StatefulShellRoute.indexedStack(

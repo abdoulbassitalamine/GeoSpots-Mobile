@@ -14,6 +14,16 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart' as _svg;
 import 'package:vector_graphics/vector_graphics.dart' as _vg;
 
+class $EnvGen {
+  const $EnvGen();
+
+  /// File path: env/.env
+  String get aEnv => 'env/.env';
+
+  /// List of all assets
+  List<String> get values => [aEnv];
+}
+
 class $AssetsIconsGen {
   const $AssetsIconsGen();
 
@@ -75,6 +85,7 @@ class GSIcons {
 
   static const AssetGenImage appLogo = AssetGenImage('assets/app_logo.png', size: const Size(448.0, 448.0));
   static const $AssetsIconsGen icons = $AssetsIconsGen();
+  static const $EnvGen env = $EnvGen();
 
   /// List of all assets
   static List<AssetGenImage> get values => [appLogo];
