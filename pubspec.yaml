@@ -29,7 +29,7 @@ dependencies:
   url_launcher: ^6.3.2
   permission_handler: ^12.0.1
   open_file: ^3.5.11
-  file_picker: ^10.3.8
+  file_picker: ^10.3.10
   device_info_plus: ^11.3.1
   package_info_plus: ^8.1.2
   simple_animations: ^5.2.0
@@ -44,6 +44,8 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: ^14.0.2
   image_picker: ^1.2.1
+  xml: ^6.6.1
+  share_plus: ^12.0.1
 
 dev_dependencies:
   flutter_test:

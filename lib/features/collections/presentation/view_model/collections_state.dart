@@ -11,6 +11,8 @@ sealed class CollectionsState with _$CollectionsState {
     @Default([]) List<PlaceEntity> allPlaces,
     @Default(0) int totalPlaces,
     @Default(false) bool isLoading,
+    @Default(false) bool isImporting,
+    @Default(false) bool isExporting,
     String? error,
   }) = _CollectionsState;
 }

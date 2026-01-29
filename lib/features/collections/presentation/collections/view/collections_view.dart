@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/router/route_names.dart';
-import 'package:geo_spots/features/collections/presentation/collections/view/widgets/collection_card.dart';
-import 'package:geo_spots/features/collections/presentation/collections/view/widgets/collections_header.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/collection_card.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
@@ -24,7 +24,7 @@ class CollectionsView extends ConsumerWidget {
           child: CollectionsHeader(
             totalCollections: state.collections.length,
             totalPlaces: state.totalPlaces,
-            onImportPressed: () => _showImportDialog(context, ref),
+          //  onImportPressed: () => _showImportDialog(context, ref),
           ),
         ),
         SliverPadding(

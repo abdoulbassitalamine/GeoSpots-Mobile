@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/collections_view_model.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../../shared/design_system/design_system.dart';
 
-class CollectionsHeader extends StatelessWidget {
+class CollectionsHeader extends ConsumerWidget {
   final int totalCollections;
   final int totalPlaces;
-  final VoidCallback onImportPressed;
 
   const CollectionsHeader({
     super.key,
     required this.totalCollections,
     required this.totalPlaces,
-    required this.onImportPressed,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
         gradient: GSColorTokens.primaryGradientVertical,
@@ -58,8 +58,13 @@ class CollectionsHeader extends StatelessWidget {
                   borderRadius: BorderRadius.circular(GSRadius.m),
                 ),
                 child: IconButton(
-                  onPressed: onImportPressed,
-                  icon: const Icon(Icons.upload_file, color: GSColors.neutral000),
+                  onPressed: () => ref
+                      .read(collectionsViewModelProvider.notifier)
+                      .importCollection(),
+                  icon: const Icon(
+                    Icons.upload_file,
+                    color: GSColors.neutral000,
+                  ),
                   iconSize: 28,
                   tooltip: 'Importer une collection',
                 ),

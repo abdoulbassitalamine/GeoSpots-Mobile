@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/collections_view_model.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../../shared/design_system/design_system.dart';
-import '../../../../domain/entity/collection_entity.dart';
+import 'export_dialog.dart';
 
-class CollectionCard extends StatelessWidget {
+class CollectionCard extends ConsumerWidget {
   final CollectionEntity collection;
   final VoidCallback? onTap;
 
@@ -14,7 +16,7 @@ class CollectionCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isAllCollection = collection.tag == 'all';
 
     return GSCard(
@@ -64,21 +66,37 @@ class CollectionCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 GSIconButton(
-                  icon: Icons.share,
-                  onPressed: () {},
+                  icon: Icons.download,
+                  onPressed: () => _showExportDialog(context, ref),
                   size: 24,
+                  tooltip: 'Exporter',
                 ),
                 const SizedBox(width: GSSpacing.s),
                 GSIconButton(
-                  icon: Icons.download,
+                  icon: Icons.share,
                   onPressed: () {},
                   size: 24,
+                  tooltip: 'Partager',
                 ),
               ],
             )
           else
             const Icon(Icons.chevron_right, color: GSColors.neutral400),
         ],
+      ),
+    );
+  }
+
+  void _showExportDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => ExportDialog(
+        collection: collection,
+        onExport: (format) {
+          ref
+              .read(collectionsViewModelProvider.notifier)
+              .exportCollection(collection, format);
+        },
       ),
     );
   }
