@@ -1,60 +1,36 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/features/places/presentation/view_model/upsert_place_state.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../../core/utils/extensions/value_notifier_ext.dart';
 import '../../../../../../shared/design_system/design_system.dart';
 import '../../../../../core/utils/extensions/validators_ext.dart';
-import '../../view_model/add_place_view_model.dart';
+import '../../view_model/upsert_place_view_model.dart';
 
-class AddPlaceBasicInfoStepView extends HookConsumerWidget {
-  const AddPlaceBasicInfoStepView({super.key});
+class UpsertPlaceBasicInfoStepView extends HookWidget {
+  const UpsertPlaceBasicInfoStepView({
+    super.key,
+    required this.state,
+    required this.notifier,
+  });
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _StepHeader(),
-        SizedBox(height: GSSpacing.xl3),
-        _TitleField(),
-        SizedBox(height: GSSpacing.xl),
-        _DescriptionField(),
-        SizedBox(height: GSSpacing.xl),
-        _PhotoSectionWrapper(),
-        SizedBox(height: GSSpacing.xl),
-        _LocationInfoBanner(),
-      ],
-    );
-  }
-}
-
-class _StepHeader extends StatelessWidget {
-  const _StepHeader();
+  final UpsertPlaceState state;
+  final UpsertPlaceViewModel notifier;
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      'Décrivez votre lieu',
-      style: GSTypography.bodyDefaultMedium.copyWith(
-        color: GSColors.neutral600,
-      ),
-    );
-  }
-}
-
-class _TitleField extends HookConsumerWidget {
-  const _TitleField();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(addPlaceViewModelProvider);
-    final notifier = ref.read(addPlaceViewModelProvider.notifier);
-
     final titleController = useTextEditingController(text: state.title);
     final titleError = useState<String?>(null);
 
+    final descriptionController = useTextEditingController(
+      text: state.description,
+    );
+
     useEffect(() {
+      notifier.requiredValidator.withErrorMessage('Ce champ est obligatoire');
+
       if (titleController.text.isNotEmpty) {
         titleError.value = notifier.titleValidators
             .executeWithPriorityMessage(titleController.text)
@@ -63,70 +39,74 @@ class _TitleField extends HookConsumerWidget {
       return null;
     }, const []);
 
-    return GSTextField(
-      label: 'Titre du lieu',
-      placeholder: 'Ex: Restaurant Le Jardin',
-      controller: titleController,
-      error: titleError.notEmptyOrNull(),
-      onValueChange: (value) {
-        titleError.value = notifier.titleValidators
-            .executeWithPriorityMessage(value)
-            .message;
-        notifier.updateState(state.copyWith(title: value));
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _StepHeader(isEditMode: state.isEditMode),
+        SizedBox(height: GSSpacing.xl3),
+        GSTextField(
+          label: 'Titre du lieu',
+          placeholder: 'Ex: Restaurant Le Jardin',
+          controller: titleController,
+          error: titleError.notEmptyOrNull(),
+          onValueChange: (value) {
+            titleError.value = notifier.titleValidators
+                .executeWithPriorityMessage(value)
+                .message;
+            notifier.updateState(state.copyWith(title: value));
+          },
+        ),
+        SizedBox(height: GSSpacing.xl),
+        GSTextField(
+          label: 'Description',
+          placeholder: 'Ajoutez une description...',
+          controller: descriptionController,
+          maxLines: 4,
+          onValueChange: (value) {
+            notifier.updateState(state.copyWith(description: value));
+          },
+        ),
+        SizedBox(height: GSSpacing.xl),
+        // On passe l'image et les fonctions de rappel (callbacks)
+        _PhotoSection(
+          imageUrl: state.imageUrl,
+          onPickImage: notifier.pickImage,
+          onRemoveImage: () =>
+              notifier.updateState(state.copyWith(imageUrl: null)),
+        ),
+        SizedBox(height: GSSpacing.xl),
+        const _LocationInfoBanner(),
+      ],
     );
   }
 }
 
-class _DescriptionField extends HookConsumerWidget {
-  const _DescriptionField();
+class _StepHeader extends StatelessWidget {
+  const _StepHeader({required this.isEditMode});
+
+  final bool isEditMode;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(addPlaceViewModelProvider);
-    final notifier = ref.read(addPlaceViewModelProvider.notifier);
-    final descriptionController = useTextEditingController(text: state.description);
-
-    return GSTextField(
-      label: 'Description',
-      placeholder: 'Ajoutez une description...',
-      controller: descriptionController,
-      maxLines: 4,
-      onValueChange: (value) {
-        notifier.updateState(state.copyWith(description: value));
-      },
-    );
-  }
-}
-
-class _PhotoSectionWrapper extends ConsumerWidget {
-  const _PhotoSectionWrapper();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(addPlaceViewModelProvider);
-    final notifier = ref.read(addPlaceViewModelProvider.notifier);
-
-    return _PhotoSection(
-      imageUrl: state.imageUrl,
-      onPickImage: notifier.pickImage,
-      onRemoveImage: () {
-        notifier.updateState(state.copyWith(imageUrl: null));
-      },
+  Widget build(BuildContext context) {
+    return Text(
+      isEditMode ? 'Modifiez les informations' : 'Décrivez votre lieu',
+      style: GSTypography.bodyDefaultMedium.copyWith(
+        color: GSColors.neutral600,
+      ),
     );
   }
 }
 
 class _PhotoSection extends StatelessWidget {
-  final String? imageUrl;
-  final VoidCallback onPickImage;
-  final VoidCallback onRemoveImage;
-
   const _PhotoSection({
     required this.imageUrl,
     required this.onPickImage,
     required this.onRemoveImage,
   });
+
+  final String? imageUrl;
+  final VoidCallback onPickImage;
+  final VoidCallback onRemoveImage;
 
   @override
   Widget build(BuildContext context) {
@@ -144,7 +124,9 @@ class _PhotoSection extends StatelessWidget {
               color: GSColors.neutral100,
               borderRadius: BorderRadius.circular(GSRadius.m),
               border: Border.all(
-                color: imageUrl != null ? GSColors.primary500 : GSColors.neutral300,
+                color: imageUrl != null
+                    ? GSColors.primary500
+                    : GSColors.neutral300,
                 width: imageUrl != null ? 2 : 1,
               ),
             ),
@@ -152,9 +134,9 @@ class _PhotoSection extends StatelessWidget {
               borderRadius: BorderRadius.circular(GSRadius.m),
               child: imageUrl != null
                   ? _ImageWithActions(
-                imageUrl: imageUrl!,
-                onRemove: onRemoveImage,
-              )
+                      imageUrl: imageUrl!,
+                      onRemove: onRemoveImage,
+                    )
                   : const _PhotoPlaceholder(),
             ),
           ),
@@ -165,13 +147,10 @@ class _PhotoSection extends StatelessWidget {
 }
 
 class _ImageWithActions extends StatelessWidget {
+  const _ImageWithActions({required this.imageUrl, required this.onRemove});
+
   final String imageUrl;
   final VoidCallback onRemove;
-
-  const _ImageWithActions({
-    required this.imageUrl,
-    required this.onRemove,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -196,8 +175,9 @@ class _ImageWithActions extends StatelessWidget {
 }
 
 class _DeletePhotoButton extends StatelessWidget {
-  final VoidCallback onTap;
   const _DeletePhotoButton({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -265,7 +245,11 @@ class _PhotoPlaceholder extends StatelessWidget {
             color: GSColors.neutral200,
             borderRadius: BorderRadius.circular(GSRadius.full),
           ),
-          child: const Icon(Icons.camera_alt, color: GSColors.neutral600, size: 32),
+          child: const Icon(
+            Icons.camera_alt,
+            color: GSColors.neutral600,
+            size: 32,
+          ),
         ),
         const SizedBox(height: GSSpacing.l),
         Text(
@@ -280,8 +264,9 @@ class _PhotoPlaceholder extends StatelessWidget {
 }
 
 class _ImagePreview extends StatelessWidget {
-  final String imageUrl;
   const _ImagePreview({required this.imageUrl});
+
+  final String imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -289,7 +274,8 @@ class _ImagePreview extends StatelessWidget {
       return Image.network(
         imageUrl,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const Center(child: Icon(Icons.error_outline)),
+        errorBuilder: (_, __, ___) =>
+            const Center(child: Icon(Icons.error_outline)),
       );
     } else {
       return Image.file(File(imageUrl), fit: BoxFit.cover);

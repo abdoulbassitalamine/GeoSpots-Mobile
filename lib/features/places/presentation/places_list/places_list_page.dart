@@ -11,7 +11,10 @@ class PlacesListPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GSScaffold(
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.pushNamed(RouteNames.addPlaceName),
+        onPressed: () => context.pushNamed(
+          RouteNames.upsertPlaceName,
+          pathParameters: {RouteNames.placeIdParam: 'new'},
+        ),
         icon: const Icon(Icons.add),
         label: const Text('Nouveau lieu'),
       ),

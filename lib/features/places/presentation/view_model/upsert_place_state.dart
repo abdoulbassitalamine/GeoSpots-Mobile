@@ -1,11 +1,12 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:latlong2/latlong.dart';
 
-part 'add_place_state.freezed.dart';
+part 'upsert_place_state.freezed.dart';
 
 @freezed
-sealed class AddPlaceState with _$AddPlaceState {
-  const factory AddPlaceState({
+sealed class UpsertPlaceState with _$UpsertPlaceState {
+  const factory UpsertPlaceState({
+    String? placeId,
     @Default('') String title,
     @Default('') String description,
     @Default([]) List<String> tags,
@@ -16,5 +17,10 @@ sealed class AddPlaceState with _$AddPlaceState {
     @Default(false) bool isLoading,
     @Default(false) bool isSaving,
     String? errorMessage,
-  }) = _AddPlaceState;
+  }) = _UpsertPlaceState;
+
+  const UpsertPlaceState._();
+
+  bool get isEditMode => placeId != null && placeId != 'new';
+  bool get isCreateMode => !isEditMode;
 }

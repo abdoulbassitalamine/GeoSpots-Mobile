@@ -31,6 +31,6 @@ abstract class RouteNames {
   static const String placeDetails = 'place-details';
   static const String placeDetailsName = 'place-details';
   static const String placeIdParam = 'placeId';
-  static const String addPlace = 'add-place';
-  static const String addPlaceName = 'add-place';
+  static const String upsertPlace = 'upsert';
+  static const String upsertPlaceName = 'upsert-place';
 }

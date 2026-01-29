@@ -30,12 +30,13 @@ class HomeView extends ConsumerWidget {
           sliver: SliverToBoxAdapter(
             child: Column(
               children: [
-                HomeRecentLocationsWidget(
-                  recentPlaces: homeState.recentPlaces,
-                ),
+                HomeRecentLocationsWidget(recentPlaces: homeState.recentPlaces),
                 GSContainerButton.filled(
                   onPressed: () {
-                    context.pushNamed(RouteNames.addPlaceName);
+                    context.pushNamed(
+                      RouteNames.upsertPlaceName,
+                      pathParameters: {RouteNames.placeIdParam: 'new'},
+                    );
                   },
                   text: 'Ajouter un lieu',
                   icon: Icons.add_circle_outline,

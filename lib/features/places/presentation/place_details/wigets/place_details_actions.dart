@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/router/route_names.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
@@ -20,7 +22,7 @@ class PlaceDetailsActions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: GSSpacing.xl),
       child: Column(
         children: [
-          const _PrimaryActionsRow(),
+          _PrimaryActionsRow(placeId: placeId),
           const SizedBox(height: GSSpacing.l),
           _SecondaryActionsRow(placeId: placeId),
         ],
@@ -30,7 +32,8 @@ class PlaceDetailsActions extends StatelessWidget {
 }
 
 class _PrimaryActionsRow extends StatelessWidget {
-  const _PrimaryActionsRow();
+  const _PrimaryActionsRow({required this.placeId});
+  final String placeId;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +54,10 @@ class _PrimaryActionsRow extends StatelessWidget {
             text: 'Modifier',
             icon: Icons.edit,
             onPressed: () {
-              // TODO: Navigation vers édition
+              context.pushNamed(
+                RouteNames.upsertPlaceName,
+                pathParameters: {RouteNames.placeIdParam: placeId},
+              );
             },
           ),
         ),

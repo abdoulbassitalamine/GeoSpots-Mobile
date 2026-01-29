@@ -1,4 +1,5 @@
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
+import 'package:geo_spots/features/places/domain/entity/place_list_extension.dart';
 import 'package:geo_spots/features/places/domain/repository/places_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/entity/collection_entity.dart';
@@ -18,7 +19,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     state = state.copyWith(isLoading: true);
     await Future.delayed(const Duration(milliseconds: 500));
     final allPlaces = await ref.watch(placesRepositoryProvider).getAllPlaces();
-    final collections = _generateCollectionsFromTags(allPlaces);
+    final collections = allPlaces.generateCollectionsFromTags();
 
     state = state.copyWith(
       collections: collections,
@@ -28,45 +29,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     );
   }
 
-  List<CollectionEntity> _generateCollectionsFromTags(
-    List<PlaceEntity> places,
-  ) {
-    // Extraire tous les tags uniques
-    final Set<String> allTags = {};
-    for (var place in places) {
-      allTags.addAll(place.tags);
-    }
 
-    // Créer une collection pour chaque tag
-    final List<CollectionEntity> collections = [
-      // Collection "Tous les lieux"
-      CollectionEntity.all(places),
-    ];
-
-    // Ajouter les collections par tag
-    for (var tag in allTags) {
-      final placesWithTag = places
-          .where((place) => place.tags.contains(tag))
-          .toList();
-
-      collections.add(
-        CollectionEntity(
-          tag: tag,
-          placesCount: placesWithTag.length,
-          places: placesWithTag,
-        ),
-      );
-    }
-
-    // Trier par nombre de lieux décroissant
-    collections.sort((a, b) {
-      if (a.tag == 'all') return -1;
-      if (b.tag == 'all') return 1;
-      return b.placesCount.compareTo(a.placesCount);
-    });
-
-    return collections;
-  }
 
   Future<void> refresh() async {
     await _loadDummyData();

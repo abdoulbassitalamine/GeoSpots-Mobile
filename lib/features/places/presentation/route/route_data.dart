@@ -1,4 +1,4 @@
-import 'package:geo_spots/features/places/presentation/add_place/add_place_page.dart';
+import 'package:geo_spots/features/places/presentation/upsert_place/upsert_place_page.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,7 +11,7 @@ import '../place_details/place_details_page.dart';
 final placesMainNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'places');
 
 final placesRoutesProvider = Provider(
-  (ref) => [
+      (ref) => [
     GoRoute(
       path: RouteNames.places,
       name: RouteNames.placesName,
@@ -20,11 +20,12 @@ final placesRoutesProvider = Provider(
       },
       routes: [
         GoRoute(
-          path: RouteNames.addPlace,
-          name: RouteNames.addPlaceName,
+          path: '${RouteNames.upsertPlace}/:${RouteNames.placeIdParam}',
+          name: RouteNames.upsertPlaceName,
           pageBuilder: (context, state) {
+            final placeId = state.pathParameters[RouteNames.placeIdParam]!;
             return GSPageTransition.buildTransition(
-              child: const AddPlacePage(),
+              child: UpsertPlacePage(placeId: placeId),
             );
           },
         ),

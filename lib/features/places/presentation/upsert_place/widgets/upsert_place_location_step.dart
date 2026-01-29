@@ -1,35 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:geo_spots/features/places/presentation/view_model/upsert_place_state.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../../../shared/design_system/design_system.dart';
-import '../../view_model/add_place_view_model.dart';
+import '../../view_model/upsert_place_view_model.dart';
 
-class AddPlaceLocationStepView extends HookConsumerWidget {
-  const AddPlaceLocationStepView({super.key});
+class UpsertPlaceLocationStepView extends HookWidget {
+  const UpsertPlaceLocationStepView({
+    super.key,
+    required this.state,
+    required this.notifier,
+  });
+
+  final UpsertPlaceState state;
+  final UpsertPlaceViewModel notifier;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final current = ref.read(addPlaceViewModelProvider);
-        if (current.position == null && !current.isLoading) {
-          ref.read(addPlaceViewModelProvider.notifier).getCurrentPosition();
+        if (state.position == null && !state.isLoading && state.isCreateMode) {
+          notifier.getCurrentPosition();
         }
       });
       return null;
     }, const []);
 
-    return const Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _StepHeader(),
-        SizedBox(height: GSSpacing.xl3),
-        _LocationSection(),
-        SizedBox(height: GSSpacing.xl3),
-        _TagsSection(),
+        const _StepHeader(),
+        const SizedBox(height: GSSpacing.xl3),
+        _LocationSection(
+          position: state.position,
+          isLoading: state.isLoading,
+          onSetPosition: notifier.setPosition,
+          onGetCurrentPosition: notifier.getCurrentPosition,
+        ),
+        const SizedBox(height: GSSpacing.xl3),
+        _TagsSection(
+          tags: state.tags,
+          onTagsChanged: (newTags) {
+            notifier.updateState(state.copyWith(tags: newTags));
+          },
+        ),
       ],
     );
   }
@@ -49,14 +65,21 @@ class _StepHeader extends StatelessWidget {
   }
 }
 
-class _LocationSection extends ConsumerWidget {
-  const _LocationSection();
+class _LocationSection extends StatelessWidget {
+  const _LocationSection({
+    required this.position,
+    required this.isLoading,
+    required this.onSetPosition,
+    required this.onGetCurrentPosition,
+  });
+
+  final LatLng? position;
+  final bool isLoading;
+  final Function(LatLng) onSetPosition;
+  final VoidCallback onGetCurrentPosition;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(addPlaceViewModelProvider);
-    final notifier = ref.read(addPlaceViewModelProvider.notifier);
-
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -72,24 +95,35 @@ class _LocationSection extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: GSSpacing.m),
-        _MapDisplay(state: state, notifier: notifier),
+        _MapDisplay(
+          position: position,
+          isLoading: isLoading,
+          onSetPosition: onSetPosition,
+          onGetCurrentPosition: onGetCurrentPosition,
+        ),
         const SizedBox(height: GSSpacing.m),
-        if (state.position != null)
-          _GpsCoordinatesStatus(position: state.position!),
+        if (position != null) _GpsCoordinatesStatus(position: position!),
       ],
     );
   }
 }
 
 class _MapDisplay extends StatelessWidget {
-  final dynamic state;
-  final AddPlaceViewModel notifier;
+  const _MapDisplay({
+    required this.position,
+    required this.isLoading,
+    required this.onSetPosition,
+    required this.onGetCurrentPosition,
+  });
 
-  const _MapDisplay({required this.state, required this.notifier});
+  final LatLng? position;
+  final bool isLoading;
+  final Function(LatLng) onSetPosition;
+  final VoidCallback onGetCurrentPosition;
 
   @override
   Widget build(BuildContext context) {
-    if (state.isLoading) {
+    if (isLoading) {
       return Container(
         height: 280,
         decoration: BoxDecoration(
@@ -100,7 +134,7 @@ class _MapDisplay extends StatelessWidget {
       );
     }
 
-    final center = state.position ?? LatLng(48.8566, 2.3522);
+    final center = position ?? LatLng(48.8566, 2.3522);
 
     return Container(
       height: 280,
@@ -115,18 +149,18 @@ class _MapDisplay extends StatelessWidget {
             options: MapOptions(
               initialCenter: center,
               initialZoom: 15,
-              onTap: (_, position) => notifier.setPosition(position),
+              onTap: (_, pos) => onSetPosition(pos),
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.geo_spots',
               ),
-              if (state.position != null)
+              if (position != null)
                 MarkerLayer(
                   markers: [
                     Marker(
-                      point: state.position!,
+                      point: position!,
                       width: 40,
                       height: 40,
                       child: const Icon(
@@ -143,7 +177,7 @@ class _MapDisplay extends StatelessWidget {
             right: GSSpacing.l,
             bottom: GSSpacing.l,
             child: GSFilledButton(
-              onPressed: notifier.getCurrentPosition,
+              onPressed: onGetCurrentPosition,
               text: 'Ma position',
               icon: Icons.my_location,
               padding: const EdgeInsets.symmetric(
@@ -159,9 +193,9 @@ class _MapDisplay extends StatelessWidget {
 }
 
 class _GpsCoordinatesStatus extends StatelessWidget {
-  final LatLng position;
-
   const _GpsCoordinatesStatus({required this.position});
+
+  final LatLng position;
 
   @override
   Widget build(BuildContext context) {
@@ -180,20 +214,20 @@ class _GpsCoordinatesStatus extends StatelessWidget {
   }
 }
 
-class _TagsSection extends HookConsumerWidget {
-  const _TagsSection();
+class _TagsSection extends HookWidget {
+  const _TagsSection({required this.tags, required this.onTagsChanged});
+
+  final List<String> tags;
+  final Function(List<String>) onTagsChanged;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(addPlaceViewModelProvider);
-    final notifier = ref.read(addPlaceViewModelProvider.notifier);
+  Widget build(BuildContext context) {
     final tagController = useTextEditingController();
 
     void onAddTag() {
       final v = tagController.text.trim();
       if (v.isEmpty) return;
-      final updated = state.copyWith(tags: [...state.tags, v]);
-      notifier.updateState(updated);
+      onTagsChanged([...tags, v]);
       tagController.clear();
     }
 
@@ -202,11 +236,19 @@ class _TagsSection extends HookConsumerWidget {
       children: [
         Text('Étiquettes (tags)', style: GSTypography.labelDefault),
         const SizedBox(height: GSSpacing.m),
-        if (state.tags.isNotEmpty) ...[
+        if (tags.isNotEmpty) ...[
           Wrap(
             spacing: GSSpacing.s,
             runSpacing: GSSpacing.s,
-            children: state.tags.map((tag) => _TagChip(tag: tag)).toList(),
+            children: tags
+                .map(
+                  (tag) => _TagChip(
+                    tag: tag,
+                    onRemove: () =>
+                        onTagsChanged(tags.where((t) => t != tag).toList()),
+                  ),
+                )
+                .toList(),
           ),
           const SizedBox(height: GSSpacing.m),
         ],
@@ -230,15 +272,14 @@ class _TagsSection extends HookConsumerWidget {
   }
 }
 
-class _TagChip extends ConsumerWidget {
-  final String tag;
+class _TagChip extends StatelessWidget {
+  const _TagChip({required this.tag, required this.onRemove});
 
-  const _TagChip({required this.tag});
+  final String tag;
+  final VoidCallback onRemove;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(addPlaceViewModelProvider.notifier);
-
+  Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: GSSpacing.l,
@@ -261,13 +302,7 @@ class _TagChip extends ConsumerWidget {
           ),
           const SizedBox(width: GSSpacing.xs),
           GestureDetector(
-            onTap: () {
-              final current = notifier.state;
-              final updated = current.copyWith(
-                tags: current.tags.where((t) => t != tag).toList(),
-              );
-              notifier.updateState(updated);
-            },
+            onTap: onRemove,
             child: const Icon(
               Icons.close,
               size: 16,

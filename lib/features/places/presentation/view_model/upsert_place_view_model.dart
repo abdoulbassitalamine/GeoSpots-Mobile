@@ -5,31 +5,72 @@ import 'package:latlong2/latlong.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../../core/utils/validator/validator.dart';
 import '../../domain/repository/places_repository.dart';
-import 'add_place_state.dart';
+import 'upsert_place_state.dart';
 
-part 'add_place_view_model.g.dart';
+part 'upsert_place_view_model.g.dart';
 
 @riverpod
-class AddPlaceViewModel extends _$AddPlaceViewModel {
-  // Validators
+class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   final requiredValidator = ValidatorRequired();
-
-  // Form validators
   late final titleValidators = Validators(validators: [requiredValidator]);
   late final positionValidators = Validators(validators: [requiredValidator]);
 
   @override
-  AddPlaceState build() {
-    return const AddPlaceState();
+  UpsertPlaceState build(String placeId) {
+    // Si c'est une modification, charger les données
+    if (placeId != 'new') {
+      Future.microtask(() => _loadPlace(placeId));
+      return UpsertPlaceState(placeId: placeId, isLoading: true);
+    }
+
+    // Sinon, état vide pour création
+    return UpsertPlaceState(placeId: placeId);
   }
 
-  Future<AddPlaceState> updateState(AddPlaceState state) async {
-    this.state = state;
+  Future<void> _loadPlace(String placeId) async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final repository = ref.read(placesRepositoryProvider);
+      final place = await repository.getPlaceById(placeId);
+
+      if (place == null) {
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Lieu non trouvé',
+        );
+        return;
+      }
+
+      state = state.copyWith(
+        title: place.title,
+        description: place.description,
+        tags: place.tags,
+        imageUrl: place.imageUrl,
+        position: place.hasCoordinates
+            ? LatLng(place.latitude!, place.longitude!)
+            : null,
+        address: place.address ?? '',
+        isLoading: false,
+      );
+
+      GsLogger().d('Place loaded for editing: ${place.id}');
+      GsLogger().d('Place loaded : ${place}');
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Erreur lors du chargement',
+      );
+      GsLogger().e(e);
+    }
+  }
+
+  Future<UpsertPlaceState> updateState(UpsertPlaceState newState) async {
+    state = newState;
     return state;
   }
 
   bool get isStep0Valid => titleValidators.execute(state.title).isEmpty;
-
   bool get isStep1Valid => state.position != null;
 
   bool isStepValid(int index) {
@@ -58,17 +99,12 @@ class AddPlaceViewModel extends _$AddPlaceViewModel {
         isLoading: false,
       );
 
-      GsLogger().d("=" * 50);
-
       GsLogger().d('Position: ${position.latitude}, ${position.longitude}');
-
-      GsLogger().d("=" * 50);
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Impossible d\'obtenir la position',
       );
-
       GsLogger().e(e);
     }
   }
@@ -84,9 +120,7 @@ class AddPlaceViewModel extends _$AddPlaceViewModel {
       if (image != null) {
         state = state.copyWith(imageUrl: image.path);
       }
-      GsLogger().d("=" * 50);
       GsLogger().d('Image: ${image?.path}');
-      GsLogger().d("=" * 50);
     } catch (e) {
       state = state.copyWith(errorMessage: 'Erreur lors du choix de l\'image');
       GsLogger().e(e);
@@ -106,15 +140,27 @@ class AddPlaceViewModel extends _$AddPlaceViewModel {
     try {
       // TODO: Implémenter la sauvegarde via le repository
       // final repository = ref.read(placesRepositoryProvider);
-      // await repository.createPlace(...);
+
+      if (state.isEditMode) {
+        // Mode modification
+        // await repository.updatePlace(state.placeId!, ...);
+        GsLogger().d('Updating place: ${state.placeId}');
+      } else {
+        // Mode création
+        // await repository.createPlace(...);
+        GsLogger().d('Creating new place');
+      }
 
       await Future.delayed(const Duration(seconds: 1));
       state = state.copyWith(isSaving: false);
     } catch (e) {
       state = state.copyWith(
         isSaving: false,
-        errorMessage: 'Erreur lors de l\'enregistrement',
+        errorMessage: state.isEditMode
+            ? 'Erreur lors de la mise à jour'
+            : 'Erreur lors de la création',
       );
+      GsLogger().e(e);
     }
   }
 }

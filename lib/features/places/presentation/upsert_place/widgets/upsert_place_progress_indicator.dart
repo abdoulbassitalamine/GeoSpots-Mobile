@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../../../shared/design_system/design_system.dart';
 
-class AddPlaceProgressIndicator extends StatelessWidget {
-  const AddPlaceProgressIndicator({
+class UpsertPlaceProgressIndicator extends StatelessWidget {
+  const UpsertPlaceProgressIndicator({
     super.key,
     required this.currentIndex,
     required this.size,
