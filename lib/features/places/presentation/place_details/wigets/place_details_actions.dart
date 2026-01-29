@@ -87,9 +87,7 @@ class _SecondaryActionsRow extends ConsumerWidget {
           label: 'Partager',
           onPressed: () async {
             final shareText = links.buildShareText(place);
-            await SharePlus.instance.share(
-              ShareParams(text: shareText),
-            );
+            await SharePlus.instance.share(ShareParams(text: shareText));
           },
         ),
         _ActionButton(
@@ -143,7 +141,9 @@ Future<void> _openMapAppPicker(BuildContext context, PlaceEntity place) async {
             const SizedBox(height: GSSpacing.s),
             Text(
               'Ouvrir avec',
-              style: GSTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600),
+              style: GSTypography.bodyDefaultLarge.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
             const SizedBox(height: GSSpacing.s),
             ...apps.map(
