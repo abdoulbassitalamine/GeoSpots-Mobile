@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:geo_spots/features/places/add_place/widgets/add_place_progress_indicator.dart';
+import 'package:geo_spots/features/places/presentation/add_place/widgets/add_place_location_step.dart';
+import 'package:geo_spots/features/places/presentation/add_place/widgets/add_place_progress_indicator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../shared/design_system/design_system.dart';
-import '../presentation/view_model/add_place_view_model.dart';
+import '../../../../../shared/design_system/design_system.dart';
+import '../view_model/add_place_view_model.dart';
 import 'widgets/add_place_basic_info_step.dart';
-import 'widgets/add_place_location_step.dart';
 
 class AddPlacePage extends HookConsumerWidget {
   const AddPlacePage({super.key});
@@ -50,16 +50,11 @@ class AddPlacePage extends HookConsumerWidget {
 class _AddPlaceHeader extends StatelessWidget {
   final int currentStep;
 
-  const _AddPlaceHeader({
-    required this.currentStep,
-  });
+  const _AddPlaceHeader({required this.currentStep});
 
   @override
   Widget build(BuildContext context) {
-    final titles = [
-      'Informations de base',
-      'Position et organisation',
-    ];
+    final titles = ['Informations de base', 'Position et organisation'];
 
     return Container(
       decoration: const BoxDecoration(
@@ -146,26 +141,27 @@ class _AddPlaceBottomActions extends ConsumerWidget {
             Expanded(
               child: currentStep.value == totalSteps - 1
                   ? GSFilledButton(
-                onPressed: state.isSaving
-                    ? () {}
-                    : () async {
-                  await viewModel.savePlace();
-                  if (context.mounted && state.errorMessage == null) {
-                    Navigator.of(context).pop();
-                  }
-                },
-                text: state.isSaving
-                    ? 'Enregistrement...'
-                    : 'Enregistrer le lieu',
-                isLoading: state.isSaving,
-              )
+                      onPressed: state.isSaving
+                          ? () {}
+                          : () async {
+                              await viewModel.savePlace();
+                              if (context.mounted &&
+                                  state.errorMessage == null) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                      text: state.isSaving
+                          ? 'Enregistrement...'
+                          : 'Enregistrer le lieu',
+                      isLoading: state.isSaving,
+                    )
                   : GSFilledButton(
-                enabled: viewModel.isStep0Valid,
-                onPressed: viewModel.isStepValid(currentStep.value)
-                    ? () => currentStep.value++
-                    : () {},
-                text: 'Suivant',
-              ),
+                      enabled: viewModel.isStep0Valid,
+                      onPressed: viewModel.isStepValid(currentStep.value)
+                          ? () => currentStep.value++
+                          : () {},
+                      text: 'Suivant',
+                    ),
             ),
           ],
         ),

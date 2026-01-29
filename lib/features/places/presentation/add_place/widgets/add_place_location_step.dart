@@ -4,8 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../../../../shared/design_system/design_system.dart';
-import '../../presentation/view_model/add_place_view_model.dart';
+import '../../../../../../shared/design_system/design_system.dart';
+import '../../view_model/add_place_view_model.dart';
 
 class AddPlaceLocationStepView extends HookConsumerWidget {
   const AddPlaceLocationStepView({super.key});

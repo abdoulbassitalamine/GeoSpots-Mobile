@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../../../core/utils/extensions/value_notifier_ext.dart';
-import '../../../../../shared/design_system/design_system.dart';
-import '../../../../core/utils/extensions/validators_ext.dart';
-import '../../presentation/view_model/add_place_view_model.dart';
+import '../../../../../../core/utils/extensions/value_notifier_ext.dart';
+import '../../../../../../shared/design_system/design_system.dart';
+import '../../../../../core/utils/extensions/validators_ext.dart';
+import '../../view_model/add_place_view_model.dart';
 
 class AddPlaceBasicInfoStepView extends HookConsumerWidget {
   const AddPlaceBasicInfoStepView({super.key});

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../shared/design_system/design_system.dart';
+import '../../../../../../shared/design_system/design_system.dart';
 
 class AddPlaceProgressIndicator extends StatelessWidget {
   const AddPlaceProgressIndicator({
