@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:latlong2/latlong.dart';
 
 part 'upsert_place_state.freezed.dart';
@@ -21,6 +22,6 @@ sealed class UpsertPlaceState with _$UpsertPlaceState {
 
   const UpsertPlaceState._();
 
-  bool get isEditMode => placeId != null && placeId != 'new';
+  bool get isEditMode => placeId != null && placeId != kPlaceCreationId;
   bool get isCreateMode => !isEditMode;
 }

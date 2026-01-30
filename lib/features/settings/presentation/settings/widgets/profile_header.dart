@@ -1,0 +1,63 @@
+import 'package:flutter/material.dart';
+import '../../../../../shared/design_system/design_system.dart';
+import '../../../../authentication/domain/entity/user/user_entity.dart';
+
+class ProfileHeader extends StatelessWidget {
+  final UserEntity user;
+
+  const ProfileHeader({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 100,
+      pinned: false,
+      backgroundColor: GSColors.primary600,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(
+            gradient: GSColorTokens.primaryGradientVertical,
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(GSSpacing.xl),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Mon Profil',
+                        style: GSTypography.headingLarge.copyWith(
+                          color: GSColors.neutral000,
+                          fontSize: GSFontScale.sf09,
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: GSColors.neutral000.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(GSRadius.m),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(
+                            Icons.settings,
+                            color: GSColors.neutral000,
+                          ),
+                          onPressed: () {
+                            // TODO: Navigation vers paramètres avancés
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

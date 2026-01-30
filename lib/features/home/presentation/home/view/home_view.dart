@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/router/route_names.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +16,10 @@ class HomeView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final homeState = ref.watch(homeViewModelProvider);
+
+    if(homeState.isLoading) {
+      return Center(child: GSCircularLoader());
+    }
 
     return CustomScrollView(
       slivers: [
@@ -35,7 +40,9 @@ class HomeView extends ConsumerWidget {
                   onPressed: () {
                     context.pushNamed(
                       RouteNames.upsertPlaceName,
-                      pathParameters: {RouteNames.placeIdParam: 'new'},
+                      pathParameters: {
+                        RouteNames.placeIdParam: kPlaceCreationId,
+                      },
                     );
                   },
                   text: 'Ajouter un lieu',

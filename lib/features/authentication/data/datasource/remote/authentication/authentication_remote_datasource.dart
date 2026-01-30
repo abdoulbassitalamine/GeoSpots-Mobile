@@ -34,7 +34,5 @@ abstract interface class IAuthenticationRemoteDatasource {
 
   Future<String> checkTokenValidity();
 
-  Future<String> sendResetPasswordLink(
-    String email,
-  );
+  Future<String> sendResetPasswordLink(String email);
 }

@@ -14,10 +14,13 @@ sealed class UserEntity with _$UserEntity {
 
   factory UserEntity.fromJson(Map<String, dynamic> json) =>
       _$UserEntityFromJson(json);
-
-
 }
 
 extension UserEntityExtension on UserEntity {
   String get fullName => '$firstName $lastName';
+
+  String get username {
+    if (email == null) return 'user';
+    return email!.split('@').first;
+  }
 }

@@ -63,28 +63,6 @@ class LoginForm extends HookConsumerWidget {
       return null;
     }, []);
 
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (emailController.text.isNotEmpty) {
-          emailError.value = notifier.emailValidators
-              .executeWithPriorityMessage(emailController.text)
-              .message;
-        }
-        if (passwordController.text.isNotEmpty) {
-          passwordError.value = notifier.passwordValidators
-              .executeWithPriorityMessage(passwordController.text)
-              .message;
-        }
-        final updatedSignInState = ref
-            .read(signInViewModelProvider)
-            .copyWith(
-              password: passwordController.text,
-              email: emailController.text,
-            );
-        notifier.updateState(updatedSignInState);
-      });
-      return null;
-    }, []);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,

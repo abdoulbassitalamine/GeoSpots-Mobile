@@ -36,36 +36,52 @@
         <key>LSRequiresIPhoneOS</key>
         <true/>
 
+        <!-- Permissions de localisation -->
         <key>NSLocationWhenInUseUsageDescription</key>
-        <string>
-            Geo Spots a besoin de votre localisation pour afficher et ajouter des lieux sur la carte.
-        </string>
+        <string>Geo Spots a besoin de votre localisation pour afficher et ajouter des lieux sur la carte.</string>
 
         <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-        <string>
-            Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement
-            les lieux à proximité et améliorer la précision des données géographiques,
-            même lorsque l’application n’est pas ouverte.
-        </string>
+        <string>Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement les lieux à proximité et améliorer la précision des données géographiques, même lorsque l'application n'est pas ouverte.</string>
 
         <key>NSLocationAlwaysUsageDescription</key>
-        <string>
-            Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement
-            les lieux à proximité et améliorer la précision des données géographiques,
-            même lorsque l’application n’est pas ouverte.
-        </string>
+        <string>Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement les lieux à proximité et améliorer la précision des données géographiques, même lorsque l'application n'est pas ouverte.</string>
 
+        <!-- Permissions photos et caméra -->
         <key>NSPhotoLibraryUsageDescription</key>
-        <string>Geo Spots a besoin d’accéder à vos photos pour choisir une image.</string>
+        <string>Geo Spots a besoin d'accéder à vos photos pour choisir une image.</string>
 
         <key>NSCameraUsageDescription</key>
-        <string>Geo Spots a besoin d’accéder à la caméra pour prendre une photo.</string>
+        <string>Geo Spots a besoin d'accéder à la caméra pour prendre une photo.</string>
 
+        <!-- Deep Links - URL Types -->
+        <key>CFBundleURLTypes</key>
+        <array>
+            <dict>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>CFBundleURLName</key>
+                <string>com.example.geospots</string>
+                <key>CFBundleURLSchemes</key>
+                <array>
+                    <string>geospots</string>
+                </array>
+            </dict>
+        </array>
 
+        <!-- LSApplicationQueriesSchemes - Apps externes -->
+        <key>LSApplicationQueriesSchemes</key>
+        <array>
+            <string>geo</string>
+            <string>comgooglemaps</string>
+            <string>waze</string>
+            <string>maps</string>
+        </array>
 
+        <!-- Background Modes -->
         <key>UIBackgroundModes</key>
         <array>
             <string>location</string>
+            <string>fetch</string>
         </array>
 
         <key>UILaunchStoryboardName</key>

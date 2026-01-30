@@ -1,3 +1,4 @@
+import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,13 +18,13 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
 
   @override
   UpsertPlaceState build(String placeId) {
-    // Si c'est une modification, charger les données
-    if (placeId != 'new') {
+    // Mode édition
+    if (placeId != kPlaceCreationId) {
       Future.microtask(() => _loadPlace(placeId));
       return UpsertPlaceState(placeId: placeId, isLoading: true);
     }
 
-    // Sinon, état vide pour création
+    // Mode création
     return UpsertPlaceState(placeId: placeId);
   }
 

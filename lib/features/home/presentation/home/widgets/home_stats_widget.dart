@@ -31,7 +31,7 @@ class HomeStatsWidget extends ConsumerWidget {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.location_on,
-                    value: '248',
+                    value: placesCount,
                     label: 'Lieux',
                     color: GSColors.neutral000,
                   ),
@@ -40,7 +40,7 @@ class HomeStatsWidget extends ConsumerWidget {
                 Expanded(
                   child: _StatItem(
                     icon: Icons.folder,
-                    value: '12',
+                    value: collectionsCount,
                     label: 'Collections',
                     color: GSColors.neutral000,
                   ),
@@ -56,7 +56,7 @@ class HomeStatsWidget extends ConsumerWidget {
 
 class _StatItem extends StatelessWidget {
   final IconData icon;
-  final String value;
+  final int value;
   final String label;
   final Color color;
 
@@ -74,7 +74,7 @@ class _StatItem extends StatelessWidget {
         Icon(icon, size: 32, color: color),
         GSSpacing.$100.toInt().toHeight,
         Text(
-          value,
+          value.toString(),
           style: context.headingMedium.copyWith(
             fontSize: GSFontScale.sf08,
             fontWeight: FontWeight.bold,

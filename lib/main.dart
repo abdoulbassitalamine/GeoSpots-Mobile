@@ -1,5 +1,6 @@
 import 'launch.dart';
 
 void main() async {
-  await launch();
+  const envFile = 'env/.env';
+  await launch(envFile);
 }

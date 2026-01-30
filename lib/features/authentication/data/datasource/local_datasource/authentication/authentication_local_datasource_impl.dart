@@ -30,7 +30,7 @@ class AuthenticationLocalDatasourceImpl
 
   @override
   Future<bool?> getTokenValidity() async {
-    return await _sharedPreferences.getBool(_authUserValidityStorageKey);
+    return _sharedPreferences.getBool(_authUserValidityStorageKey);
   }
 
   @override

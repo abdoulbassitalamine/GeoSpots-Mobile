@@ -26,7 +26,11 @@ class PlaceDetailsView extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.error_outline, size: 64, color: GSColors.danger600),
+              const Icon(
+                Icons.error_outline,
+                size: 64,
+                color: GSColors.danger600,
+              ),
               const SizedBox(height: GSSpacing.xl),
               Text(
                 state.errorMessage!,
@@ -53,10 +57,7 @@ class PlaceDetailsView extends ConsumerWidget {
             children: [
               PlaceDetailsContent(place: state.place!),
               const SizedBox(height: GSSpacing.xl3),
-              PlaceDetailsActions(
-                place: state.place!,
-                placeId: placeId,
-              ),
+              PlaceDetailsActions(place: state.place!, placeId: placeId),
               const SizedBox(height: GSSpacing.xl3),
             ],
           ),

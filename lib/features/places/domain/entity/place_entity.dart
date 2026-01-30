@@ -17,6 +17,8 @@ sealed class PlaceEntity with _$PlaceEntity {
     String? address,
     String? city,
     String? country,
+    @Default(false) bool isShared,
+    String? sharedToken,
   }) = _PlaceEntity;
 
   const PlaceEntity._();

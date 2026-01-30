@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/route_names.dart';
 import '../../../../shared/design_system/widgets/scaffold/gs_scaffold.dart';
@@ -13,7 +14,7 @@ class PlacesListPage extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.pushNamed(
           RouteNames.upsertPlaceName,
-          pathParameters: {RouteNames.placeIdParam: 'new'},
+          pathParameters: {RouteNames.placeIdParam: kPlaceCreationId},
         ),
         icon: const Icon(Icons.add),
         label: const Text('Nouveau lieu'),

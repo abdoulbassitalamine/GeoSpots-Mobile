@@ -14,6 +14,7 @@ class SettingsPage extends ConsumerWidget {
       onRefresh: () async {
         await SettingsDomain.invalidate(ref);
       },
+      padding: EdgeInsets.zero,
       child: const SettingsView(),
     );
   }

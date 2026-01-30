@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/places/domain/services/share_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 import '../../view_model/place_details_view_model.dart';
+import 'navigation_options_dialog.dart';
 
 class PlaceDetailsActions extends StatelessWidget {
   final PlaceEntity place;
@@ -22,9 +24,9 @@ class PlaceDetailsActions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: GSSpacing.xl),
       child: Column(
         children: [
-          _PrimaryActionsRow(placeId: placeId),
+          _PrimaryActionsRow(placeId: placeId, place: place),
           const SizedBox(height: GSSpacing.l),
-          _SecondaryActionsRow(placeId: placeId),
+          _SecondaryActionsRow(placeId: placeId, place: place),
         ],
       ),
     );
@@ -32,8 +34,9 @@ class PlaceDetailsActions extends StatelessWidget {
 }
 
 class _PrimaryActionsRow extends StatelessWidget {
-  const _PrimaryActionsRow({required this.placeId});
+  const _PrimaryActionsRow({required this.placeId, required this.place});
   final String placeId;
+  final PlaceEntity place;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +47,10 @@ class _PrimaryActionsRow extends StatelessWidget {
             text: 'Itinéraire',
             icon: Icons.directions,
             onPressed: () {
-              // TODO: Ouvrir itinéraire
+              showDialog(
+                context: context,
+                builder: (context) => NavigationOptionsDialog(place: place),
+              );
             },
           ),
         ),
@@ -69,7 +75,9 @@ class _PrimaryActionsRow extends StatelessWidget {
 class _SecondaryActionsRow extends ConsumerWidget {
   final String placeId;
 
-  const _SecondaryActionsRow({required this.placeId});
+  const _SecondaryActionsRow({required this.placeId, required this.place});
+
+  final PlaceEntity place;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,8 +87,10 @@ class _SecondaryActionsRow extends ConsumerWidget {
         _ActionButton(
           icon: Icons.share,
           label: 'Partager',
-          onPressed: () {
-            // TODO: Partager
+          onPressed: () async {
+            await ref
+                .read(shareServiceProvider)
+                .sharePlaceWithCoordinates(place);
           },
         ),
         _ActionButton(
