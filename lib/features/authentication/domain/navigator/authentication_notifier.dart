@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -37,20 +38,20 @@ class AuthenticationNotifier extends Notifier<AuthenticationStatus>
     final currentRoute = goRouterState.uri.toString();
     final isExcluded = _isExcludedRoute(currentRoute);
 
-    // final token = await ref
-    //     .read(authenticationLocalDatasourceProvider)
-    //     .getAuthUserToken();
-    //
-    // if ((token == null || state is AuthenticationStatusUnauthenticated) &&
-    //     !isExcluded) {
-    //   return kAuthLoginPath;
-    // }
-    //
-    // if (publicRoutes.any(currentRoute.startsWith) &&
-    //     token != null &&
-    //     !isExcluded) {
-    //   return kAuthHomePath;
-    // }
+    final token = await ref
+        .read(authenticationLocalDatasourceProvider)
+        .getAuthUserToken();
+
+    if ((token == null || state is AuthenticationStatusUnauthenticated) &&
+        !isExcluded) {
+      return RouteNames.signIn;
+    }
+
+    if (publicRoutes.any(currentRoute.startsWith) &&
+        token != null &&
+        !isExcluded) {
+      return RouteNames.home;
+    }
 
     return null;
   }

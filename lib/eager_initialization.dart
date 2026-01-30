@@ -10,6 +10,8 @@ class EagerInitialization extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+
     Future.microtask(() async {
       await ref
           .read(locationTrackingServiceProvider)

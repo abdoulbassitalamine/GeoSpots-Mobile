@@ -15,7 +15,7 @@ class WelcomePage extends HookConsumerWidget {
     useEffect(() {
       Future.delayed(Duration(milliseconds: 1500), () {
         if (context.mounted) {
-          context.pushNamed(RouteNames.home);
+          context.pushNamed(RouteNames.homeName);
         }
       });
       return null;

@@ -40,7 +40,7 @@ class GSLocationCard extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.location_on,
-                    color: Colors.white,
+                    color: GSColorTokens.textPrimary,
                     size: 28,
                   ),
                 ),

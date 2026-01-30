@@ -24,6 +24,7 @@ const _publicRoutes = [
   RouteNames.signIn,
   RouteNames.signUp,
   RouteNames.forgotPassword,
+  RouteNames.welcome,
 ];
 
 @Riverpod(keepAlive: true)
@@ -35,7 +36,7 @@ GoRouter appRouter(Ref ref) {
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     debugLogDiagnostics: !kReleaseMode,
-    initialLocation: RouteNames.home,
+    initialLocation: RouteNames.welcome,
     observers: [],
     refreshListenable: Listenable.merge([authenticationNotifier]),
     redirect: (context, state) async {
