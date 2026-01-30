@@ -38,20 +38,20 @@ class AuthenticationNotifier extends Notifier<AuthenticationStatus>
     final currentRoute = goRouterState.uri.toString();
     final isExcluded = _isExcludedRoute(currentRoute);
 
-    final token = await ref
-        .read(authenticationLocalDatasourceProvider)
-        .getAuthUserToken();
-
-    if ((token == null || state is AuthenticationStatusUnauthenticated) &&
-        !isExcluded) {
-      return RouteNames.signIn;
-    }
-
-    if (publicRoutes.any(currentRoute.startsWith) &&
-        token != null &&
-        !isExcluded) {
-      return RouteNames.home;
-    }
+    // final token = await ref
+    //     .read(authenticationLocalDatasourceProvider)
+    //     .getAuthUserToken();
+    //
+    // if ((token == null || state is AuthenticationStatusUnauthenticated) &&
+    //     !isExcluded) {
+    //   return RouteNames.signIn;
+    // }
+    //
+    // if (publicRoutes.any(currentRoute.startsWith) &&
+    //     token != null &&
+    //     !isExcluded) {
+    //   return RouteNames.home;
+    // }
 
     return null;
   }

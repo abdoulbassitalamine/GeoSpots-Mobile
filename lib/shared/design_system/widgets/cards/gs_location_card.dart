@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/shared/design_system/theme/colors.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
 import '../../tokens/color_tokens.dart';
@@ -40,7 +41,7 @@ class GSLocationCard extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.location_on,
-                    color: GSColorTokens.textPrimary,
+                    color: GSColors.neutral000,
                     size: 28,
                   ),
                 ),
