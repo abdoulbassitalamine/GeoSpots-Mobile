@@ -13,6 +13,8 @@ sealed class UpsertPlaceState with _$UpsertPlaceState {
     @Default([]) List<String> tags,
     String? imageUrl,
     LatLng? position,
+    @Default('') String manualLatitude,
+    @Default('') String manualLongitude,
     @Default('') String address,
     @Default(0) int currentStep,
     @Default(false) bool isLoading,

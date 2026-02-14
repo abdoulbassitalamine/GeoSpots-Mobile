@@ -1,5 +1,6 @@
 import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -13,11 +14,23 @@ part 'upsert_place_view_model.g.dart';
 @riverpod
 class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   final requiredValidator = ValidatorRequired();
+  final latitudeValidator = ValidatorLatitude();
+  final longitudeValidator = ValidatorLongitude();
+
   late final titleValidators = Validators(validators: [requiredValidator]);
-  late final positionValidators = Validators(validators: [requiredValidator]);
+  late final latitudeValidators = Validators(
+    validators: [requiredValidator, latitudeValidator],
+  );
+  late final longitudeValidators = Validators(
+    validators: [requiredValidator, longitudeValidator],
+  );
 
   @override
   UpsertPlaceState build(String placeId) {
+    requiredValidator.withErrorMessage('Ce champ est obligatoire');
+    latitudeValidator.withErrorMessage('Latitude invalide (-90 a 90)');
+    longitudeValidator.withErrorMessage('Longitude invalide (-180 a 180)');
+
     // Mode édition
     if (placeId != kPlaceCreationId) {
       Future.microtask(() => _loadPlace(placeId));
@@ -51,12 +64,14 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         position: place.hasCoordinates
             ? LatLng(place.latitude!, place.longitude!)
             : null,
+        manualLatitude: place.latitude?.toStringAsFixed(6) ?? '',
+        manualLongitude: place.longitude?.toStringAsFixed(6) ?? '',
         address: place.address ?? '',
         isLoading: false,
       );
 
       GsLogger().d('Place loaded for editing: ${place.id}');
-      GsLogger().d('Place loaded : ${place}');
+      GsLogger().d('Place loaded : $place');
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -72,7 +87,24 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   }
 
   bool get isStep0Valid => titleValidators.execute(state.title).isEmpty;
-  bool get isStep1Valid => state.position != null;
+  bool get _hasManualCoordinatesDraft =>
+      state.manualLatitude.trim().isNotEmpty ||
+      state.manualLongitude.trim().isNotEmpty;
+
+  String? get latitudeError {
+    if (!_hasManualCoordinatesDraft) return null;
+    return latitudeValidators.executeWithPriorityMessage(state.manualLatitude).message;
+  }
+
+  String? get longitudeError {
+    if (!_hasManualCoordinatesDraft) return null;
+    return longitudeValidators.executeWithPriorityMessage(state.manualLongitude).message;
+  }
+
+  bool get _manualCoordinatesValid =>
+      latitudeError == null && longitudeError == null;
+
+  bool get isStep1Valid => state.position != null && _manualCoordinatesValid;
 
   bool isStepValid(int index) {
     switch (index) {
@@ -85,8 +117,10 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     }
   }
 
-  Future<void> getCurrentPosition() async {
-    state = state.copyWith(isLoading: true);
+  Future<void> getCurrentPosition({bool showLoading = true}) async {
+    if (showLoading) {
+      state = state.copyWith(isLoading: true);
+    }
 
     try {
       final permission = await Geolocator.checkPermission();
@@ -97,6 +131,8 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       final position = await Geolocator.getCurrentPosition();
       state = state.copyWith(
         position: LatLng(position.latitude, position.longitude),
+        manualLatitude: position.latitude.toStringAsFixed(6),
+        manualLongitude: position.longitude.toStringAsFixed(6),
         isLoading: false,
       );
 
@@ -111,7 +147,36 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   }
 
   void setPosition(LatLng position) {
-    state = state.copyWith(position: position);
+    state = state.copyWith(
+      position: position,
+      manualLatitude: position.latitude.toStringAsFixed(6),
+      manualLongitude: position.longitude.toStringAsFixed(6),
+    );
+  }
+
+  void updateManualCoordinates({
+    required String latitude,
+    required String longitude,
+  }) {
+    state = state.copyWith(
+      manualLatitude: latitude,
+      manualLongitude: longitude,
+    );
+
+    if (!_hasManualCoordinatesDraft) {
+      return;
+    }
+
+    final latError = latitudeError;
+    final lonError = longitudeError;
+
+    if (latError == null && lonError == null) {
+      final lat = _parseCoordinate(latitude);
+      final lon = _parseCoordinate(longitude);
+      if (lat != null && lon != null) {
+        state = state.copyWith(position: LatLng(lat, lon));
+      }
+    }
   }
 
   Future<void> pickImage() async {
@@ -163,5 +228,10 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       );
       GsLogger().e(e);
     }
+  }
+
+  double? _parseCoordinate(String raw) {
+    final normalized = raw.trim().replaceAll(',', '.');
+    return double.tryParse(normalized);
   }
 }

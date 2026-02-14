@@ -15,6 +15,8 @@ part 'collections_view_model.g.dart';
 
 @riverpod
 class CollectionsViewModel extends _$CollectionsViewModel {
+  static const _supportedExtensions = ['gpx', 'kml', 'geojson', 'json'];
+
   @override
   CollectionsState build() {
     Future.microtask(_loadDummyData);
@@ -77,34 +79,50 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     try {
       state = state.copyWith(isImporting: true);
 
+      // On iOS, FileType.custom can hide some valid files (notably .gpx/.kml)
+      // depending on provider UTType support, so we fallback to `any` and enforce
+      // extension validation ourselves.
+      final pickerType = Platform.isIOS ? FileType.any : FileType.custom;
       final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['gpx', 'kml', 'geojson'],
+        type: pickerType,
+        allowedExtensions: pickerType == FileType.custom
+            ? _supportedExtensions
+            : null,
       );
 
       if (result == null || result.files.isEmpty) {
-        state = state.copyWith(isLoading: false);
+        state = state.copyWith(isImporting: false);
         return;
       }
 
       final file = result.files.first;
       if (file.path == null) {
         state = state.copyWith(
-          isLoading: false,
+          isImporting: false,
           error: 'Impossible de lire le fichier',
+        );
+        return;
+      }
+
+      // Déterminer le format
+      ExportFormat? format;
+      final extension = (file.extension ?? '').toLowerCase();
+      if (!_supportedExtensions.contains(extension)) {
+        state = state.copyWith(
+          isImporting: false,
+          error:
+              'Format non supporte. Utilisez uniquement: .gpx, .kml, .geojson',
         );
         return;
       }
 
       final content = await File(file.path!).readAsString();
 
-      // Déterminer le format
-      ExportFormat? format;
-      if (file.extension == 'gpx') {
+      if (extension == 'gpx') {
         format = ExportFormat.gpx;
-      } else if (file.extension == 'kml') {
+      } else if (extension == 'kml') {
         format = ExportFormat.kml;
-      } else if (file.extension == 'geojson') {
+      } else if (extension == 'geojson' || extension == 'json') {
         format = ExportFormat.geoJSON;
       }
 

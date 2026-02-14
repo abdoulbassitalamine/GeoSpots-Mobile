@@ -162,15 +162,13 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
             Expanded(
               child: currentStep.value == totalSteps - 1
                   ? GSFilledButton(
-                      onPressed: state.isSaving
-                          ? () {}
-                          : () async {
-                              await viewModel.savePlace();
-                              if (context.mounted &&
-                                  state.errorMessage == null) {
-                                Navigator.of(context).pop();
-                              }
-                            },
+                      enabled: viewModel.isStep1Valid,
+                      onPressed: () async {
+                        await viewModel.savePlace();
+                        if (context.mounted && state.errorMessage == null) {
+                          Navigator.of(context).pop();
+                        }
+                      },
                       text: state.isSaving
                           ? 'Enregistrement...'
                           : state.isEditMode

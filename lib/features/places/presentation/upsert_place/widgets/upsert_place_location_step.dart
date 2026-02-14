@@ -35,10 +35,13 @@ class UpsertPlaceLocationStepView extends HookWidget {
         const _StepHeader(),
         const SizedBox(height: GSSpacing.xl3),
         _LocationSection(
+          state: state,
+          notifier: notifier,
           position: state.position,
           isLoading: state.isLoading,
           onSetPosition: notifier.setPosition,
-          onGetCurrentPosition: notifier.getCurrentPosition,
+          onGetCurrentPosition: () =>
+              notifier.getCurrentPosition(showLoading: false),
         ),
         const SizedBox(height: GSSpacing.xl3),
         _TagsSection(
@@ -68,12 +71,16 @@ class _StepHeader extends StatelessWidget {
 
 class _LocationSection extends StatelessWidget {
   const _LocationSection({
+    required this.state,
+    required this.notifier,
     required this.position,
     required this.isLoading,
     required this.onSetPosition,
     required this.onGetCurrentPosition,
   });
 
+  final UpsertPlaceState state;
+  final UpsertPlaceViewModel notifier;
   final LatLng? position;
   final bool isLoading;
   final Function(LatLng) onSetPosition;
@@ -104,8 +111,8 @@ class _LocationSection extends StatelessWidget {
         ),
         const SizedBox(height: GSSpacing.m),
         _ManualCoordinatesInput(
-          position: position,
-          onSetPosition: onSetPosition,
+          state: state,
+          notifier: notifier,
         ),
         const SizedBox(height: GSSpacing.m),
         if (position != null) _GpsCoordinatesStatus(position: position!),
@@ -116,67 +123,65 @@ class _LocationSection extends StatelessWidget {
 
 class _ManualCoordinatesInput extends HookWidget {
   const _ManualCoordinatesInput({
-    required this.position,
-    required this.onSetPosition,
+    required this.state,
+    required this.notifier,
   });
 
-  final LatLng? position;
-  final Function(LatLng) onSetPosition;
+  final UpsertPlaceState state;
+  final UpsertPlaceViewModel notifier;
 
   @override
   Widget build(BuildContext context) {
     final debouncer = useMemoized(() => Debouncer(milliseconds: 450));
     final latitudeController = useTextEditingController();
     final longitudeController = useTextEditingController();
-    final latitudeError = useState<String?>(null);
-    final longitudeError = useState<String?>(null);
+    final latitudeFocusNode = useFocusNode();
+    final longitudeFocusNode = useFocusNode();
 
-    useEffect(() {
-      if (position == null) {
+    useEffect(() => debouncer.dispose, [debouncer]);
+
+    useEffect(
+      () {
+        // Avoid overriding the user's typing while a coordinate field is focused.
+        if (latitudeFocusNode.hasFocus || longitudeFocusNode.hasFocus) {
+          return null;
+        }
+
+        final nextLat = state.manualLatitude;
+        final nextLon = state.manualLongitude;
+
+        if (latitudeController.text != nextLat) {
+          latitudeController.text = nextLat;
+        }
+        if (longitudeController.text != nextLon) {
+          longitudeController.text = nextLon;
+        }
+
         return null;
-      }
-
-      final nextLat = position!.latitude.toStringAsFixed(6);
-      final nextLon = position!.longitude.toStringAsFixed(6);
-
-      if (latitudeController.text != nextLat) {
-        latitudeController.text = nextLat;
-      }
-      if (longitudeController.text != nextLon) {
-        longitudeController.text = nextLon;
-      }
-
-      return null;
-    }, [position?.latitude, position?.longitude]);
+      },
+      [
+        state.manualLatitude,
+        state.manualLongitude,
+        latitudeFocusNode.hasFocus,
+        longitudeFocusNode.hasFocus,
+      ],
+    );
 
     void applyManualCoordinates() {
-      final hasLatitude = latitudeController.text.trim().isNotEmpty;
-      final hasLongitude = longitudeController.text.trim().isNotEmpty;
-
-      if (!hasLatitude || !hasLongitude) {
-        latitudeError.value = null;
-        longitudeError.value = null;
-        return;
-      }
-
-      final lat = _parseCoordinate(latitudeController.text);
-      final lon = _parseCoordinate(longitudeController.text);
-
-      latitudeError.value = _latitudeErrorMessage(lat);
-      longitudeError.value = _longitudeErrorMessage(lon);
-
-      if (latitudeError.value == null &&
-          longitudeError.value == null &&
-          lat != null &&
-          lon != null) {
-        onSetPosition(LatLng(lat, lon));
-      }
+      if (!context.mounted) return;
+      notifier.updateManualCoordinates(
+        latitude: latitudeController.text,
+        longitude: longitudeController.text,
+      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Saisie manuelle des coordonnees', style: GSTypography.labelDefault),
+        Text(
+          'Saisie manuelle des coordonnees',
+          style: GSTypography.labelDefault,
+        ),
         const SizedBox(height: GSSpacing.s),
         Text(
           'Entrez latitude et longitude si vous ne souhaitez pas utiliser le GPS.',
@@ -186,17 +191,19 @@ class _ManualCoordinatesInput extends HookWidget {
         ),
         const SizedBox(height: GSSpacing.m),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: GSTextField(
                 controller: latitudeController,
+                focusNode: latitudeFocusNode,
                 label: 'Latitude',
                 placeholder: 'Ex: 48.8566',
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: true,
                 ),
-                error: latitudeError.value,
+                error: notifier.latitudeError,
                 onValueChange: (_) => debouncer.run(applyManualCoordinates),
                 onSubmitted: (_) => applyManualCoordinates(),
               ),
@@ -205,13 +212,14 @@ class _ManualCoordinatesInput extends HookWidget {
             Expanded(
               child: GSTextField(
                 controller: longitudeController,
+                focusNode: longitudeFocusNode,
                 label: 'Longitude',
                 placeholder: 'Ex: 2.3522',
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: true,
                 ),
-                error: longitudeError.value,
+                error: notifier.longitudeError,
                 onValueChange: (_) => debouncer.run(applyManualCoordinates),
                 onSubmitted: (_) => applyManualCoordinates(),
               ),
@@ -221,27 +229,9 @@ class _ManualCoordinatesInput extends HookWidget {
       ],
     );
   }
-
-  static double? _parseCoordinate(String raw) {
-    final cleaned = raw.trim().replaceAll(',', '.');
-    if (cleaned.isEmpty) return null;
-    return double.tryParse(cleaned);
-  }
-
-  static String? _latitudeErrorMessage(double? value) {
-    if (value == null) return 'Latitude invalide';
-    if (value < -90 || value > 90) return 'Entre -90 et 90';
-    return null;
-  }
-
-  static String? _longitudeErrorMessage(double? value) {
-    if (value == null) return 'Longitude invalide';
-    if (value < -180 || value > 180) return 'Entre -180 et 180';
-    return null;
-  }
 }
 
-class _MapDisplay extends StatelessWidget {
+class _MapDisplay extends HookWidget {
   const _MapDisplay({
     required this.position,
     required this.isLoading,
@@ -256,6 +246,17 @@ class _MapDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final mapController = useMemoized(MapController.new);
+    final isMapReady = useState(false);
+
+    useEffect(() {
+      if (isMapReady.value && position != null) {
+        // Keep marker visible when coordinates change from manual inputs or GPS.
+        mapController.move(position!, mapController.camera.zoom);
+      }
+      return null;
+    }, [isMapReady.value, position?.latitude, position?.longitude]);
+
     if (isLoading) {
       return Container(
         height: 280,
@@ -279,9 +280,13 @@ class _MapDisplay extends StatelessWidget {
       child: Stack(
         children: [
           FlutterMap(
+            mapController: mapController,
             options: MapOptions(
               initialCenter: center,
               initialZoom: 15,
+              onMapReady: () {
+                isMapReady.value = true;
+              },
               onTap: (_, pos) => onSetPosition(pos),
             ),
             children: [
@@ -310,7 +315,11 @@ class _MapDisplay extends StatelessWidget {
             right: GSSpacing.l,
             bottom: GSSpacing.l,
             child: GSFilledButton(
-              onPressed: onGetCurrentPosition,
+              onPressed: () {
+                // Ensure manual fields can sync with GPS values immediately.
+                FocusScope.of(context).unfocus();
+                onGetCurrentPosition();
+              },
               text: 'Ma position',
               icon: Icons.my_location,
               padding: const EdgeInsets.symmetric(
