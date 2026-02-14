@@ -1,0 +1,4 @@
+enum CollectionSource {
+  owned,
+  shared,
+}

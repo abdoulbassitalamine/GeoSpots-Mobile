@@ -50,7 +50,7 @@ class GSAppTheme {
 
       // App bar
       appBarTheme: AppBarTheme(
-        backgroundColor: GSColors.neutral1000,
+        backgroundColor: GSColors.primary600,
         foregroundColor: GSColors.neutral000,
         elevation: 0,
         centerTitle: false,

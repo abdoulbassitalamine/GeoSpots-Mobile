@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/features/places/presentation/route/route_data.dart';
-import 'package:geo_spots/features/collections/presentation/collections/widgets/collection_card.dart';
+import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
+import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/add_shared_access_dialog.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_tabs.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/owned_collections_tab_view.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/shared_by_me_collections_tab_view.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/shared_with_me_collections_tab_view.dart';
+import 'package:geo_spots/features/collections/presentation/route/route_data.dart'
+    show CollectionDetailsRouteData;
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
+import '../../view_model/collections_state.dart';
 import '../../view_model/collections_view_model.dart';
 
 class CollectionsView extends ConsumerWidget {
@@ -12,36 +20,111 @@ class CollectionsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(collectionsViewModelProvider);
+    final notifier = ref.read(collectionsViewModelProvider.notifier);
 
     if (state.isLoading) {
       return const Center(child: GSCircularLoader());
     }
 
+    final ownedSharesByCollection = <String, List<SharedAccessTokenEntity>>{};
+    for (final token in state.ownedShareTokens) {
+      if (token.resourceType != 'collection' || token.resourceId.isEmpty) {
+        continue;
+      }
+      ownedSharesByCollection.putIfAbsent(token.resourceId, () => []).add(token);
+    }
+    final sharedByMeCollections = state.ownedCollections
+        .where(
+          (collection) =>
+              collection.tag != 'all' &&
+              ownedSharesByCollection.containsKey(collection.tag),
+        )
+        .toList();
+    final collections = switch (state.selectedTab) {
+      CollectionsTab.owned => state.ownedCollections,
+      CollectionsTab.sharedWithMe => state.sharedCollections,
+      CollectionsTab.sharedByMe => sharedByMeCollections,
+    };
+    final title = switch (state.selectedTab) {
+      CollectionsTab.owned => 'Mes Collections',
+      CollectionsTab.sharedWithMe => 'Partagées avec moi',
+      CollectionsTab.sharedByMe => 'Partagées par moi',
+    };
+    final placesCount = switch (state.selectedTab) {
+      CollectionsTab.owned => state.totalPlaces,
+      CollectionsTab.sharedWithMe => collections.fold<int>(
+          0,
+          (sum, c) => sum + c.placesCount,
+        ),
+      CollectionsTab.sharedByMe => sharedByMeCollections.fold<int>(
+          0,
+          (sum, c) => sum + c.placesCount,
+        ),
+    };
+    final totalCollections = collections.length;
+    Future<void> openCollectionDetails(CollectionEntity collection) async {
+      await notifier.activateSharedCollection(collection);
+      if (!context.mounted) {
+        return;
+      }
+      CollectionDetailsRouteData(collectionTag: collection.tag).push(context);
+    }
+
+    final tabView = switch (state.selectedTab) {
+      CollectionsTab.owned => OwnedCollectionsTabView(
+          collections: state.ownedCollections,
+          onCollectionTap: openCollectionDetails,
+        ),
+      CollectionsTab.sharedWithMe => SharedWithMeCollectionsTabView(
+          collections: state.sharedCollections,
+          onCollectionTap: openCollectionDetails,
+          onRemoveAccess: notifier.revokeSharedAccess,
+        ),
+      CollectionsTab.sharedByMe => SharedByMeCollectionsTabView(
+          collections: sharedByMeCollections,
+          tokensByCollection: ownedSharesByCollection,
+          onCollectionTap: openCollectionDetails,
+          onRevokeToken: notifier.revokeOwnedShare,
+        ),
+    };
+
     return CustomScrollView(
       slivers: [
         SliverToBoxAdapter(
           child: CollectionsHeader(
-            totalCollections: state.collections.length,
-            totalPlaces: state.totalPlaces,
-            // onImportPressed: () => _showImportDialog(context, ref),
+            title: title,
+            totalCollections: totalCollections,
+            totalPlaces: placesCount,
+            onImportPressed: notifier.importCollection,
+            onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              GSSpacing.xl,
+              GSSpacing.m,
+              GSSpacing.xl,
+              0,
+            ),
+            child: CollectionsTabs(
+              selectedTab: state.selectedTab,
+              onTabChanged: notifier.selectTab,
+            ),
           ),
         ),
         SliverPadding(
           padding: const EdgeInsets.all(GSSpacing.xl),
-          sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final collection = state.collections[index];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: GSSpacing.l),
-                child: CollectionCard(
-                  collection: collection,
-                  onTap: () => const PlacesRouteData().push(context),
-                ),
-              );
-            }, childCount: state.collections.length),
-          ),
+          sliver: SliverToBoxAdapter(child: tabView),
         ),
       ],
     );
   }
+}
+
+void _showAddSharedAccessDialog(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    builder: (_) => const AddSharedAccessDialog(),
+  );
 }

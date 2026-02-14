@@ -23,31 +23,40 @@ class GSActionButtonRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = screenWidth > 700 ? screenWidth * 0.1 : 0.0;
+    const buttonPadding = EdgeInsets.symmetric(
+      horizontal: GSSpacing.m,
+      vertical: GSSpacing.l,
+    );
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth > 700 ? screenWidth * 0.1 : GSSpacing.xl,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        spacing: GSSpacing.s,
+        runSpacing: GSSpacing.s,
         children: [
-          Expanded(
+          SizedBox(
+            width: 140,
             child: GSOutlinedButton(
               onPressed: () {
                 onCancel?.call();
-                Navigator.of(context).pop();
               },
               text: cancelText,
+              padding: buttonPadding,
+              fullWidth: true,
             ),
           ),
-          const SizedBox(width: GSSpacing.xl4),
-          Expanded(
+          SizedBox(
+            width: 140,
             child: GSFilledButton(
               enabled: isFormValid,
               isLoading: isLoading,
               onPressed: onSave,
               text: saveText,
+              padding: buttonPadding,
+              fullWidth: true,
             ),
           ),
         ],

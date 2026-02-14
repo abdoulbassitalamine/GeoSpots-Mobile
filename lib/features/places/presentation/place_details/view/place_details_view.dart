@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/shared_access_session.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/place_details_view_model.dart';
@@ -8,12 +10,20 @@ import '../wigets/place_details_header.dart';
 
 class PlaceDetailsView extends ConsumerWidget {
   final String placeId;
+  final bool readOnly;
 
-  const PlaceDetailsView({super.key, required this.placeId});
+  const PlaceDetailsView({
+    super.key,
+    required this.placeId,
+    this.readOnly = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(placeDetailsViewModelProvider(placeId));
+    final activeAccessRight = ref.watch(activeCollectionAccessRightProvider);
+    final effectiveReadOnly =
+        readOnly || activeAccessRight == ShareAccessRight.read;
 
     if (state.isLoading) {
       return const Center(child: GSCircularLoader());
@@ -57,7 +67,11 @@ class PlaceDetailsView extends ConsumerWidget {
             children: [
               PlaceDetailsContent(place: state.place!),
               const SizedBox(height: GSSpacing.xl3),
-              PlaceDetailsActions(place: state.place!, placeId: placeId),
+              PlaceDetailsActions(
+                place: state.place!,
+                placeId: placeId,
+                readOnly: effectiveReadOnly,
+              ),
               const SizedBox(height: GSSpacing.xl3),
             ],
           ),

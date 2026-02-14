@@ -6,7 +6,7 @@ import '../../theme/shadows.dart';
 import '../../tokens/color_tokens.dart';
 
 /// GSDropdownField - Dropdown component for GeoSpots
-class GSDropdownField<T> extends StatelessWidget {
+class GSDropdownField<T> extends StatefulWidget {
   const GSDropdownField({
     super.key,
     this.items,
@@ -24,6 +24,7 @@ class GSDropdownField<T> extends StatelessWidget {
     this.width,
     this.placeholder,
     this.focusNode,
+    this.showErrorOnlyWhenUnfocused = true,
   }) : assert(
   (items != null) != ((itemBuilder != null && itemValues != null)),
   'Either provide items or both itemBuilder and itemValues',
@@ -44,25 +45,77 @@ class GSDropdownField<T> extends StatelessWidget {
   final double? width;
   final String? placeholder;
   final FocusNode? focusNode;
+  final bool showErrorOnlyWhenUnfocused;
+
+  @override
+  State<GSDropdownField<T>> createState() => _GSDropdownFieldState<T>();
+}
+
+class _GSDropdownFieldState<T> extends State<GSDropdownField<T>> {
+  FocusNode? _internalFocusNode;
+  bool _hasBeenFocused = false;
+
+  FocusNode get _effectiveFocusNode => widget.focusNode ?? _internalFocusNode!;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalFocusNode = widget.focusNode == null ? FocusNode() : null;
+    _effectiveFocusNode.addListener(_onFocusChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant GSDropdownField<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      final oldFocusNode = oldWidget.focusNode ?? _internalFocusNode;
+      oldFocusNode?.removeListener(_onFocusChanged);
+      if (oldWidget.focusNode != null && widget.focusNode == null) {
+        _internalFocusNode = FocusNode();
+      }
+      _effectiveFocusNode.addListener(_onFocusChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _effectiveFocusNode.removeListener(_onFocusChanged);
+    _internalFocusNode?.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChanged() {
+    if (_effectiveFocusNode.hasFocus && !_hasBeenFocused) {
+      setState(() => _hasBeenFocused = true);
+      return;
+    }
+    if (!_effectiveFocusNode.hasFocus) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final dropdownItems = items ??
-        itemValues?.map((value) {
+    final shouldShowError =
+        !widget.showErrorOnlyWhenUnfocused ||
+        (_hasBeenFocused && !_effectiveFocusNode.hasFocus);
+
+    final dropdownItems = widget.items ??
+        widget.itemValues?.map((value) {
           return DropdownMenuItem<T>(
             value: value,
-            child: itemBuilder!(context, value),
+            child: widget.itemBuilder!(context, value),
           );
         }).toList();
 
     return MergeSemantics(
       child: Semantics(
         child: DropdownButtonFormField2<T>(
-          value: value,
-          focusNode: focusNode,
+          value: widget.value,
+          focusNode: _effectiveFocusNode,
           items: dropdownItems,
-          onChanged: enabled ? onChanged : null,
-          onSaved: onSaved,
+          onChanged: widget.enabled ? widget.onChanged : null,
+          onSaved: widget.onSaved,
           dropdownStyleData: DropdownStyleData(
             decoration: BoxDecoration(
               color: GSColorTokens.backgroundPrimary,
@@ -73,7 +126,7 @@ class GSDropdownField<T> extends StatelessWidget {
             ),
           ),
           decoration: InputDecoration(
-            labelText: label,
+            labelText: widget.label,
             labelStyle: GSTypography.bodyDefaultSmall.copyWith(
               color: GSColorTokens.textPrimary,
               fontWeight: FontWeight.w400,
@@ -82,12 +135,12 @@ class GSDropdownField<T> extends StatelessWidget {
             floatingLabelStyle: TextStyle(
               color: GSColorTokens.textAccent,
             ),
-            hintText: placeholder,
+            hintText: widget.placeholder,
             hintStyle: TextStyle(
               color: GSColorTokens.fieldLabel,
             ),
-            errorText: errorMessage,
-            prefixIcon: leadingIcon,
+            errorText: shouldShowError ? widget.errorMessage : null,
+            prefixIcon: widget.leadingIcon,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 16,
               horizontal: GSSpacing.xs,

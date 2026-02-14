@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
+import 'package:geo_spots/features/collections/domain/enums/collection_source.dart';
 import 'package:geo_spots/features/collections/presentation/view_model/collections_view_model.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../../shared/design_system/design_system.dart';
 import 'export_dialog.dart';
+import 'share_collection_dialog.dart';
 
 class CollectionCard extends ConsumerWidget {
   final CollectionEntity collection;
@@ -18,9 +20,10 @@ class CollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAllCollection = collection.tag == 'all';
+    final isShared = collection.source == CollectionSource.shared;
 
     return GSCard(
-      onTap: isAllCollection ? onTap : null,
+      onTap: onTap,
       padding: const EdgeInsets.all(GSSpacing.xl),
       child: Row(
         children: [
@@ -49,6 +52,26 @@ class CollectionCard extends ConsumerWidget {
                     fontSize: GSFontScale.sf05,
                   ),
                 ),
+                if (isShared) ...[
+                  const SizedBox(height: GSSpacing.xs),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: GSSpacing.s,
+                      vertical: GSSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: GSColors.warning100,
+                      borderRadius: BorderRadius.circular(GSRadius.full),
+                    ),
+                    child: Text(
+                      collection.rights.label,
+                      style: GSTypography.captionDefault.copyWith(
+                        color: GSColors.warning700,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: GSSpacing.xs),
                 Text(
                   isAllCollection
@@ -61,7 +84,7 @@ class CollectionCard extends ConsumerWidget {
               ],
             ),
           ),
-          if (!isAllCollection)
+          if (!isAllCollection && !isShared)
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -74,13 +97,13 @@ class CollectionCard extends ConsumerWidget {
                 const SizedBox(width: GSSpacing.s),
                 GSIconButton(
                   icon: Icons.share,
-                  onPressed: () {},
+                  onPressed: () => _showShareDialog(context, ref),
                   size: 24,
                   tooltip: 'Partager',
                 ),
               ],
             )
-          else
+          else if (onTap != null)
             const Icon(Icons.chevron_right, color: GSColors.neutral400),
         ],
       ),
@@ -96,6 +119,19 @@ class CollectionCard extends ConsumerWidget {
           ref
               .read(collectionsViewModelProvider.notifier)
               .exportCollection(collection, format);
+        },
+      ),
+    );
+  }
+
+  void _showShareDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => ShareCollectionDialog(
+        onShare: (accessRight) {
+          ref
+              .read(collectionsViewModelProvider.notifier)
+              .shareCollection(collection, accessRight);
         },
       ),
     );

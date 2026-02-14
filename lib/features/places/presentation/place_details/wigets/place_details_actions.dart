@@ -10,11 +10,13 @@ import 'navigation_options_dialog.dart';
 class PlaceDetailsActions extends StatelessWidget {
   final PlaceEntity place;
   final String placeId;
+  final bool readOnly;
 
   const PlaceDetailsActions({
     super.key,
     required this.place,
     required this.placeId,
+    this.readOnly = false,
   });
 
   @override
@@ -23,9 +25,9 @@ class PlaceDetailsActions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: GSSpacing.xl),
       child: Column(
         children: [
-          _PrimaryActionsRow(placeId: placeId, place: place),
+          _PrimaryActionsRow(placeId: placeId, place: place, readOnly: readOnly),
           const SizedBox(height: GSSpacing.l),
-          _SecondaryActionsRow(placeId: placeId, place: place),
+          _SecondaryActionsRow(placeId: placeId, place: place, readOnly: readOnly),
         ],
       ),
     );
@@ -33,9 +35,14 @@ class PlaceDetailsActions extends StatelessWidget {
 }
 
 class _PrimaryActionsRow extends StatelessWidget {
-  const _PrimaryActionsRow({required this.placeId, required this.place});
+  const _PrimaryActionsRow({
+    required this.placeId,
+    required this.place,
+    required this.readOnly,
+  });
   final String placeId;
   final PlaceEntity place;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -54,15 +61,24 @@ class _PrimaryActionsRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: GSSpacing.l),
-        Expanded(
-          child: GSOutlinedButton(
-            text: 'Modifier',
-            icon: Icons.edit,
-            onPressed: () {
-              UpsertPlaceRouteData(placeId: placeId).push(context);
-            },
+        if (!readOnly)
+          Expanded(
+            child: GSOutlinedButton(
+              text: 'Modifier',
+              icon: Icons.edit,
+              onPressed: () {
+                UpsertPlaceRouteData(placeId: placeId).push(context);
+              },
+            ),
+          )
+        else
+          Expanded(
+            child: GSOutlinedButton(
+              text: 'Lecture seule',
+              icon: Icons.lock_outline,
+              onPressed: () {},
+            ),
           ),
-        ),
       ],
     );
   }
@@ -70,8 +86,13 @@ class _PrimaryActionsRow extends StatelessWidget {
 
 class _SecondaryActionsRow extends ConsumerWidget {
   final String placeId;
+  final bool readOnly;
 
-  const _SecondaryActionsRow({required this.placeId, required this.place});
+  const _SecondaryActionsRow({
+    required this.placeId,
+    required this.place,
+    required this.readOnly,
+  });
 
   final PlaceEntity place;
 
@@ -96,26 +117,27 @@ class _SecondaryActionsRow extends ConsumerWidget {
             // TODO: Ajouter aux favoris
           },
         ),
-        _ActionButton(
-          icon: Icons.delete_outline,
-          label: 'Supprimer',
-          color: GSColors.danger600,
-          onPressed: () async {
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (context) => const _DeleteConfirmDialog(),
-            );
+        if (!readOnly)
+          _ActionButton(
+            icon: Icons.delete_outline,
+            label: 'Supprimer',
+            color: GSColors.danger600,
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => const _DeleteConfirmDialog(),
+              );
 
-            if (confirmed == true) {
-              await ref
-                  .read(placeDetailsViewModelProvider(placeId).notifier)
-                  .deletePlace();
-              if (context.mounted) {
-                Navigator.of(context).pop();
+              if (confirmed == true) {
+                await ref
+                    .read(placeDetailsViewModelProvider(placeId).notifier)
+                    .deletePlace();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
               }
-            }
-          },
-        ),
+            },
+          ),
       ],
     );
   }

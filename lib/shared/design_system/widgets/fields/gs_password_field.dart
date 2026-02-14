@@ -3,7 +3,7 @@ import 'package:geo_spots/shared/design_system/tokens/color_tokens.dart';
 
 import '../../theme/text_styles.dart';
 
-class GSPasswordField extends StatelessWidget {
+class GSPasswordField extends StatefulWidget {
   const GSPasswordField({
     super.key,
     required this.label,
@@ -17,6 +17,7 @@ class GSPasswordField extends StatelessWidget {
     required this.obscureText,
     this.onVisibilityChanged,
     this.errorMessage,
+    this.showErrorOnlyWhenUnfocused = true,
   });
 
   final String label;
@@ -30,14 +31,57 @@ class GSPasswordField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final bool obscureText;
   final String? errorMessage;
+  final bool showErrorOnlyWhenUnfocused;
+
+  @override
+  State<GSPasswordField> createState() => _GSPasswordFieldState();
+}
+
+class _GSPasswordFieldState extends State<GSPasswordField> {
+  bool _hasBeenFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.focusNode.addListener(_onFocusChanged);
+  }
+
+  @override
+  void didUpdateWidget(covariant GSPasswordField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.focusNode != widget.focusNode) {
+      oldWidget.focusNode.removeListener(_onFocusChanged);
+      widget.focusNode.addListener(_onFocusChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.focusNode.removeListener(_onFocusChanged);
+    super.dispose();
+  }
+
+  void _onFocusChanged() {
+    if (widget.focusNode.hasFocus && !_hasBeenFocused) {
+      setState(() => _hasBeenFocused = true);
+      return;
+    }
+    if (!widget.focusNode.hasFocus) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final shouldShowError =
+        !widget.showErrorOnlyWhenUnfocused ||
+        (_hasBeenFocused && !widget.focusNode.hasFocus);
+
     return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      obscureText: obscureText,
-      textInputAction: action,
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      obscureText: widget.obscureText,
+      textInputAction: widget.action,
       enableSuggestions: false,
       autocorrect: false,
       maxLines: 1,
@@ -52,16 +96,16 @@ class GSPasswordField extends StatelessWidget {
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: GSColorTokens.fieldBorder),
         ),
-        labelText: label,
-        errorText: errorMessage,
+        labelText: widget.label,
+        errorText: shouldShowError ? widget.errorMessage : null,
         border: const OutlineInputBorder(),
         filled: false,
-        error: error == null
+        error: widget.error == null || !shouldShowError
             ? null
             : Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  error!,
+                  widget.error!,
                   textAlign: TextAlign.end,
                   style: context.bodyAccentMedium.copyWith(
                     color: GSColorTokens.fieldError,
@@ -71,11 +115,11 @@ class GSPasswordField extends StatelessWidget {
         errorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: GSColorTokens.fieldError),
         ),
-        suffixIcon: onVisibilityChanged != null
+        suffixIcon: widget.onVisibilityChanged != null
             ? IconButton(
-                onPressed: () => onVisibilityChanged?.call(!obscureText),
+                onPressed: () => widget.onVisibilityChanged?.call(!widget.obscureText),
                 icon: Icon(
-                  obscureText
+                  widget.obscureText
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
                   color: GSColorTokens.textPrimary,
@@ -83,8 +127,8 @@ class GSPasswordField extends StatelessWidget {
               )
             : null,
       ),
-      onChanged: onChanged,
-      onSubmitted: onSubmitted,
+      onChanged: widget.onChanged,
+      onSubmitted: widget.onSubmitted,
     );
   }
 }

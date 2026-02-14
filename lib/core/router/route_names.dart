@@ -8,6 +8,10 @@ abstract class RouteNames {
 
   static const String collections = '/collections';
   static const String collectionsName = 'collections';
+  static const String collectionTagParam = 'collectionTag';
+  static const String collectionDetails =
+      'details/:$collectionTagParam';
+  static const String collectionDetailsName = 'collection-details';
 
   static const String settings = '/settings';
   static const String settingsName = 'settings';

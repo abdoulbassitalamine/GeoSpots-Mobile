@@ -50,6 +50,12 @@ const _publicRoutes = [
         TypedGoRoute<CollectionsRouteData>(
           path: RouteNames.collections,
           name: RouteNames.collectionsName,
+          routes: <TypedRoute<RouteData>>[
+            TypedGoRoute<CollectionDetailsRouteData>(
+              path: RouteNames.collectionDetails,
+              name: RouteNames.collectionDetailsName,
+            ),
+          ],
         ),
       ],
     ),

@@ -45,6 +45,26 @@ class PlaceListItem extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: GSSpacing.xs),
+                    if (place.isShared) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: GSSpacing.s,
+                          vertical: GSSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: GSColors.warning100,
+                          borderRadius: BorderRadius.circular(GSRadius.full),
+                        ),
+                        child: Text(
+                          'Partagé',
+                          style: GSTypography.captionDefault.copyWith(
+                            color: GSColors.warning700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: GSSpacing.xs),
+                    ],
                     if (place.city != null || place.country != null)
                       Row(
                         children: [

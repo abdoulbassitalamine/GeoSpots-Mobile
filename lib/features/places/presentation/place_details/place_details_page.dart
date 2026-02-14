@@ -4,13 +4,18 @@ import 'view/place_details_view.dart';
 
 class PlaceDetailsPage extends ConsumerWidget {
   final String placeId;
+  final bool readOnly;
 
-  const PlaceDetailsPage({super.key, required this.placeId});
+  const PlaceDetailsPage({
+    super.key,
+    required this.placeId,
+    this.readOnly = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      body: PlaceDetailsView(placeId: placeId),
+      body: PlaceDetailsView(placeId: placeId, readOnly: readOnly),
     );
   }
 }

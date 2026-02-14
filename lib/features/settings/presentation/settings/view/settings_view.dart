@@ -6,7 +6,6 @@ import '../widgets/profile_header.dart';
 import '../widgets/profile_stats.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/tracking_toggle.dart';
-import '../widgets/sources_card.dart';
 import '../widgets/logout_button.dart';
 
 class SettingsView extends ConsumerWidget {
@@ -56,8 +55,6 @@ class SettingsView extends ConsumerWidget {
                   totalCollections: state.totalCollections,
                   sharedPlaces: state.sharedPlaces,
                 ),
-                const SizedBox(height: GSSpacing.xl),
-                const SourcesCard(),
                 const SizedBox(height: GSSpacing.xl),
                 SettingsSection(
                   title: 'Paramètres',

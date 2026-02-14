@@ -18,34 +18,38 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
         ? navigationShell.currentIndex
         : 0;
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: GSColorTokens.backgroundPrimary,
-        body: navigationShell,
-        bottomNavigationBar: MainMenuKey.values.length >= 2
-            ? Theme(
-                data: Theme.of(context).copyWith(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
+    return Scaffold(
+      backgroundColor: GSColorTokens.backgroundPrimary,
+      body: navigationShell,
+      bottomNavigationBar: MainMenuKey.values.length >= 2
+          ? Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: Container(
+                color: GSColorTokens.navBarBackground,
+                child: SafeArea(
+                  top: false,
+                  child: BottomNavigationBar(
+                    currentIndex: selectedIndex,
+                    type: BottomNavigationBarType.fixed,
+                    backgroundColor: GSColorTokens.navBarBackground,
+                    selectedItemColor: GSColorTokens.navBarItemSelected,
+                    unselectedItemColor: GSColorTokens.navBarItemDefault,
+                    selectedLabelStyle: context.captionAccent,
+                    unselectedLabelStyle: context.captionDefault,
+                    showUnselectedLabels: true,
+                    iconSize: 24,
+                    items: MainMenuKey.values
+                        .map((key) => key.toBottomNavItem(context))
+                        .toList(),
+                    onTap: (index) => _goToLocation(context, index),
+                  ),
                 ),
-                child: BottomNavigationBar(
-                  currentIndex: selectedIndex,
-                  type: BottomNavigationBarType.fixed,
-                  backgroundColor: GSColorTokens.navBarBackground,
-                  selectedItemColor: GSColorTokens.navBarItemSelected,
-                  unselectedItemColor: GSColorTokens.navBarItemDefault,
-                  selectedLabelStyle: context.captionAccent,
-                  unselectedLabelStyle: context.captionDefault,
-                  showUnselectedLabels: true,
-                  iconSize: 24,
-                  items: MainMenuKey.values
-                      .map((key) => key.toBottomNavItem(context))
-                      .toList(),
-                  onTap: (index) => _goToLocation(context, index),
-                ),
-              )
-            : null,
-      ),
+              ),
+            )
+          : null,
     );
   }
 

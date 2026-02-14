@@ -1,4 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/collections_view_model.dart';
+import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import '../../domain/repository/places_repository.dart';
 import 'place_details_state.dart';
 
@@ -17,7 +19,9 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
 
     try {
       final repository = ref.read(placesRepositoryProvider);
-      final place = await repository.getPlaceById(placeId);
+      var place = await repository.getPlaceById(placeId);
+
+      place ??= _findPlaceInCollections(placeId);
 
       if (place == null) {
         state = state.copyWith(
@@ -48,5 +52,17 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
         errorMessage: 'Erreur lors de la suppression',
       );
     }
+  }
+
+  PlaceEntity? _findPlaceInCollections(String placeId) {
+    final collectionsState = ref.read(collectionsViewModelProvider);
+    for (final collection in collectionsState.sharedCollections) {
+      for (final sharedPlace in collection.places) {
+        if (sharedPlace.id == placeId) {
+          return sharedPlace;
+        }
+      }
+    }
+    return null;
   }
 }

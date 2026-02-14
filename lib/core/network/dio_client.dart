@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geo_spots/features/authentication/data/client/dio/interceptors/authentication_interceptor.dart';
+import 'package:geo_spots/features/collections/data/client/interceptors/shared_access_interceptor.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -18,6 +19,7 @@ Dio dioClient(Ref ref) {
   );
 
   dio.interceptors.add(AuthenticationInterceptor(ref: ref));
+  dio.interceptors.add(SharedAccessInterceptor(ref: ref));
 
   return dio;
 }

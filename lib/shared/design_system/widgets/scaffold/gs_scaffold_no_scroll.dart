@@ -32,7 +32,7 @@ class GSScaffoldNoScroll extends StatelessWidget {
             children: [
               Container(
                 height: GSSpacing.xl,
-                color: GSColorTokens.backgroundSecondaryInverse,
+                color: GSColorTokens.backgroundAccent,
               ),
               AppBar(
                 centerTitle: false,
@@ -40,7 +40,7 @@ class GSScaffoldNoScroll extends StatelessWidget {
                 leading: const GSBackButton(),
                 iconTheme: IconThemeData(color: GSColorTokens.textInverse),
                 foregroundColor: GSColorTokens.backgroundPrimary,
-                backgroundColor: GSColorTokens.backgroundSecondaryInverse,
+                backgroundColor: GSColorTokens.backgroundAccent,
                 title: Text(
                   title,
                   style: GSTypography.headingSmall.copyWith(
