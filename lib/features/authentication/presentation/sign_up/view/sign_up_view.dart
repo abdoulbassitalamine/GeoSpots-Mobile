@@ -1,12 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../core/utils/extensions/sized_box_extension.dart';
 import '../../../../../shared/design_system/design_system.dart';
-import '../../../../../shared/design_system/theme/spacing.dart';
-import '../../../../../shared/design_system/theme/text_styles.dart';
 import '../widget/signup_form.dart';
 
 class SignUpView extends ConsumerWidget {
@@ -57,6 +56,19 @@ class SignUpView extends ConsumerWidget {
                       ..onTap = () => const SignInRouteData().go(context),
                   ),
                 ],
+              ),
+            ),
+          ),
+          GSSpacing.$150.toInt().toHeight,
+          Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              onPressed: () => const MapRouteData().go(context),
+              child: Text(
+                'Continuer en invité',
+                style: context.bodyAccentSmall.copyWith(
+                  color: GSColors.neutral900,
+                ),
               ),
             ),
           ),

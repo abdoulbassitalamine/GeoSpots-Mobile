@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
+import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/add_shared_access_dialog.dart';
@@ -19,6 +21,9 @@ class CollectionsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authenticationStatus = ref.watch(authenticationNotifierProvider);
+    final isAuthenticated =
+        authenticationStatus is AuthenticationStatusAuthenticated;
     final state = ref.watch(collectionsViewModelProvider);
     final notifier = ref.read(collectionsViewModelProvider.notifier);
 
@@ -40,17 +45,21 @@ class CollectionsView extends ConsumerWidget {
               ownedSharesByCollection.containsKey(collection.tag),
         )
         .toList();
-    final collections = switch (state.selectedTab) {
+    final effectiveTab = isAuthenticated
+        ? state.selectedTab
+        : CollectionsTab.sharedWithMe;
+
+    final collections = switch (effectiveTab) {
       CollectionsTab.owned => state.ownedCollections,
       CollectionsTab.sharedWithMe => state.sharedCollections,
       CollectionsTab.sharedByMe => sharedByMeCollections,
     };
-    final title = switch (state.selectedTab) {
+    final title = switch (effectiveTab) {
       CollectionsTab.owned => 'Mes Collections',
       CollectionsTab.sharedWithMe => 'Partagées avec moi',
       CollectionsTab.sharedByMe => 'Partagées par moi',
     };
-    final placesCount = switch (state.selectedTab) {
+    final placesCount = switch (effectiveTab) {
       CollectionsTab.owned => state.totalPlaces,
       CollectionsTab.sharedWithMe => collections.fold<int>(
           0,
@@ -70,7 +79,7 @@ class CollectionsView extends ConsumerWidget {
       CollectionDetailsRouteData(collectionTag: collection.tag).push(context);
     }
 
-    final tabView = switch (state.selectedTab) {
+    final tabView = switch (effectiveTab) {
       CollectionsTab.owned => OwnedCollectionsTabView(
           collections: state.ownedCollections,
           onCollectionTap: openCollectionDetails,
@@ -95,24 +104,27 @@ class CollectionsView extends ConsumerWidget {
             title: title,
             totalCollections: totalCollections,
             totalPlaces: placesCount,
-            onImportPressed: notifier.importCollection,
+            onImportPressed: isAuthenticated
+                ? notifier.importCollection
+                : null,
             onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
           ),
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              GSSpacing.xl,
-              GSSpacing.m,
-              GSSpacing.xl,
-              0,
-            ),
-            child: CollectionsTabs(
-              selectedTab: state.selectedTab,
-              onTabChanged: notifier.selectTab,
+        if (isAuthenticated)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                GSSpacing.xl,
+                GSSpacing.m,
+                GSSpacing.xl,
+                0,
+              ),
+              child: CollectionsTabs(
+                selectedTab: state.selectedTab,
+                onTabChanged: notifier.selectTab,
+              ),
             ),
           ),
-        ),
         SliverPadding(
           padding: const EdgeInsets.all(GSSpacing.xl),
           sliver: SliverToBoxAdapter(child: tabView),

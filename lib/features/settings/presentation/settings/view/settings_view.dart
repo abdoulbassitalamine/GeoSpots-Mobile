@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
+import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
+import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/profile_view_model.dart';
@@ -13,6 +16,12 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authStatus = ref.watch(authenticationNotifierProvider);
+    final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
+    if (!isAuthenticated) {
+      return const _GuestProfilePrompt();
+    }
+
     final state = ref.watch(profileViewModelProvider);
 
     if (state.isLoading) {
@@ -77,6 +86,70 @@ class SettingsView extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _GuestProfilePrompt extends StatelessWidget {
+  const _GuestProfilePrompt();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(GSSpacing.xl),
+        child: GSCard(
+          padding: const EdgeInsets.all(GSSpacing.xl),
+          borderRadius: BorderRadius.circular(GSRadius.l),
+          shadows: [GSShadows.s()],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: const BoxDecoration(
+                  color: GSColors.primary100,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_outline,
+                  color: GSColors.primary600,
+                  size: 34,
+                ),
+              ),
+              const SizedBox(height: GSSpacing.l),
+              Text(
+                'Connectez-vous pour synchroniser vos lieux',
+                textAlign: TextAlign.center,
+                style: GSTypography.headingSmall.copyWith(
+                  color: GSColors.neutral900,
+                ),
+              ),
+              const SizedBox(height: GSSpacing.s),
+              Text(
+                'Créez un compte ou connectez-vous pour gérer vos collections personnelles.',
+                textAlign: TextAlign.center,
+                style: GSTypography.bodyDefaultMedium.copyWith(
+                  color: GSColors.neutral600,
+                ),
+              ),
+              const SizedBox(height: GSSpacing.xl),
+              GSFilledButton(
+                onPressed: () => const SignInRouteData().go(context),
+                text: 'Se connecter',
+                fullWidth: true,
+              ),
+              const SizedBox(height: GSSpacing.m),
+              GSOutlinedButton(
+                onPressed: () => const SignUpRouteData().go(context),
+                text: 'Créer un compte',
+                fullWidth: true,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

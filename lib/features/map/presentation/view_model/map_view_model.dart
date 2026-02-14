@@ -1,4 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
+import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
+import 'package:geo_spots/features/collections/domain/repository/collections_repository.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/features/places/domain/repository/places_repository.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -19,7 +21,7 @@ class MapViewModel extends _$MapViewModel {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final places = await ref.read(placesRepositoryProvider).getAllPlaces();
+      final places = await _loadPlacesForCurrentMode();
       final categories = _buildCategories(places);
       final visiblePlaces = _filterPlaces(
         places: places,
@@ -47,8 +49,27 @@ class MapViewModel extends _$MapViewModel {
     }
   }
 
+  Future<List<PlaceEntity>> _loadPlacesForCurrentMode() async {
+    final authStatus = ref.read(authenticationNotifierProvider);
+    final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
+
+    if (isAuthenticated) {
+      return ref.read(placesRepositoryProvider).getAllPlaces();
+    }
+
+    final sharedCollections = await ref
+        .read(collectionsRepositoryProvider)
+        .getSharedCollections();
+    final placesById = <String, PlaceEntity>{};
+    for (final collection in sharedCollections) {
+      for (final place in collection.places) {
+        placesById.putIfAbsent(place.id, () => place);
+      }
+    }
+    return placesById.values.toList();
+  }
+
   void updateSearchQuery(String query) {
-    _logSearchInput(query);
     _applyFilters(
       searchQuery: query,
       selectedCategory: query.trim().isNotEmpty ? 'Tous' : state.selectedCategory,
@@ -80,12 +101,6 @@ class MapViewModel extends _$MapViewModel {
       places: state.allPlaces,
       category: effectiveCategory,
       query: nextQuery,
-    );
-    _logSearchResult(
-      rawQuery: nextQuery,
-      normalizedQuery: _normalize(nextQuery),
-      effectiveCategory: effectiveCategory,
-      resultsCount: nextVisiblePlaces.length,
     );
 
     state = state.copyWith(
@@ -215,27 +230,6 @@ class MapViewModel extends _$MapViewModel {
     return false;
   }
 
-  void _logSearchInput(String query) {
-    if (!kDebugMode) {
-      return;
-    }
-    debugPrint('[MapSearch] input="$query"');
-  }
-
-  void _logSearchResult({
-    required String rawQuery,
-    required String normalizedQuery,
-    required String effectiveCategory,
-    required int resultsCount,
-  }) {
-    if (!kDebugMode) {
-      return;
-    }
-    debugPrint(
-      '[MapSearch] query="$rawQuery" normalized="$normalizedQuery" '
-      'category="$effectiveCategory" results=$resultsCount',
-    );
-  }
 
   String _normalize(String value) {
     return value

@@ -5,7 +5,7 @@ class CollectionsHeader extends StatelessWidget {
   final int totalCollections;
   final int totalPlaces;
   final String title;
-  final VoidCallback onImportPressed;
+  final VoidCallback? onImportPressed;
   final VoidCallback onAddSharedAccessPressed;
 
   const CollectionsHeader({
@@ -13,7 +13,7 @@ class CollectionsHeader extends StatelessWidget {
     required this.totalCollections,
     required this.totalPlaces,
     required this.title,
-    required this.onImportPressed,
+    this.onImportPressed,
     required this.onAddSharedAccessPressed,
   });
 
@@ -58,22 +58,24 @@ class CollectionsHeader extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: GSColors.neutral000.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(GSRadius.m),
-                    ),
-                    child: IconButton(
-                      onPressed: onImportPressed,
-                      icon: const Icon(
-                        Icons.upload_file,
-                        color: GSColors.neutral000,
+                  if (onImportPressed != null) ...[
+                    Container(
+                      decoration: BoxDecoration(
+                        color: GSColors.neutral000.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(GSRadius.m),
                       ),
-                      iconSize: 28,
-                      tooltip: 'Importer une collection',
+                      child: IconButton(
+                        onPressed: onImportPressed,
+                        icon: const Icon(
+                          Icons.upload_file,
+                          color: GSColors.neutral000,
+                        ),
+                        iconSize: 28,
+                        tooltip: 'Importer une collection',
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: GSSpacing.s),
+                    const SizedBox(width: GSSpacing.s),
+                  ],
                   Container(
                     decoration: BoxDecoration(
                       color: GSColors.neutral000.withValues(alpha: 0.2),

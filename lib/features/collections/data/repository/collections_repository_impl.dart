@@ -163,17 +163,30 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   List<PlaceEntity> _buildSharedPlaces(SharedAccessTokenEntity token) {
     final count = _estimateSharedPlacesCount(token.token).clamp(2, 8);
     final cityPool = ['Paris', 'Dakar', 'Casablanca', 'Lyon', 'Berlin', 'Rome'];
+    final cityCoordinates = <String, (double lat, double lon)>{
+      'Paris': (48.8566, 2.3522),
+      'Dakar': (14.7167, -17.4677),
+      'Casablanca': (33.5731, -7.5898),
+      'Lyon': (45.7640, 4.8357),
+      'Berlin': (52.5200, 13.4050),
+      'Rome': (41.9028, 12.4964),
+    };
     final collectionTag = _formatSharedCollectionName(token.resourceId);
 
     return List<PlaceEntity>.generate(count, (index) {
       final seed = (token.token.hashCode + index).abs();
       final city = cityPool[seed % cityPool.length];
+      final base = cityCoordinates[city] ?? (48.8566, 2.3522);
+      final latOffset = ((seed % 17) - 8) * 0.0045;
+      final lonOffset = ((seed % 19) - 9) * 0.0045;
       return PlaceEntity(
         id: 'shared_${token.resourceId}_$index',
         title: '$collectionTag ${index + 1}',
         description: 'Lieu partagé via token (${token.rights.label}).',
         tags: [collectionTag],
         date: '15 janvier 2026',
+        latitude: base.$1 + latOffset,
+        longitude: base.$2 + lonOffset,
         city: city,
         country: 'France',
         isShared: true,

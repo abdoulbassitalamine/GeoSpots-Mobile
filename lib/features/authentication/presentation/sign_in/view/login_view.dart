@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:geo_spots/gen/assets.gen.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -34,6 +35,16 @@ class LoginView extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
             onPressed: () => const SignUpRouteData().go(context),
             text: 'Créer un compte',
+          ),
+          GSSpacing.$200.toInt().toHeight,
+          TextButton(
+            onPressed: () => const MapRouteData().go(context),
+            child: Text(
+              'Continuer en invité',
+              style: context.bodyAccentSmall.copyWith(
+                color: GSColors.neutral900,
+              ),
+            ),
           ),
         ],
       ),
