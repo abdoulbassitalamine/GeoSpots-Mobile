@@ -18,12 +18,8 @@ class WelcomePage extends HookConsumerWidget {
     useEffect(() {
       final timer = Timer(const Duration(milliseconds: 1500), () {
         if (context.mounted) {
-          final authStatus = ref.read(authenticationNotifierProvider);
-          if (authStatus is AuthenticationStatusAuthenticated) {
-            const HomeRouteData().go(context);
-            return;
-          }
-          const MapRouteData().go(context);
+          const HomeRouteData().go(context);
+          return;
         }
       });
 

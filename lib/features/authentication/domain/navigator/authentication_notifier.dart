@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/features/authentication/authentication.dart';
+import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
+import 'package:geo_spots/features/home/presentation/route/route_data.dart';
+import 'package:geo_spots/features/map/presentation/route/route_data.dart';
+import 'package:geo_spots/features/welcome/presentation/route/route_data.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -11,6 +16,13 @@ final authenticationNotifierProvider =
 
 class AuthenticationNotifier extends Notifier<AuthenticationStatus>
     implements Listenable {
+  static final _excludedRoutes = [
+    SignInRouteData().location,
+    SignUpRouteData().location,
+    ForgotPasswordRouteData().location,
+    WelcomeRouteData().location,
+  ];
+
   VoidCallback? _routerListener;
 
   @override
@@ -22,26 +34,28 @@ class AuthenticationNotifier extends Notifier<AuthenticationStatus>
     required GoRouterState goRouterState,
     required List<String> publicRoutes,
   }) async {
-    // Auth redirection is intentionally disabled until auth flow is completed.
-    // Parameters are used here to keep the intent explicit and avoid dead code.
+    final currentRoute = goRouterState.uri.toString();
+    final isExcludedRoute = _excludedRoutes.contains(currentRoute);
+
     if (publicRoutes.any(goRouterState.uri.path.startsWith)) {
       return null;
     }
 
-    // final token = await ref
-    //     .read(authenticationLocalDatasourceProvider)
-    //     .getAuthUserToken();
-    //
-    // if ((token == null || state is AuthenticationStatusUnauthenticated) &&
-    //     !isExcluded) {
-    //   return RouteNames.signIn;
-    // }
-    //
-    // if (publicRoutes.any(currentRoute.startsWith) &&
-    //     token != null &&
-    //     !isExcluded) {
-    //   return RouteNames.home;
-    // }
+    final token = await ref
+        .read(authenticationLocalDatasourceProvider)
+        .getAuthUserToken();
+
+    if ((token == null || state is AuthenticationStatusUnauthenticated) &&
+        !isExcludedRoute &&
+        currentRoute == HomeRouteData().location) {
+      return MapRouteData().location;
+    }
+
+    if (publicRoutes.any(currentRoute.startsWith) &&
+        token != null &&
+        !isExcludedRoute) {
+      return HomeRouteData().location;
+    }
 
     return null;
   }
