@@ -31,19 +31,16 @@ class GSPageTransition {
   }
 
   static Widget _getTransition(
-      GSPageTransitionType type,
-      Animation<double> animation,
-      Widget child,
-      Curve curve,
-      ) {
+    GSPageTransitionType type,
+    Animation<double> animation,
+    Widget child,
+    Curve curve,
+  ) {
     final curvedAnimation = CurvedAnimation(parent: animation, curve: curve);
 
     switch (type) {
       case GSPageTransitionType.fade:
-        return FadeTransition(
-          opacity: curvedAnimation,
-          child: child,
-        );
+        return FadeTransition(opacity: curvedAnimation, child: child);
 
       case GSPageTransitionType.slideRight:
         return SlideTransition(
@@ -82,10 +79,7 @@ class GSPageTransition {
         );
 
       case GSPageTransitionType.scale:
-        return ScaleTransition(
-          scale: curvedAnimation,
-          child: child,
-        );
+        return ScaleTransition(scale: curvedAnimation, child: child);
 
       case GSPageTransitionType.none:
         return child;

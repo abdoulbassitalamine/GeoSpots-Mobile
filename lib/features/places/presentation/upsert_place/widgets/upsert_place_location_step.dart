@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geo_spots/core/utils/utils/debounce.dart';
 import 'package:geo_spots/features/places/presentation/view_model/upsert_place_state.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -102,9 +103,141 @@ class _LocationSection extends StatelessWidget {
           onGetCurrentPosition: onGetCurrentPosition,
         ),
         const SizedBox(height: GSSpacing.m),
+        _ManualCoordinatesInput(
+          position: position,
+          onSetPosition: onSetPosition,
+        ),
+        const SizedBox(height: GSSpacing.m),
         if (position != null) _GpsCoordinatesStatus(position: position!),
       ],
     );
+  }
+}
+
+class _ManualCoordinatesInput extends HookWidget {
+  const _ManualCoordinatesInput({
+    required this.position,
+    required this.onSetPosition,
+  });
+
+  final LatLng? position;
+  final Function(LatLng) onSetPosition;
+
+  @override
+  Widget build(BuildContext context) {
+    final debouncer = useMemoized(() => Debouncer(milliseconds: 450));
+    final latitudeController = useTextEditingController();
+    final longitudeController = useTextEditingController();
+    final latitudeError = useState<String?>(null);
+    final longitudeError = useState<String?>(null);
+
+    useEffect(() {
+      if (position == null) {
+        return null;
+      }
+
+      final nextLat = position!.latitude.toStringAsFixed(6);
+      final nextLon = position!.longitude.toStringAsFixed(6);
+
+      if (latitudeController.text != nextLat) {
+        latitudeController.text = nextLat;
+      }
+      if (longitudeController.text != nextLon) {
+        longitudeController.text = nextLon;
+      }
+
+      return null;
+    }, [position?.latitude, position?.longitude]);
+
+    void applyManualCoordinates() {
+      final hasLatitude = latitudeController.text.trim().isNotEmpty;
+      final hasLongitude = longitudeController.text.trim().isNotEmpty;
+
+      if (!hasLatitude || !hasLongitude) {
+        latitudeError.value = null;
+        longitudeError.value = null;
+        return;
+      }
+
+      final lat = _parseCoordinate(latitudeController.text);
+      final lon = _parseCoordinate(longitudeController.text);
+
+      latitudeError.value = _latitudeErrorMessage(lat);
+      longitudeError.value = _longitudeErrorMessage(lon);
+
+      if (latitudeError.value == null &&
+          longitudeError.value == null &&
+          lat != null &&
+          lon != null) {
+        onSetPosition(LatLng(lat, lon));
+      }
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Saisie manuelle des coordonnees', style: GSTypography.labelDefault),
+        const SizedBox(height: GSSpacing.s),
+        Text(
+          'Entrez latitude et longitude si vous ne souhaitez pas utiliser le GPS.',
+          style: GSTypography.captionDefault.copyWith(
+            color: GSColors.neutral600,
+          ),
+        ),
+        const SizedBox(height: GSSpacing.m),
+        Row(
+          children: [
+            Expanded(
+              child: GSTextField(
+                controller: latitudeController,
+                label: 'Latitude',
+                placeholder: 'Ex: 48.8566',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: true,
+                ),
+                error: latitudeError.value,
+                onValueChange: (_) => debouncer.run(applyManualCoordinates),
+                onSubmitted: (_) => applyManualCoordinates(),
+              ),
+            ),
+            const SizedBox(width: GSSpacing.m),
+            Expanded(
+              child: GSTextField(
+                controller: longitudeController,
+                label: 'Longitude',
+                placeholder: 'Ex: 2.3522',
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                  signed: true,
+                ),
+                error: longitudeError.value,
+                onValueChange: (_) => debouncer.run(applyManualCoordinates),
+                onSubmitted: (_) => applyManualCoordinates(),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  static double? _parseCoordinate(String raw) {
+    final cleaned = raw.trim().replaceAll(',', '.');
+    if (cleaned.isEmpty) return null;
+    return double.tryParse(cleaned);
+  }
+
+  static String? _latitudeErrorMessage(double? value) {
+    if (value == null) return 'Latitude invalide';
+    if (value < -90 || value > 90) return 'Entre -90 et 90';
+    return null;
+  }
+
+  static String? _longitudeErrorMessage(double? value) {
+    if (value == null) return 'Longitude invalide';
+    if (value < -180 || value > 180) return 'Entre -180 et 180';
+    return null;
   }
 }
 

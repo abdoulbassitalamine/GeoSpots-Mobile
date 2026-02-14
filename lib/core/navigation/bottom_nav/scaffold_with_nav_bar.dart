@@ -13,14 +13,10 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final path = GoRouter.of(context).routeInformationProvider.value.uri.path;
-    final selectedIndex = _getSelectedIndex(
-      MainMenuKey.values,
-      MainMenuKey.home,
-      path,
-    );
-
-    _checkCurrentIndexAvailable(context, MainMenuKey.values, MainMenuKey.home);
+    final selectedIndex = navigationShell.currentIndex >= 0 &&
+            navigationShell.currentIndex < MainMenuKey.values.length
+        ? navigationShell.currentIndex
+        : 0;
 
     return SafeArea(
       child: Scaffold(
@@ -51,38 +47,6 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
             : null,
       ),
     );
-  }
-
-  void _checkCurrentIndexAvailable(
-    BuildContext context,
-    List<MainMenuKey> mainMenuKeys,
-    MainMenuKey initial,
-  ) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final hasCurrentIndex = mainMenuKeys.contains(
-        MainMenuKey.values[navigationShell.currentIndex],
-      );
-      if (!hasCurrentIndex) {
-        _goToLocation(context, initial.index);
-      }
-    });
-  }
-
-  int _getSelectedIndex(
-    List<MainMenuKey> mainMenuKeys,
-    MainMenuKey initial,
-    String path,
-  ) {
-    final initialIndex = mainMenuKeys.indexOf(initial);
-    final selectedIndex = mainMenuKeys.indexWhere(
-      (key) => path.contains(key.path),
-    );
-
-    return (selectedIndex != -1)
-        ? selectedIndex
-        : (initialIndex != -1)
-        ? initialIndex
-        : 0;
   }
 
   void _goToLocation(BuildContext context, int index) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:geo_spots/features/home/presentation/route/route_data.dart';
 import 'package:geo_spots/features/welcome/presentation/view/welcome_view.dart';
@@ -11,13 +13,14 @@ class WelcomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     useEffect(() {
-      Future.delayed(Duration(milliseconds: 1500), () {
+      final timer = Timer(const Duration(milliseconds: 1500), () {
         if (context.mounted) {
-          const HomeRouteData().push(context);
+          const HomeRouteData().go(context);
         }
       });
-      return null;
-    });
+
+      return timer.cancel;
+    }, const []);
 
     return SafeArea(
       child: Scaffold(
