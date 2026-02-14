@@ -11,6 +11,7 @@ class MapPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GSRefreshScaffold(
       enableRefresh: false,
+      padding: EdgeInsets.zero,
       child: const MapView(),
     );
   }
