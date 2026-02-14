@@ -1,7 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/router/route_names.dart';
-import 'package:go_router/go_router.dart';
+import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../core/utils/extensions/sized_box_extension.dart';
@@ -55,7 +54,7 @@ class SignUpView extends ConsumerWidget {
                       fontWeight: FontWeight.w700,
                     ),
                     recognizer: TapGestureRecognizer()
-                      ..onTap = () => context.go(RouteNames.signIn)
+                      ..onTap = () => const SignInRouteData().go(context),
                   ),
                 ],
               ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
 import 'package:geo_spots/gen/assets.gen.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../core/utils/extensions/sized_box_extension.dart';
@@ -33,7 +32,7 @@ class LoginView extends ConsumerWidget {
           GSSpacing.$800.toInt().toHeight,
           GSContainerButton.outline(
             padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
-            onPressed: ()=> context.goNamed(RouteNames.signUp),
+            onPressed: () => const SignUpRouteData().go(context),
             text: 'Créer un compte',
           ),
         ],

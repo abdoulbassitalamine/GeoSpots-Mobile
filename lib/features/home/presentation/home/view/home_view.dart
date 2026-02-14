@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/constants/app_constants.dart';
-import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../core/utils/extensions/sized_box_extension.dart';
@@ -38,12 +37,7 @@ class HomeView extends ConsumerWidget {
                 HomeRecentLocationsWidget(recentPlaces: homeState.recentPlaces),
                 GSContainerButton.filled(
                   onPressed: () {
-                    context.pushNamed(
-                      RouteNames.upsertPlaceName,
-                      pathParameters: {
-                        RouteNames.placeIdParam: kPlaceCreationId,
-                      },
-                    );
+                    UpsertPlaceRouteData(placeId: kPlaceCreationId).push(context);
                   },
                   text: 'Ajouter un lieu',
                   icon: Icons.add_circle_outline,

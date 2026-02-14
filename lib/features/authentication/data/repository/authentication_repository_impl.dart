@@ -35,9 +35,7 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
 
   @override
   Future<String> sendResetPasswordLink(String email) async {
-    final result = await _authenticationRemoteDatasource.sendResetPasswordLink(
-      email,
-    );
+    await _authenticationRemoteDatasource.sendResetPasswordLink(email);
     throw UnimplementedError();
   }
 

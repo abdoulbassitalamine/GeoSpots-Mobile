@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/router/route_names.dart';
 import 'package:geo_spots/features/places/domain/services/share_service.dart';
-import 'package:go_router/go_router.dart';
+import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
@@ -60,10 +59,7 @@ class _PrimaryActionsRow extends StatelessWidget {
             text: 'Modifier',
             icon: Icons.edit,
             onPressed: () {
-              context.pushNamed(
-                RouteNames.upsertPlaceName,
-                pathParameters: {RouteNames.placeIdParam: placeId},
-              );
+              UpsertPlaceRouteData(placeId: placeId).push(context);
             },
           ),
         ),

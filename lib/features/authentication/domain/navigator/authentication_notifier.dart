@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/router/route_names.dart';
-import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -15,28 +13,20 @@ class AuthenticationNotifier extends Notifier<AuthenticationStatus>
     implements Listenable {
   VoidCallback? _routerListener;
 
-  static const List<String> _excludedRoutes = [
-    RouteNames.forgotPassword,
-    RouteNames.signIn,
-    RouteNames.signUp,
-    RouteNames.welcome,
-  ];
-
   @override
   AuthenticationStatus build() {
     return const AuthenticationStatus.unknown();
-  }
-
-  bool _isExcludedRoute(String route) {
-    return _excludedRoutes.contains(route);
   }
 
   Future<String?> redirect({
     required GoRouterState goRouterState,
     required List<String> publicRoutes,
   }) async {
-    final currentRoute = goRouterState.uri.toString();
-    final isExcluded = _isExcludedRoute(currentRoute);
+    // Auth redirection is intentionally disabled until auth flow is completed.
+    // Parameters are used here to keep the intent explicit and avoid dead code.
+    if (publicRoutes.any(goRouterState.uri.path.startsWith)) {
+      return null;
+    }
 
     // final token = await ref
     //     .read(authenticationLocalDatasourceProvider)

@@ -8,38 +8,58 @@ import '../../../../core/router/route_names.dart';
 import '../places_list/places_list_page.dart';
 import '../place_details/place_details_page.dart';
 
+part 'route_data.g.dart';
+
 final placesMainNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'places');
 
-final placesRoutesProvider = Provider(
-      (ref) => [
-    GoRoute(
-      path: RouteNames.places,
-      name: RouteNames.placesName,
-      pageBuilder: (context, state) {
-        return GSPageTransition.buildTransition(child: PlacesListPage());
-      },
-      routes: [
-        GoRoute(
-          path: '${RouteNames.upsertPlace}/:${RouteNames.placeIdParam}',
-          name: RouteNames.upsertPlaceName,
-          pageBuilder: (context, state) {
-            final placeId = state.pathParameters[RouteNames.placeIdParam]!;
-            return GSPageTransition.buildTransition(
-              child: UpsertPlacePage(placeId: placeId),
-            );
-          },
-        ),
-        GoRoute(
-          path: ':${RouteNames.placeIdParam}',
-          name: RouteNames.placeDetailsName,
-          pageBuilder: (context, state) {
-            final placeId = state.pathParameters[RouteNames.placeIdParam]!;
-            return GSPageTransition.buildTransition(
-              child: PlaceDetailsPage(placeId: placeId),
-            );
-          },
-        ),
-      ],
+@TypedGoRoute<PlacesRouteData>(
+  path: RouteNames.places,
+  name: RouteNames.placesName,
+  routes: <TypedRoute<RouteData>>[
+    TypedGoRoute<UpsertPlaceRouteData>(
+      path: '${RouteNames.upsertPlace}/:${RouteNames.placeIdParam}',
+      name: RouteNames.upsertPlaceName,
+    ),
+    TypedGoRoute<PlaceDetailsRouteData>(
+      path: ':${RouteNames.placeIdParam}',
+      name: RouteNames.placeDetailsName,
     ),
   ],
-);
+)
+class PlacesRouteData extends GoRouteData with $PlacesRouteData {
+  const PlacesRouteData();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return GSPageTransition.buildTransition(child: PlacesListPage());
+  }
+}
+
+class UpsertPlaceRouteData extends GoRouteData with $UpsertPlaceRouteData {
+  const UpsertPlaceRouteData({required this.placeId, this.$extra});
+
+  final String placeId;
+  final Map<String, Object?>? $extra;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return GSPageTransition.buildTransition(
+      child: UpsertPlacePage(placeId: placeId),
+    );
+  }
+}
+
+class PlaceDetailsRouteData extends GoRouteData with $PlaceDetailsRouteData {
+  const PlaceDetailsRouteData({required this.placeId});
+
+  final String placeId;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return GSPageTransition.buildTransition(
+      child: PlaceDetailsPage(placeId: placeId),
+    );
+  }
+}
+
+final placesRoutesProvider = Provider<List<RouteBase>>((ref) => $appRoutes);

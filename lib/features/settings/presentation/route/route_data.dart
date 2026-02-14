@@ -6,15 +6,23 @@ import 'package:flutter/material.dart';
 import '../../../../core/router/route_names.dart';
 import '../settings/settings_page.dart';
 
+part 'route_data.g.dart';
+
 final settingsMainNavigatorKey = GlobalKey<NavigatorState>(
   debugLabel: 'settings',
 );
-final settingsRoutesProvider = Provider(
-  (ref) => GoRoute(
-    path: RouteNames.settings,
-    name: RouteNames.settingsName,
-    pageBuilder: (context, state) {
-      return const NoTransitionPage(child: SettingsPage());
-    },
-  ),
-);
+
+@TypedGoRoute<SettingsRouteData>(
+  path: RouteNames.settings,
+  name: RouteNames.settingsName,
+)
+class SettingsRouteData extends GoRouteData with $SettingsRouteData {
+  const SettingsRouteData();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage(child: SettingsPage());
+  }
+}
+
+final settingsRoutesProvider = Provider<RouteBase>((ref) => $appRoutes.first);

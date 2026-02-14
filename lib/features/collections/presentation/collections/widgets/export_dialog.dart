@@ -67,36 +67,30 @@ class _ExportFormatTile extends StatelessWidget {
     required this.icon,
     required this.description,
     required this.onTap,
-    this.enabled = true,
   });
 
   final ExportFormat format;
   final IconData icon;
   final String description;
   final VoidCallback onTap;
-  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
     return GSCard(
-      onTap: enabled ? onTap : null,
+      onTap: onTap,
       padding: const EdgeInsets.all(GSSpacing.l),
-      border: Border.all(
-        color: enabled ? GSColors.primary600 : GSColors.neutral300,
-      ),
+      border: Border.all(color: GSColors.primary600),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(GSSpacing.m),
             decoration: BoxDecoration(
-              color: enabled
-                  ? GSColors.primary600.withValues(alpha: 0.1)
-                  : GSColors.neutral200,
+              color: GSColors.primary600.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(GSRadius.s),
             ),
             child: Icon(
               icon,
-              color: enabled ? GSColors.primary600 : GSColors.neutral400,
+              color: GSColors.primary600,
             ),
           ),
           const SizedBox(width: GSSpacing.l),
@@ -107,7 +101,7 @@ class _ExportFormatTile extends StatelessWidget {
                 Text(
                   format.extension.toUpperCase(),
                   style: GSTypography.bodyAccentMedium.copyWith(
-                    color: enabled ? GSColors.neutral1000 : GSColors.neutral400,
+                    color: GSColors.neutral1000,
                   ),
                 ),
                 const SizedBox(height: GSSpacing.xs),

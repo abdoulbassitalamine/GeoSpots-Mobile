@@ -1,115 +1,105 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-    <dict>
-
-        <key>CFBundleDevelopmentRegion</key>
-        <string>$(DEVELOPMENT_LANGUAGE)</string>
-
-        <key>CFBundleDisplayName</key>
-        <string>Geo Spots</string>
-
-        <key>CFBundleExecutable</key>
-        <string>$(EXECUTABLE_NAME)</string>
-
-        <key>CFBundleIdentifier</key>
-        <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-
-        <key>CFBundleInfoDictionaryVersion</key>
-        <string>6.0</string>
-
-        <key>CFBundleName</key>
-        <string>geo_spots</string>
-
-        <key>CFBundlePackageType</key>
-        <string>APPL</string>
-
-        <key>CFBundleShortVersionString</key>
-        <string>$(FLUTTER_BUILD_NAME)</string>
-
-        <key>CFBundleSignature</key>
-        <string>????</string>
-
-        <key>CFBundleVersion</key>
-        <string>$(FLUTTER_BUILD_NUMBER)</string>
-
-        <key>LSRequiresIPhoneOS</key>
-        <true/>
-
-        <!-- Permissions de localisation -->
-        <key>NSLocationWhenInUseUsageDescription</key>
-        <string>Geo Spots a besoin de votre localisation pour afficher et ajouter des lieux sur la carte.</string>
-
-        <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-        <string>Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement les lieux à proximité et améliorer la précision des données géographiques, même lorsque l'application n'est pas ouverte.</string>
-
-        <key>NSLocationAlwaysUsageDescription</key>
-        <string>Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement les lieux à proximité et améliorer la précision des données géographiques, même lorsque l'application n'est pas ouverte.</string>
-
-        <!-- Permissions photos et caméra -->
-        <key>NSPhotoLibraryUsageDescription</key>
-        <string>Geo Spots a besoin d'accéder à vos photos pour choisir une image.</string>
-
-        <key>NSCameraUsageDescription</key>
-        <string>Geo Spots a besoin d'accéder à la caméra pour prendre une photo.</string>
-
-        <!-- Deep Links - URL Types -->
-        <key>CFBundleURLTypes</key>
-        <array>
-            <dict>
-                <key>CFBundleTypeRole</key>
-                <string>Editor</string>
-                <key>CFBundleURLName</key>
-                <string>com.example.geospots</string>
-                <key>CFBundleURLSchemes</key>
-                <array>
-                    <string>geospots</string>
-                </array>
-            </dict>
-        </array>
-
-        <!-- LSApplicationQueriesSchemes - Apps externes -->
-        <key>LSApplicationQueriesSchemes</key>
-        <array>
-            <string>geo</string>
-            <string>comgooglemaps</string>
-            <string>waze</string>
-            <string>maps</string>
-        </array>
-
-        <!-- Background Modes -->
-        <key>UIBackgroundModes</key>
-        <array>
-            <string>location</string>
-            <string>fetch</string>
-        </array>
-
-        <key>UILaunchStoryboardName</key>
-        <string>LaunchScreen</string>
-
-        <key>UIMainStoryboardFile</key>
-        <string>Main</string>
-
-        <key>UISupportedInterfaceOrientations</key>
-        <array>
-            <string>UIInterfaceOrientationPortrait</string>
-            <string>UIInterfaceOrientationLandscapeLeft</string>
-            <string>UIInterfaceOrientationLandscapeRight</string>
-        </array>
-
-        <key>UISupportedInterfaceOrientations~ipad</key>
-        <array>
-            <string>UIInterfaceOrientationPortrait</string>
-            <string>UIInterfaceOrientationPortraitUpsideDown</string>
-            <string>UIInterfaceOrientationLandscapeLeft</string>
-            <string>UIInterfaceOrientationLandscapeRight</string>
-        </array>
-
-        <key>CADisableMinimumFrameDurationOnPhone</key>
-        <true/>
-
-        <key>UIApplicationSupportsIndirectInputEvents</key>
-        <true/>
-
-    </dict>
+<dict>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Geo Spots</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>geo_spots</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>$(FLUTTER_BUILD_NAME)</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.example.geospots</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>geospots</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleVersion</key>
+	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>geo</string>
+		<string>comgooglemaps</string>
+		<string>waze</string>
+		<string>maps</string>
+	</array>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Geo Spots a besoin d'accéder à la caméra pour prendre une photo.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement les lieux à proximité et améliorer la précision des données géographiques, même lorsque l'application n'est pas ouverte.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Geo Spots utilise votre localisation en arrière-plan afin de mettre à jour automatiquement les lieux à proximité et améliorer la précision des données géographiques, même lorsque l'application n'est pas ouverte.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Geo Spots a besoin de votre localisation pour afficher et ajouter des lieux sur la carte.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Geo Spots a besoin d'accéder à vos photos pour choisir une image.</string>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+		<key>UISceneConfigurations</key>
+		<dict>
+			<key>UIWindowSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneClassName</key>
+					<string>UIWindowScene</string>
+					<key>UISceneConfigurationName</key>
+					<string>flutter</string>
+					<key>UISceneDelegateClassName</key>
+					<string>FlutterSceneDelegate</string>
+					<key>UISceneStoryboardFile</key>
+					<string>Main</string>
+				</dict>
+			</array>
+		</dict>
+	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIMainStoryboardFile</key>
+	<string>Main</string>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+</dict>
 </plist>

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/router/route_names.dart';
-import 'package:go_router/go_router.dart';
+import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/places_list_view_model.dart';
@@ -85,13 +85,11 @@ class PlacesListView extends ConsumerWidget {
       separatorBuilder: (context, index) => const SizedBox(height: GSSpacing.l),
       itemBuilder: (context, index) {
         final place = state.places[index];
+        GsLogger().d('place: $place');
         return PlaceListItem(
           place: place,
           onTap: () {
-            context.pushNamed(
-              RouteNames.placeDetailsName,
-              pathParameters: {RouteNames.placeIdParam: place.id},
-            );
+            PlaceDetailsRouteData(placeId: place.id).push(context);
           },
         );
       },

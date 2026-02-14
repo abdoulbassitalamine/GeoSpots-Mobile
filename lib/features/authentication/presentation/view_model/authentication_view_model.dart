@@ -2,9 +2,6 @@ import 'package:geo_spots/features/authentication/authentication.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
-import '../../domain/entity/authentication_status/authentication_status.dart';
-import '../../domain/entity/user/user_entity.dart';
-import '../../domain/navigator/authentication_notifier.dart';
 
 part 'authentication_view_model.g.dart';
 
@@ -88,10 +85,6 @@ class AuthenticationViewModel extends _$AuthenticationViewModel {
 
   Future<UserEntity> me() async {
     final result = await ref.read(authenticationRepositoryProvider).me();
-
-    if (result == null) {
-      await logOut();
-    }
-    return result!;
+    return result;
   }
 }

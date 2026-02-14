@@ -5,13 +5,21 @@ import 'package:flutter/material.dart';
 
 import '../home/home_page.dart';
 
+part 'route_data.g.dart';
+
 final homeMainNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'home');
-final homeRoutesProvider = Provider(
-  (ref) => GoRoute(
-    path: RouteNames.home,
-    name: RouteNames.homeName,
-    pageBuilder: (context, state) {
-      return const NoTransitionPage(child: HomePage());
-    },
-  ),
-);
+
+@TypedGoRoute<HomeRouteData>(
+  path: RouteNames.home,
+  name: RouteNames.homeName,
+)
+class HomeRouteData extends GoRouteData with $HomeRouteData {
+  const HomeRouteData();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return const NoTransitionPage(child: HomePage());
+  }
+}
+
+final homeRoutesProvider = Provider<RouteBase>((ref) => $appRoutes.first);

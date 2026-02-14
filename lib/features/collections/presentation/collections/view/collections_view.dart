@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collection_card.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/collections_view_model.dart';
@@ -24,7 +23,7 @@ class CollectionsView extends ConsumerWidget {
           child: CollectionsHeader(
             totalCollections: state.collections.length,
             totalPlaces: state.totalPlaces,
-          //  onImportPressed: () => _showImportDialog(context, ref),
+            // onImportPressed: () => _showImportDialog(context, ref),
           ),
         ),
         SliverPadding(
@@ -36,7 +35,7 @@ class CollectionsView extends ConsumerWidget {
                 padding: const EdgeInsets.only(bottom: GSSpacing.l),
                 child: CollectionCard(
                   collection: collection,
-                  onTap: () => context.pushNamed(RouteNames.placesName),
+                  onTap: () => const PlacesRouteData().push(context),
                 ),
               );
             }, childCount: state.collections.length),
@@ -44,10 +43,5 @@ class CollectionsView extends ConsumerWidget {
         ),
       ],
     );
-  }
-
-
-  void _showImportDialog(BuildContext context, WidgetRef ref) {
-    // TODO: Dialogue d'import GPX/KML/GeoJSON
   }
 }

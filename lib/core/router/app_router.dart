@@ -1,7 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/collections/presentation/route/route_data.dart';
+import 'package:geo_spots/features/home/presentation/route/route_data.dart';
+import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
+import 'package:geo_spots/features/settings/presentation/route/route_data.dart';
 import 'package:geo_spots/features/welcome/presentation/route/route_data.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -9,10 +13,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/authentication/domain/navigator/authentication_notifier.dart';
 import '../../features/authentication/presentation/route/route_data.dart';
-import '../navigation/bottom_nav/main_menu_key.dart';
 import '../navigation/bottom_nav/scaffold_with_nav_bar.dart';
-import '../navigation/bottom_nav/utils/main_menu_extension.dart';
-import '../route_utils/extension/go_route_extension.dart';
 import '../route_utils/route/router.dart';
 
 part 'app_router.g.dart';
@@ -24,8 +25,86 @@ const _publicRoutes = [
   RouteNames.signIn,
   RouteNames.signUp,
   RouteNames.forgotPassword,
-  RouteNames.welcome,
 ];
+
+@TypedStatefulShellRoute<MainShellRouteData>(
+  branches: <TypedStatefulShellBranch<StatefulShellBranchData>>[
+    TypedStatefulShellBranch<HomeShellBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<HomeRouteData>(
+          path: RouteNames.home,
+          name: RouteNames.homeName,
+        ),
+      ],
+    ),
+    TypedStatefulShellBranch<MapShellBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<MapRouteData>(
+          path: RouteNames.map,
+          name: RouteNames.mapName,
+        ),
+      ],
+    ),
+    TypedStatefulShellBranch<CollectionsShellBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<CollectionsRouteData>(
+          path: RouteNames.collections,
+          name: RouteNames.collectionsName,
+        ),
+      ],
+    ),
+    TypedStatefulShellBranch<SettingsShellBranchData>(
+      routes: <TypedRoute<RouteData>>[
+        TypedGoRoute<SettingsRouteData>(
+          path: RouteNames.settings,
+          name: RouteNames.settingsName,
+        ),
+      ],
+    ),
+  ],
+)
+class MainShellRouteData extends StatefulShellRouteData {
+  const MainShellRouteData();
+
+  static const String $restorationScopeId = _restorationScopeId;
+
+  @override
+  Page<void> pageBuilder(
+    BuildContext context,
+    GoRouterState state,
+    StatefulNavigationShell navigationShell,
+  ) {
+    return NoTransitionPage(
+      child: ScaffoldWithNavBar(navigationShell: navigationShell),
+    );
+  }
+}
+
+class HomeShellBranchData extends StatefulShellBranchData {
+  const HomeShellBranchData();
+
+  static final GlobalKey<NavigatorState> $navigatorKey = homeMainNavigatorKey;
+}
+
+class MapShellBranchData extends StatefulShellBranchData {
+  const MapShellBranchData();
+
+  static final GlobalKey<NavigatorState> $navigatorKey = mapMainNavigatorKey;
+}
+
+class CollectionsShellBranchData extends StatefulShellBranchData {
+  const CollectionsShellBranchData();
+
+  static final GlobalKey<NavigatorState> $navigatorKey =
+      collectionsMainNavigatorKey;
+}
+
+class SettingsShellBranchData extends StatefulShellBranchData {
+  const SettingsShellBranchData();
+
+  static final GlobalKey<NavigatorState> $navigatorKey =
+      settingsMainNavigatorKey;
+}
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
@@ -55,23 +134,7 @@ GoRouter appRouter(Ref ref) {
 
       ...ref.read(placesRoutesProvider),
 
-      // Main app shell with bottom navigation
-      StatefulShellRoute.indexedStack(
-        restorationScopeId: _restorationScopeId,
-        pageBuilder: (context, state, navigationShell) {
-          if (state.topRoute?.withAppBar ?? true) {
-            return NoTransitionPage(
-              child: ScaffoldWithNavBar(navigationShell: navigationShell),
-            );
-          }
-          return NoTransitionPage(
-            child: SafeArea(child: Scaffold(body: navigationShell)),
-          );
-        },
-        branches: MainMenuKey.values
-            .map((key) => key.toShellBranch(ref, _restorationScopeId))
-            .toList(),
-      ),
+      ...$appRoutes,
     ],
   );
 
@@ -80,11 +143,10 @@ GoRouter appRouter(Ref ref) {
   return router;
 }
 
-final routeInformationProvider =
-    ChangeNotifierProvider<GoRouteInformationProvider>((ref) {
-      final router = ref.watch(appRouterProvider);
-      return router.routeInformationProvider;
-    });
+final routeInformationProvider = Provider<GoRouteInformationProvider>((ref) {
+  final router = ref.watch(appRouterProvider);
+  return router.routeInformationProvider;
+});
 
 final currentRouteProvider = Provider(
   (ref) => ref.watch(routeInformationProvider).value.uri,

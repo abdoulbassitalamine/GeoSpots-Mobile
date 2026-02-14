@@ -10,13 +10,11 @@ import 'package:geo_spots/core/utils/extensions/string_ext.dart';
 const _kAuthorizationHeader = 'Authorization';
 const _kContentTypeHeader = 'Content-Type';
 const _kAcceptHeader = 'Accept';
-const _kDeviceIdHeader = 'Device-X-Id';
-const _kDeviceTypeHeader = 'Device-Type';
 
 class AuthenticationInterceptor extends Interceptor {
   AuthenticationInterceptor({required this.ref});
 
-  final Ref<dynamic> ref;
+  final Ref ref;
 
   @override
   void onRequest(

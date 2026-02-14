@@ -64,7 +64,7 @@ class TrackingToggle extends StatelessWidget {
           Switch(
             value: isEnabled,
             onChanged: onChanged,
-            activeColor: GSColors.primary600,
+            activeThumbColor: GSColors.primary600,
           ),
         ],
       ),

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:geo_spots/core/router/route_names.dart';
+import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
 import 'package:geo_spots/features/authentication/presentation/view_model/sign_up/sign_up_view_model.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
@@ -239,7 +238,7 @@ void _onSubmit(
           passwordConfirmation: signInForm.confirmPassword,
         );
     if (context.mounted) {
-      context.pushNamed(RouteNames.signIn);
+      const SignInRouteData().push(context);
     }
   } on Exception catch (error) {
     if (!context.mounted) return;

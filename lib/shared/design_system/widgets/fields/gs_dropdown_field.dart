@@ -107,7 +107,7 @@ class GSDropdownField<T> extends StatelessWidget {
             disabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(GSRadius.s),
               borderSide: BorderSide(
-                color: GSColorTokens.fieldBorder.withOpacity(0.5),
+                color: GSColorTokens.fieldBorder.withValues(alpha: .5),
               ),
             ),
             errorBorder: OutlineInputBorder(

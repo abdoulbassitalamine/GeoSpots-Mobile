@@ -22,13 +22,13 @@ class GSSwitch extends StatelessWidget {
     return Switch(
       value: value,
       onChanged: enabled ? onChanged : null,
-      activeColor: activeColor ?? GSColorTokens.textAccent,
-      activeTrackColor: (activeColor ?? GSColorTokens.textAccent).withOpacity(
-        0.3,
+      activeThumbColor: activeColor ?? GSColorTokens.textAccent,
+      activeTrackColor: (activeColor ?? GSColorTokens.textAccent).withValues(
+        alpha: 0.3,
       ),
       inactiveThumbColor: inactiveColor ?? GSColorTokens.textSecondary,
       inactiveTrackColor: (inactiveColor ?? GSColorTokens.textSecondary)
-          .withOpacity(0.3),
+          .withValues(alpha: 0.3),
     );
   }
 }
@@ -57,10 +57,10 @@ class GSSwitchListTile extends StatelessWidget {
       subtitle: subtitle != null ? Text(subtitle!) : null,
       value: value,
       onChanged: enabled ? onChanged : null,
-      activeColor: GSColorTokens.textAccent,
-      activeTrackColor: GSColorTokens.textAccent.withOpacity(0.3),
+      activeThumbColor: GSColorTokens.textAccent,
+      activeTrackColor: GSColorTokens.textAccent.withValues(alpha: 0.3),
       inactiveThumbColor: GSColorTokens.textSecondary,
-      inactiveTrackColor: GSColorTokens.textSecondary.withOpacity(0.3),
+      inactiveTrackColor: GSColorTokens.textSecondary.withValues(alpha: 0.3),
     );
   }
 }

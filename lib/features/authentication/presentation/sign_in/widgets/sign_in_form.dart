@@ -1,17 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:go_router/go_router.dart';
+import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/features/home/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../core/logger/gs_logger.dart';
-import '../../../../../core/router/route_names.dart';
 import '../../../../../core/utils/extensions/sized_box_extension.dart';
 import '../../../../../core/utils/extensions/validators_ext.dart';
 import '../../../../../core/utils/extensions/value_notifier_ext.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../../data/exception/auth_exception.dart';
-import '../../view_model/authentication_view_model.dart';
 import '../../view_model/sign_in/sign_in_view_model.dart';
 import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
@@ -62,7 +61,6 @@ class LoginForm extends HookConsumerWidget {
       });
       return null;
     }, []);
-
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -117,7 +115,7 @@ class LoginForm extends HookConsumerWidget {
         GSSpacing.$200.toInt().toHeight,
         _ForgotPasswordLink(
           onClick: () {
-            context.pushNamed(RouteNames.forgotPassword);
+            const ForgotPasswordRouteData().push(context);
           },
         ),
         const SizedBox(height: GSSpacing.$600),
@@ -170,14 +168,12 @@ class LoginForm extends HookConsumerWidget {
     emailError.clear();
     passwordError.clear();
 
-    final signInForm = ref.read(signInViewModelProvider);
-
     try {
       // await ref
       //     .read(authenticationViewModelProvider.notifier)
       //     .signIn(mail: signInForm.email, password: signInForm.password);
 
-      context.goNamed(RouteNames.homeName);
+      const HomeRouteData().go(context);
 
       isLoading.value = false;
       return;

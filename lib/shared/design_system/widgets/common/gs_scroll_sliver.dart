@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:vibration/vibration.dart';
-import '../../theme/typography.dart';
 import '../../tokens/color_tokens.dart';
 
 class GSScrollSliver extends StatefulWidget {
