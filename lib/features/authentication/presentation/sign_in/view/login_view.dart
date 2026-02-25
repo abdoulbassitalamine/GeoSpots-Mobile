@@ -16,16 +16,16 @@ class LoginView extends ConsumerWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          GSIcons.icons.logoGeoSpotsVerticale.svg(),
+          GSIcons.icons.logoGeoSpotsVerticale.svg(height: 130),
           Text(
             'Vos lieux, partout',
             style: context.bodyDefaultSmall.copyWith(
               fontSize: GSFontScale.sf04,
             ),
           ),
-          GSSpacing.$600.toInt().toHeight,
+          GSSpacing.$500.toInt().toHeight,
           LoginForm(),
-          GSSpacing.$800.toInt().toHeight,
+          GSSpacing.$600.toInt().toHeight,
           GSTextBetweenDivider(
             text: 'OU',
             lineColor: GSColorTokens.borderPrimary,

@@ -61,16 +61,42 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
 
     switch (result) {
       case Ok(:final value):
-        final session = value.data;
-        if (session?.data == null || session?.token == null) {
-          return Err(ServerException('Invalid sign-in response'));
+        final accessToken = value.accessToken;
+        final refreshToken = value.refreshToken;
+        if (accessToken == null || accessToken.isEmpty ) {
+          return Err(
+            ServerException('Missing access token in sign-in response'),
+          );
         }
-        final user = session!.data!;
-        final entity = UserEntity.fromDto(user);
+        if(refreshToken == null || refreshToken.isEmpty) {
+          return Err(
+            ServerException('Missing refresh token in sign-in response'),
+          );
+        }
+
+        final fallbackEntity = UserEntity(
+          id: value.userId?.toString() ?? value.username ?? value.email ?? '0',
+          firstName: value.username,
+          email: value.email,
+        );
         await _authenticationLocalDataSource.upsertAuthUser(
-          session.token!,
+          accessToken,
+          refreshToken,
+          fallbackEntity,
+        );
+
+        final meResult = await _authenticationRemoteDatasource.getCurrentUser();
+        final entity = switch (meResult) {
+          Ok(:final value) => UserEntity.fromDto(value),
+          Err() => fallbackEntity,
+        };
+
+        await _authenticationLocalDataSource.upsertAuthUser(
+          accessToken,
+          refreshToken,
           entity,
         );
+        await _authenticationLocalDataSource.setTokenValidity(true);
         return Ok(entity);
       case Err(:final error, :final stackTrace):
         return Err(error, stackTrace);
@@ -93,7 +119,7 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
       passwordConfirmation: passwordConfirmation,
     );
     return switch (result) {
-      Ok(:final value) => Ok(value.token),
+      Ok(:final value) => Ok(value.accessToken),
       Err(:final error, :final stackTrace) => Err(error, stackTrace),
     };
   }

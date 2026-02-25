@@ -1,9 +1,12 @@
+import 'package:geo_spots/core/network/dio_client.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../../domain/entity/place_entity.dart';
 import 'places_remote_datasource_impl.dart';
 
 final placesRemoteDatasourceProvider = Provider<IPlacesRemoteDatasource>(
-  (ref) => PlacesRemoteDatasourceImpl(),
+  (ref) =>
+      PlacesRemoteDatasourceImpl(placesClient: ref.watch(dioClientProvider)),
 );
 
 abstract interface class IPlacesRemoteDatasource {

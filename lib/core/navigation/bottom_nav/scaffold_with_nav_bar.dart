@@ -6,6 +6,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'main_menu_key.dart';
 
+const _gsNavigationBarDefaultHeight = GSSpacing.$900;
+
 class ScaffoldWithNavBar extends HookConsumerWidget {
   const ScaffoldWithNavBar({super.key, required this.navigationShell});
 
@@ -31,20 +33,23 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
                 color: GSColorTokens.navBarBackground,
                 child: SafeArea(
                   top: false,
-                  child: BottomNavigationBar(
-                    currentIndex: safeSelectedIndex,
-                    type: BottomNavigationBarType.fixed,
-                    backgroundColor: GSColorTokens.navBarBackground,
-                    selectedItemColor: GSColorTokens.navBarItemSelected,
-                    unselectedItemColor: GSColorTokens.navBarItemDefault,
-                    selectedLabelStyle: context.captionAccent,
-                    unselectedLabelStyle: context.captionDefault,
-                    showUnselectedLabels: true,
-                    iconSize: 24,
-                    items: MainMenuKey.values
-                        .map((key) => key.toBottomNavItem(context))
-                        .toList(),
-                    onTap: (index) => _goToLocation(MainMenuKey.values[index]),
+                  child: SizedBox(
+                    height: _gsNavigationBarDefaultHeight,
+                    child: BottomNavigationBar(
+                      currentIndex: safeSelectedIndex,
+                      type: BottomNavigationBarType.fixed,
+                      backgroundColor: GSColorTokens.navBarBackground,
+                      selectedItemColor: GSColorTokens.navBarItemSelected,
+                      unselectedItemColor: GSColorTokens.navBarItemDefault,
+                      selectedLabelStyle: context.captionAccent,
+                      unselectedLabelStyle: context.captionDefault,
+                      showUnselectedLabels: true,
+                      iconSize: 24,
+                      items: MainMenuKey.values
+                          .map((key) => key.toBottomNavItem(context))
+                          .toList(),
+                      onTap: (index) => _goToLocation(MainMenuKey.values[index]),
+                    ),
                   ),
                 ),
               ),

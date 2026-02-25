@@ -20,11 +20,19 @@ class AuthenticationRemoteDatasourceImpl
   @override
   Future<Result<UserDto>> getCurrentUser() async {
     try {
-      final response = await _authenticationClient.get<Object>('/api/me');
+      final response = await _authenticationClient.get<Object>('/api/users/me');
       final json = response.asJsonMap();
 
       if (json == null) {
         return Err(ServerException('Invalid me response payload'));
+      }
+
+      final data = json['data'];
+      if (data is Map<String, dynamic>) {
+        return Ok(UserDto.fromJson(data));
+      }
+      if (data is Map) {
+        return Ok(UserDto.fromJson(data.cast<String, dynamic>()));
       }
 
       return Ok(UserDto.fromJson(json));
@@ -37,7 +45,7 @@ class AuthenticationRemoteDatasourceImpl
   @override
   Future<Result<void>> logout() async {
     try {
-      await _authenticationClient.get<Object>('/api/logout');
+      await _authenticationClient.post<Object>('/api/auth/logout');
       return const Ok(null);
     } on DioException catch (e, st) {
       GsLogger().e('logout', e, st);
@@ -50,29 +58,11 @@ class AuthenticationRemoteDatasourceImpl
     required String mail,
     required String password,
   }) async {
-    // TODO(dev): fake response — remove before prod
-    // return Ok(
-    //   LoginResponseDto(
-    //     success: true,
-    //     message: 'fake login',
-    //     data: AuthSessionDto(
-    //       token: 'fake-dev-token-123',
-    //       data: UserDto(
-    //         id: 1,
-    //         name: 'Dev User',
-    //         email: mail,
-    //         roleId: 3,
-    //         status: UserStatus.active,
-    //       ),
-    //     ),
-    //   ),
-    // );
-
     try {
       final request = LoginRequestDto(email: mail, password: password);
 
       final response = await _authenticationClient.post<Object>(
-        '/api/login',
+        '/api/auth/login',
         data: request.toJson(),
       );
 
@@ -104,12 +94,10 @@ class AuthenticationRemoteDatasourceImpl
         lastName: lastName,
         email: mail,
         password: password,
-        passwordConfirmation: passwordConfirmation,
-
       );
 
       final response = await _authenticationClient.post<Object>(
-        '/api/register',
+        '/api/auth/register',
         data: request.toJson(),
       );
       final json = response.asJsonMap();

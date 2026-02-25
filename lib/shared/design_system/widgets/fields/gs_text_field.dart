@@ -21,7 +21,7 @@ import '../../tokens/color_tokens.dart';
 /// A text field lets the user enter text, either with hardware keyboard or with an onscreen keyboard.
 ///
 ///.
-class GSTextField extends StatefulWidget {
+class GSTextField extends StatelessWidget {
   const GSTextField({
     super.key,
     this.controller,
@@ -51,7 +51,6 @@ class GSTextField extends StatefulWidget {
     this.error,
     this.obscureText = false,
     this.onVisibilityChanged,
-    this.showErrorOnlyWhenUnfocused = true,
   });
 
   final TextEditingController? controller;
@@ -81,161 +80,94 @@ class GSTextField extends StatefulWidget {
   final String? error;
   final ValueChanged<bool>? onVisibilityChanged;
   final bool obscureText;
-  final bool showErrorOnlyWhenUnfocused;
-
-  @override
-  State<GSTextField> createState() => _GSTextFieldState();
-}
-
-class _GSTextFieldState extends State<GSTextField> {
-  FocusNode? _internalFocusNode;
-  bool _hasBeenFocused = false;
-
-  FocusNode get _effectiveFocusNode => widget.focusNode ?? _internalFocusNode!;
-
-  @override
-  void initState() {
-    super.initState();
-    _internalFocusNode = widget.focusNode == null ? FocusNode() : null;
-    _effectiveFocusNode.addListener(_onFocusChanged);
-  }
-
-  @override
-  void didUpdateWidget(covariant GSTextField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.focusNode != widget.focusNode) {
-      final oldFocusNode = oldWidget.focusNode ?? _internalFocusNode;
-      oldFocusNode?.removeListener(_onFocusChanged);
-      if (oldWidget.focusNode != null && widget.focusNode == null) {
-        _internalFocusNode = FocusNode();
-      }
-      _effectiveFocusNode.addListener(_onFocusChanged);
-    }
-  }
-
-  @override
-  void dispose() {
-    _effectiveFocusNode.removeListener(_onFocusChanged);
-    _internalFocusNode?.dispose();
-    super.dispose();
-  }
-
-  void _onFocusChanged() {
-    if (_effectiveFocusNode.hasFocus && !_hasBeenFocused) {
-      setState(() => _hasBeenFocused = true);
-      return;
-    }
-    if (!_effectiveFocusNode.hasFocus) {
-      setState(() {});
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final shouldShowError =
-        !widget.showErrorOnlyWhenUnfocused ||
-        (_hasBeenFocused && !_effectiveFocusNode.hasFocus);
     return MergeSemantics(
       child: Semantics(
         child: TextField(
-          controller: widget.controller,
-          keyboardType: widget.keyboardType,
-          textInputAction: widget.keyboardActions,
-          obscureText: widget.obscureText,
-          expands: widget.expands,
-          focusNode: _effectiveFocusNode,
-          onChanged: widget.onValueChange,
-          onSubmitted: widget.onSubmitted,
-          textCapitalization:
-          widget.textCapitalization != true
+          controller: controller,
+          keyboardType: keyboardType,
+          textInputAction: keyboardActions,
+          obscureText: obscureText,
+          expands: expands,
+          focusNode: focusNode,
+          onChanged: onValueChange,
+          onSubmitted: onSubmitted,
+          textCapitalization: textCapitalization != true
               ? TextCapitalization.none
               : TextCapitalization.characters,
-          keyboardAppearance:
-          Theme.of(context).brightness == Brightness.dark
+          keyboardAppearance: Theme.of(context).brightness == Brightness.dark
               ? Brightness.dark
               : Brightness.light,
-          maxLength: widget.characterCounter,
-          enabled: widget.enabled,
-          readOnly: widget.readOnly,
-          minLines: widget.maxLines != null ? widget.minLines ?? 1 : null,
-          maxLines: widget.maxLines,
+          maxLength: characterCounter,
+          enabled: enabled,
+          readOnly: readOnly,
+          minLines: maxLines != null ? minLines ?? 1 : null,
+          maxLines: maxLines,
           style:
-          widget.inputStyle ??
+              inputStyle ??
               context.bodyDefaultMedium.copyWith(
                 color: GSColorTokens.textPrimary,
               ),
           cursorColor: GSColorTokens.textAccent,
           decoration: InputDecoration(
-            labelStyle: TextStyle(
-              color: GSColorTokens.textPrimary,
-            ),
-            floatingLabelStyle: TextStyle(
-              color: GSColorTokens.textPrimary,
-            ),
-            error:
-            widget.error == null || !shouldShowError
+            labelStyle: TextStyle(color: GSColorTokens.textPrimary),
+            floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
+              return context.bodyDefaultSmall.copyWith(
+                color: states.contains(WidgetState.focused)
+                    ? GSColorTokens.textAccent
+                    : GSColorTokens.textPrimary,
+              );
+            }),
+            error: error == null
                 ? null
                 : Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                widget.error!,
-                textAlign: TextAlign.end,
-                style: context.bodyAccentMedium.copyWith(
-                  color: GSColorTokens.fieldError,
-                ),
-              ),
-            ),
-            focusedBorder:
-            widget.focusBorder ??
-                OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color:
-                    GSColorTokens.borderAccent,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      error!,
+                      textAlign: TextAlign.end,
+                      style: context.bodyAccentMedium.copyWith(
+                        color: GSColorTokens.fieldError,
+                      ),
+                    ),
                   ),
+            focusedBorder:
+                focusBorder ??
+                OutlineInputBorder(
+                  borderSide: BorderSide(color: GSColorTokens.borderAccent),
                 ),
             enabledBorder:
-            widget.enabledBorder ??
+                enabledBorder ??
                 OutlineInputBorder(
-                  borderSide: BorderSide(
-                    color: GSColorTokens.fieldBorder,
-                  ),
+                  borderSide: BorderSide(color: GSColorTokens.fieldBorder),
                 ),
-            prefixIcon: widget.leadingIcon,
-            suffixIcon:
-            widget.onVisibilityChanged != null
+            prefixIcon: leadingIcon,
+            suffixIcon: onVisibilityChanged != null
                 ? IconButton(
-              onPressed: () => widget.onVisibilityChanged?.call(!widget.obscureText),
-              icon: Icon(
-                widget.obscureText
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color:
-                GSColorTokens.textPrimary,
-
-              ),
-            )
-                : widget.trailingText != null
+                    onPressed: () => onVisibilityChanged?.call(!obscureText),
+                    icon: Icon(
+                      obscureText
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      color: GSColorTokens.textPrimary,
+                    ),
+                  )
+                : trailingText != null
                 ? Padding(
-              padding: const EdgeInsets.all(GSSpacing.$100),
-              child: Text(
-                widget.trailingText!,
-                style: TextStyle(
-                  color:
-                  GSColorTokens.textPrimary,
-                ),
-              ),
-            )
-                : widget.trailingIcon,
-            labelText: widget.label,
-            hintText: widget.placeholder,
-            hintStyle:
-            widget.hintStyle ??
-                TextStyle(color: GSColorTokens.fieldLabel),
-            errorText: shouldShowError ? widget.errorMessage : null,
+                    padding: const EdgeInsets.all(GSSpacing.$100),
+                    child: Text(
+                      trailingText!,
+                      style: TextStyle(color: GSColorTokens.textPrimary),
+                    ),
+                  )
+                : trailingIcon,
+            labelText: label,
+            hintText: placeholder,
+            hintStyle: hintStyle ?? TextStyle(color: GSColorTokens.fieldLabel),
+            errorText: errorMessage,
             border: OutlineInputBorder(
-              borderSide: BorderSide(
-                color: GSColorTokens.borderPrimary,
-              ),
+              borderSide: BorderSide(color: GSColorTokens.borderPrimary),
             ),
             filled: false,
           ),

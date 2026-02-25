@@ -2,12 +2,9 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'login_request_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class LoginRequestDto {
-  const LoginRequestDto({
-    required this.email,
-    required this.password,
-  });
+  const LoginRequestDto({required this.email, required this.password});
 
   factory LoginRequestDto.fromJson(Map<String, dynamic> json) =>
       _$LoginRequestDtoFromJson(json);

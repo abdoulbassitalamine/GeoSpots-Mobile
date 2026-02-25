@@ -1,21 +1,29 @@
-import 'package:geo_spots/features/authentication/data/dto/authentication/user_dto.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'register_response_dto.g.dart';
 
-
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class RegisterResponseDto {
   const RegisterResponseDto({
-    this.user,
-    this.token,
+    this.accessToken,
+    this.refreshToken,
+    this.tokenType,
+    this.userId,
+    this.username,
+    this.email,
+    this.roles,
   });
 
   factory RegisterResponseDto.fromJson(Map<String, dynamic> json) =>
       _$RegisterResponseDtoFromJson(json);
 
-  final UserDto? user;
-  final String? token;
+  final String? accessToken;
+  final String? refreshToken;
+  final String? tokenType;
+  final int? userId;
+  final String? username;
+  final String? email;
+  final Set<String>? roles;
 
   Map<String, dynamic> toJson() => _$RegisterResponseDtoToJson(this);
 }
