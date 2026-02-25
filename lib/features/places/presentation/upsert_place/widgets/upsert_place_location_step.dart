@@ -83,7 +83,7 @@ class _LocationSection extends StatelessWidget {
   final UpsertPlaceViewModel notifier;
   final LatLng? position;
   final bool isLoading;
-  final Function(LatLng) onSetPosition;
+  final ValueChanged<LatLng> onSetPosition;
   final VoidCallback onGetCurrentPosition;
 
   @override
@@ -241,7 +241,7 @@ class _MapDisplay extends HookWidget {
 
   final LatLng? position;
   final bool isLoading;
-  final Function(LatLng) onSetPosition;
+  final ValueChanged<LatLng> onSetPosition;
   final VoidCallback onGetCurrentPosition;
 
   @override
@@ -360,7 +360,7 @@ class _TagsSection extends HookWidget {
   const _TagsSection({required this.tags, required this.onTagsChanged});
 
   final List<String> tags;
-  final Function(List<String>) onTagsChanged;
+  final ValueChanged<List<String>> onTagsChanged;
 
   @override
   Widget build(BuildContext context) {

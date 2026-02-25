@@ -8,9 +8,9 @@ import 'widgets/upsert_place_location_step.dart';
 import 'widgets/upsert_place_progress_indicator.dart';
 
 class UpsertPlacePage extends HookConsumerWidget {
-  final String placeId;
 
   const UpsertPlacePage({super.key, required this.placeId});
+  final String placeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -63,19 +63,19 @@ class UpsertPlacePage extends HookConsumerWidget {
 }
 
 class _UpsertPlaceHeader extends StatelessWidget {
-  final int currentStep;
-  final bool isEditMode;
 
   const _UpsertPlaceHeader({
     required this.currentStep,
     required this.isEditMode,
   });
+  final int currentStep;
+  final bool isEditMode;
 
   @override
   Widget build(BuildContext context) {
     final titles = ['Informations de base', 'Position et organisation'];
 
-    return Container(
+    return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: GSColorTokens.primaryGradientVertical,
       ),
@@ -125,15 +125,15 @@ class _UpsertPlaceHeader extends StatelessWidget {
 }
 
 class _UpsertPlaceBottomActions extends ConsumerWidget {
-  final ValueNotifier<int> currentStep;
-  final int totalSteps;
-  final String placeId;
 
   const _UpsertPlaceBottomActions({
     required this.currentStep,
     required this.totalSteps,
     required this.placeId,
   });
+  final ValueNotifier<int> currentStep;
+  final int totalSteps;
+  final String placeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

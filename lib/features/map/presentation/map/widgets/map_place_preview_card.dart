@@ -94,7 +94,7 @@ class MapPlacePreviewCard extends StatelessWidget {
                           GSIconButton(
                             icon: Icons.close,
                             tooltip: 'Masquer l’aperçu',
-                            onPressed: onClose!,
+                            onPressed: onClose,
                           ),
                       ],
                     ),
@@ -139,7 +139,7 @@ class MapPlacePreviewCard extends StatelessWidget {
               ),
               if (!compact) ...[
                 const SizedBox(width: GSSpacing.m),
-                Container(
+                DecoratedBox(
                   decoration: BoxDecoration(
                     color: GSColors.neutral100,
                     borderRadius: BorderRadius.circular(GSRadius.m),

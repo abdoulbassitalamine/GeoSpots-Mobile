@@ -1,8 +1,8 @@
 export 'validator_digit.dart';
 export 'validator_email.dart';
-export 'validator_lowercase.dart';
 export 'validator_latitude.dart';
 export 'validator_longitude.dart';
+export 'validator_lowercase.dart';
 export 'validator_min_length.dart';
 export 'validator_min_size.dart';
 export 'validator_password.dart';

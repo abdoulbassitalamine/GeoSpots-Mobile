@@ -1,8 +1,9 @@
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+
+import '../../theme/shadows.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
-import '../../theme/shadows.dart';
 import '../../tokens/color_tokens.dart';
 
 /// GSDropdownField - Dropdown component for GeoSpots

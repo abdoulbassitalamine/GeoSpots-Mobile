@@ -1,12 +1,12 @@
+import 'package:flutter/material.dart';
 import 'package:geo_spots/features/places/presentation/upsert_place/upsert_place_page.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter/material.dart';
 
 import '../../../../core/router/route_names.dart';
-import '../places_list/places_list_page.dart';
 import '../place_details/place_details_page.dart';
+import '../places_list/places_list_page.dart';
 
 part 'route_data.g.dart';
 

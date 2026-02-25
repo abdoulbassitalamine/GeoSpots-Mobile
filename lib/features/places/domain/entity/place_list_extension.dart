@@ -3,14 +3,14 @@ import 'place_entity.dart';
 
 extension PlaceListExtension on List<PlaceEntity> {
   List<CollectionEntity> generateCollectionsFromTags() {
-    final Set<String> allTags = {};
-    for (var place in this) {
+    final allTags = <String>{};
+    for (final place in this) {
       allTags.addAll(place.tags);
     }
 
-    final List<CollectionEntity> collections = [CollectionEntity.all(this)];
+    final collections = <CollectionEntity>[CollectionEntity.all(this)];
 
-    for (var tag in allTags) {
+    for (final tag in allTags) {
       final placesWithTag = where((place) => place.tags.contains(tag)).toList();
 
       collections.add(
@@ -41,8 +41,8 @@ extension PlaceListExtension on List<PlaceEntity> {
   }
 
   Map<String, List<PlaceEntity>> groupByCity() {
-    final Map<String, List<PlaceEntity>> grouped = {};
-    for (var place in this) {
+    final grouped = <String, List<PlaceEntity>>{};
+    for (final place in this) {
       final city = place.city ?? 'Sans ville';
       grouped.putIfAbsent(city, () => []).add(place);
     }
@@ -50,8 +50,8 @@ extension PlaceListExtension on List<PlaceEntity> {
   }
 
   Map<String, List<PlaceEntity>> groupByCountry() {
-    final Map<String, List<PlaceEntity>> grouped = {};
-    for (var place in this) {
+    final grouped = <String, List<PlaceEntity>>{};
+    for (final place in this) {
       final country = place.country ?? 'Sans pays';
       grouped.putIfAbsent(country, () => []).add(place);
     }
@@ -59,8 +59,8 @@ extension PlaceListExtension on List<PlaceEntity> {
   }
 
   Set<String> getAllTags() {
-    final Set<String> allTags = {};
-    for (var place in this) {
+    final allTags = <String>{};
+    for (final place in this) {
       allTags.addAll(place.tags);
     }
     return allTags;

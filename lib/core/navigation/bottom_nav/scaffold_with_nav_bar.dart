@@ -27,7 +27,7 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
               ),
-              child: Container(
+              child: ColoredBox(
                 color: GSColorTokens.navBarBackground,
                 child: SafeArea(
                   top: false,

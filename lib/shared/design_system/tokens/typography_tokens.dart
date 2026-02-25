@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../theme/typography.dart';
+
 import '../theme/colors.dart';
+import '../theme/typography.dart';
 
 /// Semantic typography tokens for common use cases
 class GSTypographyTokens {

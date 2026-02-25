@@ -6,9 +6,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class NavigationOptionsDialog extends ConsumerWidget {
-  final PlaceEntity place;
 
   const NavigationOptionsDialog({super.key, required this.place});
+  final PlaceEntity place;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -58,15 +58,15 @@ class NavigationOptionsDialog extends ConsumerWidget {
 }
 
 class _NavigationOption extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
 
   const _NavigationOption({
     required this.icon,
     required this.label,
     required this.onTap,
   });
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {

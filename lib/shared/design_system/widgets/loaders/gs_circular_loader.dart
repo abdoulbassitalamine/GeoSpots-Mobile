@@ -54,7 +54,7 @@ class GSCircularLoaderAnimated extends StatelessWidget {
       width: size,
       height: size,
       child: TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0.0, end: value),
+        tween: Tween(begin: 0, end: value),
         duration: const Duration(milliseconds: 300),
         builder: (context, value, child) {
           return CircularProgressIndicator(

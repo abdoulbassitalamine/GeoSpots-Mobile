@@ -74,7 +74,7 @@ class SignUpViewModel extends _$SignUpViewModel {
 
     // Min password length validator
     _minPasswordLengthValidator.withErrorMessage(
-      "Ce champ doit contenir au moins 12 caractères",
+      'Ce champ doit contenir au moins 12 caractères',
     );
 
     // Password validators

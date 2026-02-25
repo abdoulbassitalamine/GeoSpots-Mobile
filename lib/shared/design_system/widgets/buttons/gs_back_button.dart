@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
-import '../../tokens/color_tokens.dart';
 
-const double leadingWidth = 40.0;
+const double leadingWidth = 40;
 
 class GSBackButton extends StatelessWidget {
   const GSBackButton({super.key, this.color, this.onPressed});

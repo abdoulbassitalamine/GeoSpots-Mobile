@@ -99,19 +99,19 @@ class CollectionDetailsView extends HookConsumerWidget {
                     if (isSharedCollection) {
                       ref
                           .read(activeCollectionAccessRightProvider.notifier)
-                          .setRight(effectiveRights);
+                          .right = effectiveRights;
                       ref
                           .read(activeSharedAccessTokenProvider.notifier)
-                          .setToken(collection.sharedToken ?? activeSharedToken);
+                          .token = collection.sharedToken ?? activeSharedToken;
                     } else {
                       ref
                           .read(activeCollectionAccessRightProvider.notifier)
-                          .setRight(null);
+                          .right = null;
                       ref
                           .read(activeSharedAccessTokenProvider.notifier)
-                          .setToken(null);
+                          .token = null;
                     }
-                    PlaceDetailsRouteData(placeId: place.id).push(context);
+                    PlaceDetailsRouteData(placeId: place.id).push<void>(context);
                   },
                 ),
               );

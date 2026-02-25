@@ -1,7 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/features/collections/domain/enums/collection_source.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
+import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 
 part 'collection_entity.freezed.dart';
 

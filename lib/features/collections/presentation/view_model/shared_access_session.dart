@@ -1,5 +1,5 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final activeSharedAccessTokenProvider =
     NotifierProvider<ActiveSharedAccessTokenNotifier, String?>(
@@ -10,9 +10,7 @@ class ActiveSharedAccessTokenNotifier extends Notifier<String?> {
   @override
   String? build() => null;
 
-  void setToken(String? token) {
-    state = token;
-  }
+  set token(String? value) => state = value;
 }
 
 final activeCollectionAccessRightProvider =
@@ -24,7 +22,5 @@ class ActiveCollectionAccessRightNotifier extends Notifier<ShareAccessRight?> {
   @override
   ShareAccessRight? build() => null;
 
-  void setRight(ShareAccessRight? right) {
-    state = right;
-  }
+  set right(ShareAccessRight? value) => state = value;
 }

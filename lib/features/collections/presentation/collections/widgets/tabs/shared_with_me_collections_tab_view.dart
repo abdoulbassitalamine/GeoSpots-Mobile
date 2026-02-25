@@ -250,7 +250,7 @@ class SharedWithMeCollectionsTabView extends StatelessWidget {
       },
     );
 
-    if (confirmed == true) {
+    if (confirmed ?? false) {
       onRemoveAccess(token);
     }
   }

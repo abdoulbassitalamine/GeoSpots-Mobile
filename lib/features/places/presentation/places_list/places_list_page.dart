@@ -12,7 +12,7 @@ class PlacesListPage extends StatelessWidget {
     return GSScaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () =>
-            UpsertPlaceRouteData(placeId: kPlaceCreationId).push(context),
+            UpsertPlaceRouteData(placeId: kPlaceCreationId).push<void>(context),
         icon: const Icon(Icons.add),
         label: const Text('Nouveau lieu'),
       ),

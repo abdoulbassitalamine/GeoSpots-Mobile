@@ -21,5 +21,5 @@ class ImportCollectionUseCase {
 }
 
 final importCollectionUseCaseProvider = Provider<ImportCollectionUseCase>(
-  (ref) => ImportCollectionUseCase(ref),
+  ImportCollectionUseCase.new,
 );

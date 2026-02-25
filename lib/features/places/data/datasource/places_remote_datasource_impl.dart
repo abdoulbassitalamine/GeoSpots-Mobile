@@ -103,12 +103,12 @@ class PlacesRemoteDatasourceImpl implements IPlacesRemoteDatasource {
   @override
   Future<List<PlaceEntity>> fetchAllPlaces() async {
     try {
-      // TODO: Remplacer par API call
+      // TODO(dev): Replace with an API call.
       // final result = await _placesApi.getAllPlaces();
       // if (result.data == null) throw Exception('No places found');
       // return result.data!.map((dto) => PlaceEntity.fromDto(dto)).toList();
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       return _mockPlaces;
     } on DioException catch (e) {
       throw Exception(e);
@@ -118,12 +118,12 @@ class PlacesRemoteDatasourceImpl implements IPlacesRemoteDatasource {
   @override
   Future<List<PlaceEntity>> fetchPlacesByTag(String tag) async {
     try {
-      // TODO: Remplacer par API call
+      // TODO(dev): Replace with an API call.
       // final result = await _placesApi.getPlacesByTag(tag: tag);
       // if (result.data == null) throw Exception('No places found');
       // return result.data!.map((dto) => PlaceEntity.fromDto(dto)).toList();
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       return _mockPlaces.where((place) => place.hasTag(tag)).toList();
     } on DioException catch (e) {
       throw Exception(e);
@@ -133,12 +133,12 @@ class PlacesRemoteDatasourceImpl implements IPlacesRemoteDatasource {
   @override
   Future<List<PlaceEntity>> searchPlaces(String query) async {
     try {
-      // TODO: Remplacer par API call
+      // TODO(dev): Replace with an API call.
       // final result = await _placesApi.searchPlaces(query: query);
       // if (result.data == null) throw Exception('No places found');
       // return result.data!.map((dto) => PlaceEntity.fromDto(dto)).toList();
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 500));
       if (query.isEmpty) return _mockPlaces;
       return _mockPlaces.where((place) => place.matchesSearch(query)).toList();
     } on DioException catch (e) {
@@ -149,16 +149,16 @@ class PlacesRemoteDatasourceImpl implements IPlacesRemoteDatasource {
   @override
   Future<PlaceEntity?> fetchPlaceById(String id) async {
     try {
-      // TODO: Remplacer par API call
+      // TODO(dev): Replace with an API call.
       // final result = await _placesApi.getPlaceById(id: id);
       // if (result.data == null) return null;
       // return PlaceEntity.fromDto(result.data!);
 
-      await Future.delayed(const Duration(milliseconds: 300));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
       return _mockPlaces.firstWhere((place) => place.id == id);
     } on DioException catch (e) {
       throw Exception(e);
-    } catch (e) {
+    } on Exception {
       return null;
     }
   }

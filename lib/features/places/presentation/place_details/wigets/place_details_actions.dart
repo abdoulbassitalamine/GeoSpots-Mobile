@@ -8,9 +8,6 @@ import '../../view_model/place_details_view_model.dart';
 import 'navigation_options_dialog.dart';
 
 class PlaceDetailsActions extends StatelessWidget {
-  final PlaceEntity place;
-  final String placeId;
-  final bool readOnly;
 
   const PlaceDetailsActions({
     super.key,
@@ -18,6 +15,9 @@ class PlaceDetailsActions extends StatelessWidget {
     required this.placeId,
     this.readOnly = false,
   });
+  final PlaceEntity place;
+  final String placeId;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +53,7 @@ class _PrimaryActionsRow extends StatelessWidget {
             text: 'Itinéraire',
             icon: Icons.directions,
             onPressed: () {
-              showDialog(
+              showDialog<void>(
                 context: context,
                 builder: (context) => NavigationOptionsDialog(place: place),
               );
@@ -67,7 +67,7 @@ class _PrimaryActionsRow extends StatelessWidget {
               text: 'Modifier',
               icon: Icons.edit,
               onPressed: () {
-                UpsertPlaceRouteData(placeId: placeId).push(context);
+                UpsertPlaceRouteData(placeId: placeId).push<void>(context);
               },
             ),
           )
@@ -85,14 +85,14 @@ class _PrimaryActionsRow extends StatelessWidget {
 }
 
 class _SecondaryActionsRow extends ConsumerWidget {
-  final String placeId;
-  final bool readOnly;
 
   const _SecondaryActionsRow({
     required this.placeId,
     required this.place,
     required this.readOnly,
   });
+  final String placeId;
+  final bool readOnly;
 
   final PlaceEntity place;
 
@@ -114,7 +114,7 @@ class _SecondaryActionsRow extends ConsumerWidget {
           icon: Icons.favorite_border,
           label: 'Favoris',
           onPressed: () {
-            // TODO: Ajouter aux favoris
+            // TODO(dev): Add to favorites.
           },
         ),
         if (!readOnly)
@@ -128,7 +128,7 @@ class _SecondaryActionsRow extends ConsumerWidget {
                 builder: (context) => const _DeleteConfirmDialog(),
               );
 
-              if (confirmed == true) {
+              if (confirmed ?? false) {
                 await ref
                     .read(placeDetailsViewModelProvider(placeId).notifier)
                     .deletePlace();
@@ -144,10 +144,6 @@ class _SecondaryActionsRow extends ConsumerWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-  final Color? color;
 
   const _ActionButton({
     required this.icon,
@@ -155,6 +151,10 @@ class _ActionButton extends StatelessWidget {
     required this.onPressed,
     this.color,
   });
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {

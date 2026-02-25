@@ -9,14 +9,14 @@ import '../wigets/place_details_content.dart';
 import '../wigets/place_details_header.dart';
 
 class PlaceDetailsView extends ConsumerWidget {
-  final String placeId;
-  final bool readOnly;
 
   const PlaceDetailsView({
     super.key,
     required this.placeId,
     this.readOnly = false,
   });
+  final String placeId;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

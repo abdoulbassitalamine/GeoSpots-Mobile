@@ -4,14 +4,15 @@ import 'package:geo_spots/features/authentication/domain/navigator/authenticatio
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/add_shared_access_dialog.dart';
+import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_tabs.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/owned_collections_tab_view.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/shared_by_me_collections_tab_view.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/shared_with_me_collections_tab_view.dart';
 import 'package:geo_spots/features/collections/presentation/route/route_data.dart'
     show CollectionDetailsRouteData;
-import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/collections_state.dart';
 import '../../view_model/collections_view_model.dart';
@@ -76,7 +77,9 @@ class CollectionsView extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      CollectionDetailsRouteData(collectionTag: collection.tag).push(context);
+      await CollectionDetailsRouteData(
+        collectionTag: collection.tag,
+      ).push<void>(context);
     }
 
     final tabView = switch (effectiveTab) {

@@ -3,10 +3,6 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../../authentication/domain/entity/user/user_entity.dart';
 
 class ProfileStats extends StatelessWidget {
-  final UserEntity user;
-  final int totalPlaces;
-  final int totalCollections;
-  final int sharedPlaces;
 
   const ProfileStats({
     super.key,
@@ -15,6 +11,10 @@ class ProfileStats extends StatelessWidget {
     required this.totalCollections,
     required this.sharedPlaces,
   });
+  final UserEntity user;
+  final int totalPlaces;
+  final int totalCollections;
+  final int sharedPlaces;
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +75,9 @@ class ProfileStats extends StatelessWidget {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-  final UserEntity user;
 
   const _ProfileAvatar({required this.user});
+  final UserEntity user;
 
   String get _initials {
     final firstName = user.firstName ?? '';
@@ -117,15 +117,15 @@ class _ProfileAvatar extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-  final String value;
-  final String label;
-  final bool isComingSoon;
 
   const _StatItem({
     required this.value,
     required this.label,
     this.isComingSoon = false,
   });
+  final String value;
+  final String label;
+  final bool isComingSoon;
 
   @override
   Widget build(BuildContext context) {

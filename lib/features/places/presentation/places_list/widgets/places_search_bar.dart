@@ -4,9 +4,6 @@ import 'package:geo_spots/core/utils/utils/debounce.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class PlacesSearchBar extends HookWidget {
-  final String searchQuery;
-  final Function(String) onSearchChanged;
-  final VoidCallback onClearSearch;
 
   const PlacesSearchBar({
     super.key,
@@ -14,6 +11,9 @@ class PlacesSearchBar extends HookWidget {
     required this.onSearchChanged,
     required this.onClearSearch,
   });
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onClearSearch;
 
   @override
   Widget build(BuildContext context) {

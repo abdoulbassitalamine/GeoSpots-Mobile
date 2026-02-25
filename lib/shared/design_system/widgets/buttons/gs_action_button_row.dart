@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
+import '../../theme/spacing.dart';
 import 'gs_filled_button.dart';
 import 'gs_outlined_button.dart';
-import '../../theme/spacing.dart';
 
 class GSActionButtonRow extends StatelessWidget {
   const GSActionButtonRow({

@@ -1,14 +1,13 @@
 import 'dart:async';
+
 import 'package:app_links/app_links.dart';
+import 'package:geo_spots/core/constants/app_constants.dart';
+import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/route_utils/route/router.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../logger/gs_logger.dart';
-import '../constants/app_constants.dart';
 
-final deepLinkServiceProvider = Provider<DeepLinkService>(
-  (ref) => DeepLinkService(ref),
-);
+final deepLinkServiceProvider = Provider<DeepLinkService>(DeepLinkService.new);
 
 class DeepLinkService {
   DeepLinkService(this.ref) {
@@ -28,7 +27,7 @@ class DeepLinkService {
 
     _linkSubscription = _appLinks.uriLinkStream.listen(
       _handleDeepLink,
-      onError: (err) {
+      onError: (Object err) {
         GsLogger().e('Deep link error: $err');
       },
     );
@@ -50,7 +49,7 @@ class DeepLinkService {
     if (context == null) return;
 
     if (placeId != null) {
-      PlaceDetailsRouteData(placeId: placeId).push(context);
+      PlaceDetailsRouteData(placeId: placeId).push<void>(context);
     } else {
       final lat = uri.queryParameters[kQueryLat];
       final lon = uri.queryParameters[kQueryLon];
@@ -62,7 +61,7 @@ class DeepLinkService {
             kExtraLatitude: double.tryParse(lat),
             kExtraLongitude: double.tryParse(lon),
           },
-        ).push(context);
+        ).push<void>(context);
       }
     }
   }
@@ -85,7 +84,7 @@ class DeepLinkService {
             kExtraLongitude: lon,
             kExtraTitle: uri.queryParameters['q'],
           },
-        ).push(context);
+        ).push<void>(context);
       }
     }
   }

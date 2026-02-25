@@ -81,7 +81,7 @@ class KMLService implements IExportImportService {
                               'Data',
                               nest: () {
                                 builder.attribute('name', 'city');
-                                builder.element('value', nest: place.city!);
+                                builder.element('value', nest: place.city);
                               },
                             );
                           }
@@ -91,7 +91,7 @@ class KMLService implements IExportImportService {
                               'Data',
                               nest: () {
                                 builder.attribute('name', 'country');
-                                builder.element('value', nest: place.country!);
+                                builder.element('value', nest: place.country);
                               },
                             );
                           }

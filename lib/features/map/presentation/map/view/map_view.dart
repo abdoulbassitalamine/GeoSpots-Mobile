@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:geo_spots/features/map/presentation/view_model/map_view_model.dart';
 import 'package:geo_spots/features/places/presentation/place_details/wigets/navigation_options_dialog.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -98,7 +98,7 @@ class MapView extends HookConsumerWidget {
       return null;
     }, [selectedPlace?.place.id]);
 
-    return Container(
+    return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,

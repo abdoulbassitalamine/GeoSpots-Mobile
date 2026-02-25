@@ -1,6 +1,7 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:geo_spots/features/collections/presentation/view_model/collections_view_model.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import '../../domain/repository/places_repository.dart';
 import 'place_details_state.dart';
 
@@ -32,7 +33,7 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
       }
 
       state = state.copyWith(place: place, isLoading: false);
-    } catch (e) {
+    } on Exception {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Erreur lors du chargement du lieu',
@@ -44,10 +45,10 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
     if (state.place == null) return;
 
     try {
-      // TODO: Implémenter la suppression
+      // TODO(dev): Implement deletion.
       // final repository = ref.read(placesRepositoryProvider);
       // await repository.deletePlace(state.place!.id);
-    } catch (e) {
+    } on Exception {
       state = state.copyWith(
         errorMessage: 'Erreur lors de la suppression',
       );

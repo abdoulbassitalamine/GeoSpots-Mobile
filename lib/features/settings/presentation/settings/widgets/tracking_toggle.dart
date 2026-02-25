@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class TrackingToggle extends StatelessWidget {
-  final bool isEnabled;
-  final Function(bool) onChanged;
 
   const TrackingToggle({
     super.key,
     required this.isEnabled,
     required this.onChanged,
   });
+  final bool isEnabled;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {

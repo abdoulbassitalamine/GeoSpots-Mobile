@@ -3,9 +3,9 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../../authentication/domain/entity/user/user_entity.dart';
 
 class ProfileHeader extends StatelessWidget {
-  final UserEntity user;
 
   const ProfileHeader({super.key, required this.user});
+  final UserEntity user;
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class ProfileHeader extends StatelessWidget {
       pinned: false,
       backgroundColor: GSColors.primary600,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
+        background: DecoratedBox(
           decoration: const BoxDecoration(
             gradient: GSColorTokens.primaryGradientVertical,
           ),
@@ -35,7 +35,7 @@ class ProfileHeader extends StatelessWidget {
                           fontSize: GSFontScale.sf09,
                         ),
                       ),
-                      Container(
+                      DecoratedBox(
                         decoration: BoxDecoration(
                           color: GSColors.neutral000.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(GSRadius.m),
@@ -46,7 +46,7 @@ class ProfileHeader extends StatelessWidget {
                             color: GSColors.neutral000,
                           ),
                           onPressed: () {
-                            // TODO: Navigation vers paramètres avancés
+                            // TODO(dev): Navigate to advanced settings.
                           },
                         ),
                       ),

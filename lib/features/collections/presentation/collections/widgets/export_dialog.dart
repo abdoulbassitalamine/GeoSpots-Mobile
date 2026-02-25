@@ -11,7 +11,7 @@ class ExportDialog extends StatelessWidget {
   });
 
   final CollectionEntity collection;
-  final Function(ExportFormat) onExport;
+  final void Function(ExportFormat) onExport;
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+
+import '../../theme/shadows.dart';
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
-import '../../theme/shadows.dart';
 import '../../tokens/color_tokens.dart';
 
 class GSCheckboxCard extends StatelessWidget {

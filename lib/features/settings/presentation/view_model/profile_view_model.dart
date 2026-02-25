@@ -79,7 +79,7 @@ class ProfileViewModel extends _$ProfileViewModel {
         isLoading: false,
       );
       */
-    } catch (e) {
+    } on Exception {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Erreur lors du chargement du profil',
@@ -94,10 +94,10 @@ class ProfileViewModel extends _$ProfileViewModel {
 
 
     if (value) {
-      trackingRepository.enableTracking();
+      await trackingRepository.enableTracking();
       await trackingService.startTracking();
     } else {
-      trackingRepository.disableTracking();
+      await trackingRepository.disableTracking();
       await trackingService.stopTracking();
     }
 

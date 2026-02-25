@@ -72,7 +72,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
 
       GsLogger().d('Place loaded for editing: ${place.id}');
       GsLogger().d('Place loaded : $place');
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Erreur lors du chargement',
@@ -137,7 +137,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       );
 
       GsLogger().d('Position: ${position.latitude}, ${position.longitude}');
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Impossible d\'obtenir la position',
@@ -187,7 +187,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         state = state.copyWith(imageUrl: image.path);
       }
       GsLogger().d('Image: ${image?.path}');
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(errorMessage: 'Erreur lors du choix de l\'image');
       GsLogger().e(e);
     }
@@ -204,7 +204,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     state = state.copyWith(isSaving: true, errorMessage: null);
 
     try {
-      // TODO: Implémenter la sauvegarde via le repository
+      // TODO(dev): Implement save via repository.
       // final repository = ref.read(placesRepositoryProvider);
 
       if (state.isEditMode) {
@@ -217,9 +217,9 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         GsLogger().d('Creating new place');
       }
 
-      await Future.delayed(const Duration(seconds: 1));
+      await Future<void>.delayed(const Duration(seconds: 1));
       state = state.copyWith(isSaving: false);
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isSaving: false,
         errorMessage: state.isEditMode

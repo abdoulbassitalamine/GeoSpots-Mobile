@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class PlacesListHeader extends StatelessWidget {
-  final String title;
-  final String subtitle;
 
   const PlacesListHeader({
     super.key,
     required this.title,
     required this.subtitle,
   });
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: GSColorTokens.primaryGradientVertical,
       ),

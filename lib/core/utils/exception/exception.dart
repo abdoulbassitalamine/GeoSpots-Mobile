@@ -30,4 +30,3 @@ class ParsingException extends AppException {
 class UnknownException extends AppException {
   const UnknownException([super.message]);
 }
-

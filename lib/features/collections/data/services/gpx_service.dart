@@ -45,11 +45,11 @@ class GPXService implements IExportImportService {
                 builder.element('desc', nest: place.description);
 
                 if (place.city != null) {
-                  builder.element('city', nest: place.city!);
+                  builder.element('city', nest: place.city);
                 }
 
                 if (place.country != null) {
-                  builder.element('country', nest: place.country!);
+                  builder.element('country', nest: place.country);
                 }
 
                 if (place.tags.isNotEmpty) {

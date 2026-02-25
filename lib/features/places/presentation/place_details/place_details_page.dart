@@ -3,14 +3,14 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'view/place_details_view.dart';
 
 class PlaceDetailsPage extends ConsumerWidget {
-  final String placeId;
-  final bool readOnly;
 
   const PlaceDetailsPage({
     super.key,
     required this.placeId,
     this.readOnly = false,
   });
+  final String placeId;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -8,14 +8,14 @@ import 'export_dialog.dart';
 import 'share_collection_dialog.dart';
 
 class CollectionCard extends ConsumerWidget {
-  final CollectionEntity collection;
-  final VoidCallback? onTap;
 
   const CollectionCard({
     super.key,
     required this.collection,
     required this.onTap,
   });
+  final CollectionEntity collection;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,7 +111,7 @@ class CollectionCard extends ConsumerWidget {
   }
 
   void _showExportDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => ExportDialog(
         collection: collection,
@@ -125,7 +125,7 @@ class CollectionCard extends ConsumerWidget {
   }
 
   void _showShareDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => ShareCollectionDialog(
         onShare: (accessRight) {

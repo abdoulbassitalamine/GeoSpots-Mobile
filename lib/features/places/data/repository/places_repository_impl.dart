@@ -10,23 +10,23 @@ class PlacesRepositoryImpl implements IPlacesRepository {
   final IPlacesRemoteDatasource _placesRemoteDatasource;
 
   @override
-  Future<List<PlaceEntity>> getAllPlaces() async {
-    return await _placesRemoteDatasource.fetchAllPlaces();
+  Future<List<PlaceEntity>> getAllPlaces() {
+    return _placesRemoteDatasource.fetchAllPlaces();
   }
 
   @override
-  Future<List<PlaceEntity>> getPlacesByTag(String tag) async {
-    return await _placesRemoteDatasource.fetchPlacesByTag(tag);
+  Future<List<PlaceEntity>> getPlacesByTag(String tag) {
+    return _placesRemoteDatasource.fetchPlacesByTag(tag);
   }
 
   @override
-  Future<List<PlaceEntity>> searchPlaces(String query) async {
-    return await _placesRemoteDatasource.searchPlaces(query);
+  Future<List<PlaceEntity>> searchPlaces(String query) {
+    return _placesRemoteDatasource.searchPlaces(query);
   }
 
   @override
-  Future<PlaceEntity?> getPlaceById(String id) async {
-    return await _placesRemoteDatasource.fetchPlaceById(id);
+  Future<PlaceEntity?> getPlaceById(String id) {
+    return _placesRemoteDatasource.fetchPlaceById(id);
   }
 
   @override

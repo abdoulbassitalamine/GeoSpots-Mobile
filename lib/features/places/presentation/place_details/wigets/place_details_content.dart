@@ -3,9 +3,9 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceDetailsContent extends StatelessWidget {
-  final PlaceEntity place;
 
   const PlaceDetailsContent({super.key, required this.place});
+  final PlaceEntity place;
 
   @override
   Widget build(BuildContext context) {
@@ -37,15 +37,15 @@ class PlaceDetailsContent extends StatelessWidget {
 }
 
 class _PlaceHeader extends StatelessWidget {
-  final String title;
-  final String? city;
-  final String? country;
 
   const _PlaceHeader({
     required this.title,
     this.city,
     this.country,
   });
+  final String title;
+  final String? city;
+  final String? country;
 
   @override
   Widget build(BuildContext context) {
@@ -87,9 +87,9 @@ class _PlaceHeader extends StatelessWidget {
 }
 
 class _PlaceTags extends StatelessWidget {
-  final List<String> tags;
 
   const _PlaceTags({required this.tags});
+  final List<String> tags;
 
   @override
   Widget build(BuildContext context) {
@@ -102,9 +102,9 @@ class _PlaceTags extends StatelessWidget {
 }
 
 class _TagChip extends StatelessWidget {
-  final String tag;
 
   const _TagChip({required this.tag});
+  final String tag;
 
   @override
   Widget build(BuildContext context) {
@@ -133,9 +133,9 @@ class _TagChip extends StatelessWidget {
 }
 
 class _PlaceDescription extends StatelessWidget {
-  final String description;
 
   const _PlaceDescription({required this.description});
+  final String description;
 
   @override
   Widget build(BuildContext context) {
@@ -162,9 +162,9 @@ class _PlaceDescription extends StatelessWidget {
 }
 
 class _PlaceMetaInfo extends StatelessWidget {
-  final String date;
 
   const _PlaceMetaInfo({required this.date});
+  final String date;
 
   @override
   Widget build(BuildContext context) {

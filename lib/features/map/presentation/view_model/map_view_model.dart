@@ -41,7 +41,7 @@ class MapViewModel extends _$MapViewModel {
         ),
         isLoading: false,
       );
-    } catch (_) {
+    } on Exception {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Erreur lors du chargement de la carte',

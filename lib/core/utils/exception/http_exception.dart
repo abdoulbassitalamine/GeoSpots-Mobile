@@ -89,4 +89,3 @@ class BadGatewayException extends HttpException {
 class GatewayTimeoutException extends HttpException {
   GatewayTimeoutException() : super('Gateway timeout', 504);
 }
-

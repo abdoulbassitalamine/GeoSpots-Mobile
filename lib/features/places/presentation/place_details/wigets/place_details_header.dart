@@ -3,9 +3,9 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceDetailsHeader extends StatelessWidget {
-  final PlaceEntity place;
 
   const PlaceDetailsHeader({super.key, required this.place});
+  final PlaceEntity place;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +46,7 @@ class _HeaderActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(GSSpacing.m),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: GSColors.neutral000.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(GSRadius.full),
@@ -54,7 +54,7 @@ class _HeaderActions extends StatelessWidget {
         child: IconButton(
           icon: const Icon(Icons.more_vert, color: GSColors.neutral000),
           onPressed: () {
-            // TODO: Menu options
+            // TODO(dev): Add menu options.
           },
         ),
       ),
@@ -63,9 +63,9 @@ class _HeaderActions extends StatelessWidget {
 }
 
 class _HeaderBackground extends StatelessWidget {
-  final String? imageUrl;
 
   const _HeaderBackground({this.imageUrl});
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +76,7 @@ class _HeaderBackground extends StatelessWidget {
           Image.network(
             imageUrl!,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => const _HeaderPlaceholder(),
+            errorBuilder: (_, _, _) => const _HeaderPlaceholder(),
           )
         else
           const _HeaderPlaceholder(),
@@ -111,7 +111,7 @@ class _HeaderPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ColoredBox(
       color: GSColors.primary600,
       child: Icon(
         Icons.image,

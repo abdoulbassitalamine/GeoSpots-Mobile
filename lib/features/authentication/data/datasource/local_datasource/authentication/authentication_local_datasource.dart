@@ -28,4 +28,10 @@ abstract interface class AuthenticationLocalDataSource {
   Future<Result<void>> setTokenValidity(bool validity);
 
   Future<Result<bool?>> getTokenValidity();
+
+  Future<Result<void>> setUserRole(String role);
+
+  Future<Result<String?>> getUserRole();
+
+  Future<Result<void>> removeUserRole();
 }

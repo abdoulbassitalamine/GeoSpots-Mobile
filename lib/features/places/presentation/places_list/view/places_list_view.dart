@@ -3,6 +3,7 @@ import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
+import '../../view_model/places_list_state.dart';
 import '../../view_model/places_list_view_model.dart';
 import '../widgets/place_list_item.dart';
 import '../widgets/places_list_header.dart';
@@ -32,7 +33,7 @@ class PlacesListView extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, state) {
+  Widget _buildContent(BuildContext context, PlacesListState state) {
     if (state.isLoading) {
       return const Center(child: GSCircularLoader());
     }
@@ -89,7 +90,7 @@ class PlacesListView extends ConsumerWidget {
         return PlaceListItem(
           place: place,
           onTap: () {
-            PlaceDetailsRouteData(placeId: place.id).push(context);
+            PlaceDetailsRouteData(placeId: place.id).push<void>(context);
           },
         );
       },

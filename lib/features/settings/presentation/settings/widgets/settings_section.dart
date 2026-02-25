@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class SettingsSection extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
 
   const SettingsSection({
     super.key,
     required this.title,
     required this.children,
   });
+  final String title;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {

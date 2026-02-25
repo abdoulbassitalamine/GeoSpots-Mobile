@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../../../shared/design_system/design_system.dart';
 
 class CollectionsHeader extends StatelessWidget {
-  final int totalCollections;
-  final int totalPlaces;
-  final String title;
-  final VoidCallback? onImportPressed;
-  final VoidCallback onAddSharedAccessPressed;
 
   const CollectionsHeader({
     super.key,
@@ -16,10 +11,15 @@ class CollectionsHeader extends StatelessWidget {
     this.onImportPressed,
     required this.onAddSharedAccessPressed,
   });
+  final int totalCollections;
+  final int totalPlaces;
+  final String title;
+  final VoidCallback? onImportPressed;
+  final VoidCallback onAddSharedAccessPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: const BoxDecoration(
         gradient: GSColorTokens.primaryGradientVertical,
       ),
@@ -59,7 +59,7 @@ class CollectionsHeader extends StatelessWidget {
               Row(
                 children: [
                   if (onImportPressed != null) ...[
-                    Container(
+                    DecoratedBox(
                       decoration: BoxDecoration(
                         color: GSColors.neutral000.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(GSRadius.m),
@@ -76,7 +76,7 @@ class CollectionsHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: GSSpacing.s),
                   ],
-                  Container(
+                  DecoratedBox(
                     decoration: BoxDecoration(
                       color: GSColors.neutral000.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(GSRadius.m),

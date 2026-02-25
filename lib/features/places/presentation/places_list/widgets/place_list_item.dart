@@ -3,10 +3,10 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceListItem extends StatelessWidget {
-  final PlaceEntity place;
-  final VoidCallback onTap;
 
   const PlaceListItem({super.key, required this.place, required this.onTap});
+  final PlaceEntity place;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +108,7 @@ class PlaceListItem extends StatelessWidget {
             Wrap(
               spacing: GSSpacing.s,
               runSpacing: GSSpacing.s,
-              children: place.tags.map((tag) => _buildTag(tag)).toList(),
+              children: place.tags.map(_buildTag).toList(),
             ),
           ],
           const SizedBox(height: GSSpacing.l),
@@ -126,7 +126,7 @@ class PlaceListItem extends StatelessWidget {
                   GSIconButton(
                     icon: Icons.directions,
                     onPressed: () {
-                      // TODO: Ouvrir dans Maps
+                      // TODO(dev): Open in maps.
                     },
                     size: 20,
                   ),
@@ -134,7 +134,7 @@ class PlaceListItem extends StatelessWidget {
                   GSIconButton(
                     icon: Icons.ios_share,
                     onPressed: () {
-                      // TODO: Partager
+                      // TODO(dev): Share place.
                     },
                     size: 20,
                   ),

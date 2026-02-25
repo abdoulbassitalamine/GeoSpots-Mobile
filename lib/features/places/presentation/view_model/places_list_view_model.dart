@@ -8,7 +8,7 @@ part 'places_list_view_model.g.dart';
 class PlacesListViewModel extends _$PlacesListViewModel {
   @override
   PlacesListState build() {
-    Future.microtask(() => loadPlaces());
+    Future.microtask(loadPlaces);
     return const PlacesListState();
   }
 
@@ -26,7 +26,7 @@ class PlacesListViewModel extends _$PlacesListViewModel {
           : await repository.getAllPlaces();
 
       state = state.copyWith(places: places, isLoading: false);
-    } catch (e) {
+    } on Exception {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Erreur lors du chargement des lieux',
@@ -42,7 +42,7 @@ class PlacesListViewModel extends _$PlacesListViewModel {
       final places = await repository.searchPlaces(query);
 
       state = state.copyWith(places: places, isLoading: false);
-    } catch (e) {
+    } on Exception {
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Erreur lors de la recherche',

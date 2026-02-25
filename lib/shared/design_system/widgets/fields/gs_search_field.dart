@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'gs_text_field.dart';
+
 import '../../theme/spacing.dart';
 import '../../theme/typography.dart';
 import '../../tokens/color_tokens.dart';
+import 'gs_text_field.dart';
 
 const _kExpanded = 'expanded';
 const _kCollapsed = 'collapsed';

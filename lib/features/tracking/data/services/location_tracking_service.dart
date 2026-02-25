@@ -5,7 +5,7 @@ import '../../../../core/logger/gs_logger.dart';
 import '../../domain/repository/tracking_repository.dart';
 
 final locationTrackingServiceProvider = Provider<LocationTrackingService>(
-  (ref) => LocationTrackingService(ref),
+  LocationTrackingService.new,
 );
 
 class LocationTrackingService {
@@ -18,7 +18,7 @@ class LocationTrackingService {
   /// Demande les permissions de localisation
   Future<bool> requestPermissions() async {
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
+      var permission = await Geolocator.checkPermission();
 
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -38,7 +38,7 @@ class LocationTrackingService {
 
       return permission == LocationPermission.whileInUse ||
           permission == LocationPermission.always;
-    } catch (e) {
+    } on Exception catch (e) {
       GsLogger().e('Error requesting permissions: $e');
       return false;
     }
@@ -66,10 +66,8 @@ class LocationTrackingService {
           Geolocator.getPositionStream(
             locationSettings: locationSettings,
           ).listen(
-            (position) {
-              _handlePositionUpdate(position);
-            },
-            onError: (error) {
+            _handlePositionUpdate,
+            onError: (Object error) {
               GsLogger().e('Position stream error: $error');
             },
           );
@@ -79,13 +77,13 @@ class LocationTrackingService {
         try {
           final position = await Geolocator.getCurrentPosition();
           _handlePositionUpdate(position);
-        } catch (e) {
+        } on Exception catch (e) {
           GsLogger().e('Timer position update error: $e');
         }
       });
 
       GsLogger().d('Location tracking started');
-    } catch (e) {
+    } on Exception catch (e) {
       GsLogger().e('Error starting tracking: $e');
     }
   }
@@ -103,7 +101,7 @@ class LocationTrackingService {
             longitude: position.longitude,
             timestamp: position.timestamp,
           );
-    } catch (e) {
+    } on Exception catch (e) {
       GsLogger().e('Error handling position update: $e');
     }
   }
@@ -117,7 +115,7 @@ class LocationTrackingService {
 
       await ref.read(trackingRepositoryProvider).disableTracking();
       GsLogger().d('Location tracking stopped');
-    } catch (e) {
+    } on Exception catch (e) {
       GsLogger().e('Error stopping tracking: $e');
     }
   }
@@ -159,7 +157,7 @@ class LocationTrackingService {
         // Optionnel : désactiver le tracking puisqu'on ne peut pas l'utiliser
         await ref.read(trackingRepositoryProvider).disableTracking();
       }
-    } catch (e, stackTrace) {
+    } on Exception catch (e, stackTrace) {
       GsLogger().e('Error restoring tracking: $e');
       GsLogger().e(stackTrace);
     }

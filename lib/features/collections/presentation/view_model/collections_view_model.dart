@@ -32,7 +32,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   Future<void> _loadDummyData() async {
     state = state.copyWith(isLoading: true);
-    await Future.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 500));
     final allPlaces = await ref.watch(placesRepositoryProvider).getAllPlaces();
     final ownedCollections = ref
         .read(collectionsRepositoryProvider)
@@ -90,7 +90,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       await SharePlus.instance.share(shareParams);
 
       state = state.copyWith(isExporting: false);
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isExporting: false,
         error: 'Erreur lors de l\'export: $e',
@@ -173,7 +173,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         totalPlaces: allPlaces.length,
         isImporting: false,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isImporting: false,
         error: 'Erreur lors de l\'import: $e',
@@ -226,7 +226,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         ownedShareTokens: ownedShareTokens,
         selectedTab: CollectionsTab.sharedByMe,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(error: 'Erreur lors du partage: $e');
     }
   }
@@ -255,7 +255,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         selectedTab: CollectionsTab.sharedWithMe,
       );
       return true;
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isImportingSharedAccess: false,
         error: 'Impossible d\'ajouter cet accès partagé: $e',
@@ -281,9 +281,9 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         sharedCollections: sharedCollections,
       );
       if (ref.read(activeSharedAccessTokenProvider) == token) {
-        ref.read(activeSharedAccessTokenProvider.notifier).setToken(null);
+        ref.read(activeSharedAccessTokenProvider.notifier).token = null;
       }
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isRevokingSharedAccess: false,
         error: 'Erreur lors de la révocation: $e',
@@ -302,7 +302,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         isRevokingSharedAccess: false,
         ownedShareTokens: ownedShareTokens,
       );
-    } catch (e) {
+    } on Exception catch (e) {
       state = state.copyWith(
         isRevokingSharedAccess: false,
         error: 'Erreur lors de la révocation: $e',
@@ -322,19 +322,19 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   Future<void> activateSharedCollection(CollectionEntity collection) async {
     if (collection.source != CollectionSource.shared) {
-      ref.read(activeSharedAccessTokenProvider.notifier).setToken(null);
-      ref.read(activeCollectionAccessRightProvider.notifier).setRight(null);
+      ref.read(activeSharedAccessTokenProvider.notifier).token = null;
+      ref.read(activeCollectionAccessRightProvider.notifier).right = null;
       return;
     }
 
     ref
         .read(activeCollectionAccessRightProvider.notifier)
-        .setRight(collection.rights);
+        .right = collection.rights;
 
     if (collection.sharedToken != null && collection.sharedToken!.isNotEmpty) {
       ref
           .read(activeSharedAccessTokenProvider.notifier)
-          .setToken(collection.sharedToken);
+          .token = collection.sharedToken;
       return;
     }
 
@@ -347,7 +347,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       resourceId: collection.sharedResourceId!,
     );
 
-    ref.read(activeSharedAccessTokenProvider.notifier).setToken(token?.token);
+    ref.read(activeSharedAccessTokenProvider.notifier).token = token?.token;
   }
 
   String _generateShareToken() {

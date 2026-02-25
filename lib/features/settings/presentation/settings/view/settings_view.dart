@@ -3,13 +3,14 @@ import 'package:geo_spots/features/authentication/domain/entity/authentication_s
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/profile_view_model.dart';
+import '../widgets/logout_button.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_stats.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/tracking_toggle.dart';
-import '../widgets/logout_button.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
