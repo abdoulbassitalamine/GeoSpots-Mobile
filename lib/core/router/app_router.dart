@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/router/route_names.dart';
 import 'package:geo_spots/features/collections/presentation/route/route_data.dart';
-import 'package:geo_spots/features/home/presentation/route/route_data.dart';
 import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:geo_spots/features/settings/presentation/route/route_data.dart';
@@ -20,23 +19,8 @@ part 'app_router.g.dart';
 
 const _restorationScopeId = 'restorationScopeId';
 
-const _publicRoutes = [
-  RouteNames.welcome,
-  RouteNames.signIn,
-  RouteNames.signUp,
-  RouteNames.forgotPassword,
-];
-
 @TypedStatefulShellRoute<MainShellRouteData>(
   branches: <TypedStatefulShellBranch<StatefulShellBranchData>>[
-    TypedStatefulShellBranch<HomeShellBranchData>(
-      routes: <TypedRoute<RouteData>>[
-        TypedGoRoute<HomeRouteData>(
-          path: RouteNames.home,
-          name: RouteNames.homeName,
-        ),
-      ],
-    ),
     TypedStatefulShellBranch<MapShellBranchData>(
       routes: <TypedRoute<RouteData>>[
         TypedGoRoute<MapRouteData>(
@@ -86,12 +70,6 @@ class MainShellRouteData extends StatefulShellRouteData {
   }
 }
 
-class HomeShellBranchData extends StatefulShellBranchData {
-  const HomeShellBranchData();
-
-  static final GlobalKey<NavigatorState> $navigatorKey = homeMainNavigatorKey;
-}
-
 class MapShellBranchData extends StatefulShellBranchData {
   const MapShellBranchData();
 
@@ -115,7 +93,7 @@ class SettingsShellBranchData extends StatefulShellBranchData {
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
   final authenticationNotifier = ref.watch(
-    authenticationNotifierProvider.notifier,
+    authGuardProvider.notifier,
   );
 
   final router = GoRouter(
@@ -127,7 +105,6 @@ GoRouter appRouter(Ref ref) {
     redirect: (context, state) async {
       final authRedirect = await authenticationNotifier.redirect(
         goRouterState: state,
-        publicRoutes: _publicRoutes,
       );
 
       return authRedirect;

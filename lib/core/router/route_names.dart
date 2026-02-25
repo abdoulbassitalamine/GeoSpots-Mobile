@@ -1,8 +1,5 @@
 abstract class RouteNames {
   // Main app routes
-  static const String home = '/home';
-  static const String homeName = 'home';
-
   static const String map = '/map';
   static const String mapName = 'map';
 

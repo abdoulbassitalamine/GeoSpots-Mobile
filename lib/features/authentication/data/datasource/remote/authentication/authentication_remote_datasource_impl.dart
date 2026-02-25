@@ -1,145 +1,127 @@
-
 import 'package:dio/dio.dart';
-
-import '../../../../../../core/logger/gs_logger.dart';
-import '../../../../domain/entity/user/user_entity.dart';
-import '../../../exception/auth_exception.dart';
-import 'authentication_remote_datasource.dart';
-
+import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/utils/exception/dio_exception.dart';
+import 'package:geo_spots/core/utils/exception/exception.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/data/datasource/remote/authentication/authentication_remote_datasource.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/login_request_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/login_response_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/register_request_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/register_response_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/user_dto.dart';
 
 class AuthenticationRemoteDatasourceImpl
     implements IAuthenticationRemoteDatasource {
-  AuthenticationRemoteDatasourceImpl({required Dio authenticationClient});
-  // : _authApi = AuthenticationApi(authenticationClient);
+  AuthenticationRemoteDatasourceImpl({required Dio authenticationClient})
+    : _authenticationClient = authenticationClient;
 
-  //final AuthenticationApi _authApi;
-
-  @override
-  Future<String> checkTokenValidity() async {
-    try {
-      // final result = await _authApi.validateToken();
-      // if (result.data == null) throw Exception('No user found');
-      // return result.data!;
-      return 'Valid';
-    } on DioException catch (e) {
-      GsLogger().e(e);
-      throw Exception(e);
-    }
-  }
+  final Dio _authenticationClient;
 
   @override
-  Future<UserEntity> getCurrentUser() async {
+  Future<Result<UserDto>> getCurrentUser() async {
     try {
-      // final result = await _authApi.me();
-      // if (result.data == null) throw Exception('No user found');
-      // return result.data!;
-      return UserEntity(id: "2");
-    } on DioException catch (e) {
-      GsLogger().e(e);
-      throw Exception(e);
-    }
-  }
+      final response = await _authenticationClient.get<Object>('/api/me');
+      final json = response.asJsonMap();
 
-  @override
-  Future<String> sendResetPasswordLink(String email) async {
-    try {
-      // final result = await _authApi.sendPasswordResetEmail(
-      //   sendPasswordResetEmailRequestDto: SendPasswordResetEmailRequestDto(
-      //     email: email,
-      //   ),
-      // );
-      // if (result.data == null) throw Exception('Cannot send link');
-      // return result.data!;
+      if (json == null) {
+        return Err(ServerException('Invalid me response payload'));
+      }
 
-      return "Success";
+      return Ok(UserDto.fromJson(json));
     } on DioException catch (e, st) {
-      GsLogger().e(e, st);
-      throw Exception(e);
+      GsLogger().e('getCurrentUser', e, st);
+      return Err(e.toAppException(), st);
     }
   }
 
   @override
-  Future<String> signInWithEmailAndPassword({
+  Future<Result<void>> logout() async {
+    try {
+      await _authenticationClient.get<Object>('/api/logout');
+      return const Ok(null);
+    } on DioException catch (e, st) {
+      GsLogger().e('logout', e, st);
+      return Err(e.toAppException(), st);
+    }
+  }
+
+  @override
+  Future<Result<LoginResponseDto>> signInWithEmailAndPassword({
     required String mail,
     required String password,
   }) async {
-    //  final request = LoginRequestDto(email: mail, password: password);
+    // TODO(dev): fake response — remove before prod
+    // return Ok(
+    //   LoginResponseDto(
+    //     success: true,
+    //     message: 'fake login',
+    //     data: AuthSessionDto(
+    //       token: 'fake-dev-token-123',
+    //       data: UserDto(
+    //         id: 1,
+    //         name: 'Dev User',
+    //         email: mail,
+    //         roleId: 3,
+    //         status: UserStatus.active,
+    //       ),
+    //     ),
+    //   ),
+    // );
 
     try {
-      // final result = await _authApi.login(loginRequestDto: request);
-      // if (result.data == null) throw Exception('No user found');
-      //
-      // return result.data!;
-      return 'Signin';
-    } on DioException catch (e) {
-      GsLogger().e(e);
-      if (e.type == DioExceptionType.badResponse) {
-        throw WrongEmailOrPasswordException();
+      final request = LoginRequestDto(email: mail, password: password);
+
+      final response = await _authenticationClient.post<Object>(
+        '/api/login',
+        data: request.toJson(),
+      );
+
+      GsLogger().d('signInWithEmailAndPassword response', response.data);
+
+      final json = response.asJsonMap();
+      if (json == null) {
+        return Err(ServerException('Invalid sign-in response payload'));
       }
-      throw Exception(e);
+
+      return Ok(LoginResponseDto.fromJson(json));
+    } on DioException catch (e, st) {
+      GsLogger().e('signInWithEmailAndPassword', e, st);
+      return Err(e.toAppException(), st);
     }
   }
 
   @override
-  Future<void> logout() async {
-    try {
-      //  await _authApi.logout();
-    } on DioException catch (e) {
-      GsLogger().e(e);
-      throw Exception(e);
-    }
-  }
-
-  @override
-  Future<String?> signup({
+  Future<Result<RegisterResponseDto>> signup({
     required String firstName,
     required String lastName,
     required String mail,
     required String password,
     required String passwordConfirmation,
   }) async {
-    // final signupRequest = RegisterRequestDto(
-    //   firstName: firstName,
-    //   lastName: lastName,
-    //   email: mail,
-    //   gender: gender.apiValueRegister,
-    //   phoneNumber: phoneNumber,
-    //   address: address,
-    //   state: State,
-    //   city: city,
-    //   zipcode: zipCode,
-    //   password: password,
-    //   passwordConfirmation: passwordConfirmation,
-    // );
     try {
-      // final result = await _authApi.register(registerRequestDto: signupRequest);
-      // if (result.data == null) throw Exception('No Token found');
-      // return result.data!.token;
-      return 'token';
-    } on DioException catch (e) {
-      GsLogger().e(e);
-      if (e.type == DioExceptionType.badResponse &&
-          e.response?.statusCode == 422) {
-        throw EmailAlreadyExistsException();
-      }
-      if (e.type == DioExceptionType.badResponse &&
-          e.response?.statusCode == 500) {
-        throw SignUpServerException();
-      }
-      throw Exception(e);
-    }
-  }
+      final request = RegisterRequestDto(
+        firstName: firstName,
+        lastName: lastName,
+        email: mail,
+        password: password,
+        passwordConfirmation: passwordConfirmation,
 
-  @override
-  Future<String> updateUser(String user) async {
-    try {
-      // final result = await _authApi.updateUser(updateUserRequestDto: user);
-      // if (result.data == null) throw Exception('No user found');
-      // return result.data!.user!;
-      return 'Update user';
-    } on DioException catch (e) {
-      GsLogger().e(e);
-      throw Exception(e);
+      );
+
+      final response = await _authenticationClient.post<Object>(
+        '/api/register',
+        data: request.toJson(),
+      );
+      final json = response.asJsonMap();
+
+      if (json == null) {
+        return Err(ServerException('Invalid sign-up response payload'));
+      }
+
+      return Ok(RegisterResponseDto.fromJson(json));
+    } on DioException catch (e, st) {
+      GsLogger().e('signup', e, st);
+      return Err(e.toAppException(), st);
     }
   }
 }

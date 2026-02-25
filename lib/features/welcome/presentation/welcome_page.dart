@@ -1,9 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
-import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
-import 'package:geo_spots/features/home/presentation/route/route_data.dart';
 import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:geo_spots/features/welcome/presentation/view/welcome_view.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
@@ -18,7 +15,7 @@ class WelcomePage extends HookConsumerWidget {
     useEffect(() {
       final timer = Timer(const Duration(milliseconds: 1500), () {
         if (context.mounted) {
-          const HomeRouteData().go(context);
+          const MapRouteData().go(context);
           return;
         }
       });

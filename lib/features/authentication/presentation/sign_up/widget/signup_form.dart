@@ -1,272 +1,139 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/core/utils/extensions/sized_box_extension.dart';
+import 'package:geo_spots/core/utils/extensions/value_notifier_ext.dart';
+import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_up_controllers.dart';
+import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_up_handlers.dart';
+import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_up_validators.dart';
 import 'package:geo_spots/features/authentication/presentation/view_model/sign_up/sign_up_view_model.dart';
+import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/top_snack_bar.dart';
-
-import '../../../../../core/logger/gs_logger.dart';
-import '../../../../../core/utils/extensions/sized_box_extension.dart';
-import '../../../../../core/utils/extensions/validators_ext.dart';
-import '../../../../../core/utils/extensions/value_notifier_ext.dart';
-import '../../../../../shared/design_system/design_system.dart';
-import '../../../data/exception/auth_exception.dart';
-import '../../view_model/authentication_view_model.dart';
 
 class SignupForm extends HookConsumerWidget {
   const SignupForm({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(signUpViewModelProvider.notifier);
-    final signupState = ref.watch(signUpViewModelProvider);
-    final isLoading = useState<bool>(false);
+    final notifier = ref.watch(signUpViewModelProvider.notifier);
+    final state = ref.watch(signUpViewModelProvider);
+    final identityControllers = SignUpIdentityControllers.initialize(state);
+    final passwordControllers = SignUpPasswordControllers.initialize(state);
 
-    // Set validator messages
-    notifier.setupValidatorMessages(context);
-
-    // First Name
-    final firstNameController = useTextEditingController();
-    final firstNameFocusNode = useFocusNode();
-    final firstNameError = useState<String?>(null);
-
-    // Last Name
-    final lastNameController = useTextEditingController();
-    final lastNameFocusNode = useFocusNode();
-    final lastNameError = useState<String?>(null);
-
-    // Email
-    final emailController = useTextEditingController();
-    final emailFocusNode = useFocusNode();
-    final emailError = useState<String?>(null);
-
-    // Password
-    final passwordController = useTextEditingController();
-    final passwordFocusNode = useFocusNode();
-    final passwordError = useState<String?>(null);
-
-    // Confirm Password
-    final confirmPasswordController = useTextEditingController();
-    final confirmPasswordFocusNode = useFocusNode();
-    final confirmPasswordError = useState<String?>(null);
-
-    final hiddenPassword = useState<bool>(true);
-    final hiddenConfirmPassword = useState<bool>(true);
-
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (emailController.text.isNotEmpty) {
-          emailError.value = notifier.emailValidators
-              .executeWithPriorityMessage(emailController.text)
-              .message;
-        }
-        if (passwordController.text.isNotEmpty) {
-          passwordError.value = notifier.passwordValidators
-              .executeWithPriorityMessage(passwordController.text)
-              .message;
-        }
-        final updatedSignInState = ref
-            .read(signUpViewModelProvider)
-            .copyWith(
-              password: passwordController.text,
-              email: emailController.text,
-            );
-        notifier.updateState(updatedSignInState);
-      });
-      return null;
-    }, []);
+    SignUpValidators.setupValidatorMessages(context, notifier);
+    SignUpValidators.setupIdentityInitialValidation(
+      ref,
+      notifier,
+      identityControllers,
+    );
+    SignUpValidators.setupIdentityFocusListeners(identityControllers, notifier);
+    SignUpValidators.setupPasswordInitialValidation(
+      ref,
+      notifier,
+      passwordControllers,
+    );
+    SignUpValidators.setupPasswordFocusListeners(passwordControllers, notifier);
 
     return Column(
       spacing: GSSpacing.$200,
       children: [
         GSInlineTextField(
           label: 'Prénom',
-          controller: firstNameController,
-          focusNode: firstNameFocusNode,
-          error: firstNameError.notEmptyOrNull(),
+          controller: identityControllers.firstNameController,
+          focusNode: identityControllers.firstNameFocusNode,
+          error: identityControllers.firstNameError.notEmptyOrNull(),
           onChanged: (value) {
-            firstNameError.value = notifier.firstNameValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            notifier.updateState(signupState.copyWith(firstName: value));
+            SignUpValidators.validateFirstName(
+              identityControllers.firstNameController,
+              notifier,
+              identityControllers.firstNameError,
+            );
+            SignUpHandlers.onFirstNameChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => lastNameFocusNode.requestFocus(),
+          onSubmitted: (_) => identityControllers.lastNameFocusNode.requestFocus(),
         ),
         GSInlineTextField(
           label: 'Nom',
-          controller: lastNameController,
-          focusNode: lastNameFocusNode,
-          error: lastNameError.notEmptyOrNull(),
+          controller: identityControllers.lastNameController,
+          focusNode: identityControllers.lastNameFocusNode,
+          error: identityControllers.lastNameError.notEmptyOrNull(),
           onChanged: (value) {
-            lastNameError.value = notifier.lastNameValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            notifier.updateState(signupState.copyWith(lastName: value));
+            SignUpValidators.validateLastName(
+              identityControllers.lastNameController,
+              notifier,
+              identityControllers.lastNameError,
+            );
+            SignUpHandlers.onLastNameChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => emailFocusNode.requestFocus(),
+          onSubmitted: (_) => identityControllers.emailFocusNode.requestFocus(),
         ),
         GSInlineTextField(
           label: 'Email',
-          controller: emailController,
-          focusNode: emailFocusNode,
-          error: emailError.notEmptyOrNull(),
+          controller: identityControllers.emailController,
+          focusNode: identityControllers.emailFocusNode,
+          type: TextInputType.emailAddress,
+          error: identityControllers.emailError.notEmptyOrNull(),
           onChanged: (value) {
-            emailError.value = notifier.emailValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            notifier.updateState(signupState.copyWith(email: value));
+            SignUpValidators.validateEmail(
+              identityControllers.emailController,
+              notifier,
+              identityControllers.emailError,
+            );
+            SignUpHandlers.onEmailChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => passwordFocusNode.requestFocus(),
+          onSubmitted: (_) => passwordControllers.passwordFocusNode.requestFocus(),
         ),
+        GSSpacing.$50.toInt().toHeight,
         GSInlinePasswordField(
           label: 'Mot de passe',
-          controller: passwordController,
-          focusNode: passwordFocusNode,
-          error: passwordError.notEmptyOrNull(),
-          obscureText: hiddenPassword.value,
-          onVisibilityChanged: (value) => hiddenPassword.value = value,
+          controller: passwordControllers.passwordController,
+          focusNode: passwordControllers.passwordFocusNode,
+          error: passwordControllers.passwordError.notEmptyOrNull(),
+          obscureText: !passwordControllers.isPasswordVisible.value,
+          onVisibilityChanged: (value) =>
+              passwordControllers.isPasswordVisible.value = !value,
           onChanged: (value) {
-            passwordError.value = notifier.passwordValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            notifier.updateState(signupState.copyWith(password: value));
+            SignUpValidators.validatePassword(
+              passwordControllers.passwordController,
+              notifier,
+              passwordControllers.passwordError,
+            );
+            SignUpHandlers.onPasswordChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => confirmPasswordFocusNode.requestFocus(),
+          onSubmitted: (_) =>
+              passwordControllers.confirmPasswordFocusNode.requestFocus(),
         ),
         GSInlinePasswordField(
           label: 'Confirmer le mot de passe',
-          controller: confirmPasswordController,
-          focusNode: confirmPasswordFocusNode,
-          obscureText: hiddenConfirmPassword.value,
-          error: confirmPasswordError.notEmptyOrNull(),
-          onVisibilityChanged: (value) => hiddenConfirmPassword.value = value,
+          controller: passwordControllers.confirmPasswordController,
+          focusNode: passwordControllers.confirmPasswordFocusNode,
+          error: passwordControllers.confirmPasswordError.notEmptyOrNull(),
+          obscureText: !passwordControllers.isConfirmPasswordVisible.value,
+          onVisibilityChanged: (value) =>
+              passwordControllers.isConfirmPasswordVisible.value = !value,
           onChanged: (value) {
-            confirmPasswordError.value = notifier.confirmPasswordValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            notifier.updateState(signupState.copyWith(confirmPassword: value));
+            SignUpValidators.validateConfirmPassword(
+              passwordControllers.confirmPasswordController,
+              notifier,
+              passwordControllers.confirmPasswordError,
+            );
+            SignUpHandlers.onConfirmPasswordChanged(value, ref, notifier);
           },
           onSubmitted: (_) {
-            if (firstNameError.value == null &&
-                lastNameError.value == null &&
-                emailError.value == null &&
-                passwordError.value == null &&
-                confirmPasswordError.value == null) {
-              _onSubmit(
-                ref,
-                context,
-                isLoading: isLoading,
-                firstNameError: firstNameError,
-                lastNameError: lastNameError,
-                emailError: emailError,
-                passwordError: passwordError,
-                confirmPasswordError: confirmPasswordError,
-              );
+            if (notifier.isFormValid) {
+              SignUpHandlers.onSubmit(ref, context, passwordControllers);
             }
           },
         ),
-        GSSpacing.$50.toInt().toHeight,
-        Text.rich(
-          TextSpan(
-            text:
-                'En continuant, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité',
-            style: context.bodyAccentSmall.copyWith(
-              fontWeight: FontWeight.w400,
-              letterSpacing: 0.05,
-              color: GSColorTokens.textPrimary.withValues(alpha: .7),
-            ),
-          ),
-        ),
-        GSSpacing.$50.toInt().toHeight,
+        GSSpacing.$100.toInt().toHeight,
         GSContainerButton.filled(
           padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
-          isLoading: isLoading.value,
+          isLoading: passwordControllers.isLoading.value,
           enabled: notifier.isFormValid,
-          onPressed: () => _onSubmit(
-            ref,
-            context,
-            isLoading: isLoading,
-            firstNameError: firstNameError,
-            lastNameError: lastNameError,
-            emailError: emailError,
-            passwordError: passwordError,
-            confirmPasswordError: confirmPasswordError,
-          ),
-          text: 'S\'inscrire',
+          onPressed: () => SignUpHandlers.onSubmit(ref, context, passwordControllers),
+          text: 'S’inscrire',
           gradient: GSColorTokens.primaryGradientHorizontal,
           radius: GSRadius.l,
         ),
       ],
     );
-  }
-}
-
-void _onSubmit(
-  WidgetRef ref,
-  BuildContext context, {
-  required ValueNotifier<bool> isLoading,
-  required ValueNotifier<String?> firstNameError,
-  required ValueNotifier<String?> lastNameError,
-  required ValueNotifier<String?> emailError,
-  required ValueNotifier<String?> passwordError,
-  required ValueNotifier<String?> confirmPasswordError,
-}) async {
-  if (isLoading.value) {
-    return;
-  }
-  isLoading.value = true;
-  FocusScope.of(context).requestFocus(FocusNode());
-
-  // Reset errors
-  firstNameError.clear();
-  lastNameError.clear();
-  emailError.clear();
-  passwordError.clear();
-  confirmPasswordError.clear();
-
-  final signInForm = ref.read(signUpViewModelProvider);
-
-  try {
-    await ref
-        .read(authenticationViewModelProvider.notifier)
-        .signUp(
-          firstName: signInForm.firstName,
-          lastName: signInForm.lastName,
-          mail: signInForm.email,
-          password: signInForm.password,
-          passwordConfirmation: signInForm.confirmPassword,
-        );
-    if (context.mounted) {
-      const SignInRouteData().push(context);
-    }
-  } on Exception catch (error) {
-    if (!context.mounted) return;
-    GsLogger().e(error);
-
-    if (error is EmailAlreadyExistsException) {
-      emailError.value = 'Cet email est déjà utilisé';
-      if (context.mounted) {
-        showTopSnackBar(
-          Overlay.of(context),
-          snackBarPosition: SnackBarPosition.bottom,
-          CustomSnackBar.error(message: 'Cet email est déjà utilisé'),
-        );
-      }
-    } else if (error is SignUpServerException) {
-      showTopSnackBar(
-        Overlay.of(context),
-        snackBarPosition: SnackBarPosition.bottom,
-        CustomSnackBar.error(message: 'Erreur du serveur'),
-      );
-    } else {
-      showTopSnackBar(
-        Overlay.of(context),
-        snackBarPosition: SnackBarPosition.bottom,
-        CustomSnackBar.error(message: 'Veuillez réessayer plus tard'),
-      );
-    }
-  } finally {
-    isLoading.value = false;
   }
 }

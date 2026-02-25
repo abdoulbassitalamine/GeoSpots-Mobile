@@ -1,9 +1,7 @@
-import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
 
 import '../../theme/colors.dart';
 import '../../theme/spacing.dart';
@@ -81,9 +79,7 @@ class GSAppBarScaffold extends StatelessWidget {
                   color: GSColorTokens.textInverse,
                   backgroundColor: GSColorTokens.textAccent,
                   onRefresh: () async {
-                    if (await Vibration.hasVibrator()) {
-                      unawaited(Vibration.vibrate(duration: 50, amplitude: 50));
-                    }
+                    await HapticFeedback.lightImpact();
                     await onRefresh?.call();
                   },
                   child: scrollView,

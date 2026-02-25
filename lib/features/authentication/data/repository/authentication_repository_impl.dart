@@ -1,7 +1,9 @@
-import '../../domain/entity/user/user_entity.dart';
-import '../../domain/repository/authentication_repository.dart';
-import '../datasource/local_datasource/authentication/authentication_local_datasource.dart';
-import '../datasource/remote/authentication/authentication_remote_datasource.dart';
+import 'package:geo_spots/core/utils/exception/exception.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
+import 'package:geo_spots/features/authentication/data/datasource/remote/authentication/authentication_remote_datasource.dart';
+import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
+import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
 
 class AuthenticationRepositoryImpl implements IAuthenticationRepository {
   AuthenticationRepositoryImpl({
@@ -12,81 +14,87 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
 
   final IAuthenticationRemoteDatasource _authenticationRemoteDatasource;
   final AuthenticationLocalDataSource _authenticationLocalDataSource;
+
   @override
-  Future<UserEntity?> autoSignIn() {
+  Future<Result<UserEntity?>> autoSignIn() {
     return _authenticationLocalDataSource.getAuthUser();
   }
 
   @override
-  Future<bool> checkTokenValidity() async {
-    throw UnimplementedError();
+  Future<Result<String?>> getStoredAuthUserToken() {
+    return _authenticationLocalDataSource.getAuthUserToken();
   }
 
   @override
-  Future<List<UserEntity>> getSearchUsers(String query) {
-    // TODO: implement getSearchUsers
-    throw UnimplementedError();
+  Future<Result<bool?>> getTokenValidity() {
+    return _authenticationLocalDataSource.getTokenValidity();
   }
 
   @override
-  Future<UserEntity> me() async {
-    throw UnimplementedError();
+  Future<Result<void>> setTokenValidity(bool validity) {
+    return _authenticationLocalDataSource.setTokenValidity(validity);
   }
 
   @override
-  Future<String> sendResetPasswordLink(String email) async {
-    await _authenticationRemoteDatasource.sendResetPasswordLink(email);
-    throw UnimplementedError();
+  Future<Result<UserEntity>> me() async {
+    final result = await _authenticationRemoteDatasource.getCurrentUser();
+    return switch (result) {
+      Ok(:final value) => Ok(UserEntity.fromDto(value)),
+      Err(:final error, :final stackTrace) => Err(error, stackTrace),
+    };
   }
 
   @override
-  Future<String> signInWithLinkedIn(String code) {
-    // TODO: implement signInWithLinkedIn
-    throw UnimplementedError();
+  Future<Result<void>> logout() async {
+    await _authenticationRemoteDatasource.logout();
+    await _authenticationLocalDataSource.setTokenValidity(false);
+    return _authenticationLocalDataSource.deleteAuthUser();
   }
 
   @override
-  Future<void> logout() async {
-    try {
-      await _authenticationRemoteDatasource.logout();
-      await _authenticationLocalDataSource.deleteAuthUser();
-    } on Exception catch (_) {
-      await _authenticationLocalDataSource.deleteAuthUser();
+  Future<Result<UserEntity>> signIn({
+    required String mail,
+    required String password,
+  }) async {
+    final result = await _authenticationRemoteDatasource
+        .signInWithEmailAndPassword(mail: mail, password: password);
+
+    switch (result) {
+      case Ok(:final value):
+        final session = value.data;
+        if (session?.data == null || session?.token == null) {
+          return Err(ServerException('Invalid sign-in response'));
+        }
+        final user = session!.data!;
+        final entity = UserEntity.fromDto(user);
+        await _authenticationLocalDataSource.upsertAuthUser(
+          session.token!,
+          entity,
+        );
+        return Ok(entity);
+      case Err(:final error, :final stackTrace):
+        return Err(error, stackTrace);
     }
   }
 
   @override
-  Future<UserEntity> updateUser({
-    String? firstName,
-    String? lastName,
-    String? email,
-  }) async {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<UserEntity> signIn({
-    required String mail,
-    required String password,
-  }) async {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<String?> signUp({
+  Future<Result<String?>> signUp({
     required String firstName,
     required String lastName,
     required String mail,
     required String password,
     required String passwordConfirmation,
   }) async {
-    final token = await _authenticationRemoteDatasource.signup(
+    final result = await _authenticationRemoteDatasource.signup(
       firstName: firstName,
       lastName: lastName,
       mail: mail,
       password: password,
       passwordConfirmation: passwordConfirmation,
     );
-    return token;
+    return switch (result) {
+      Ok(:final value) => Ok(value.token),
+      Err(:final error, :final stackTrace) => Err(error, stackTrace),
+    };
   }
 }

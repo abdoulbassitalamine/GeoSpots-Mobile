@@ -1,9 +1,9 @@
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
+import 'package:geo_spots/features/authentication/data/datasource/remote/authentication/authentication_remote_datasource.dart';
+import 'package:geo_spots/features/authentication/data/repository/authentication_repository_impl.dart';
+import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
-import '../../data/datasource/remote/authentication/authentication_remote_datasource.dart';
-import '../../data/repository/authentication_repository_impl.dart';
-import '../entity/user/user_entity.dart';
 
 final authenticationRepositoryProvider = Provider<IAuthenticationRepository>(
   (ref) => AuthenticationRepositoryImpl(
@@ -17,31 +17,29 @@ final authenticationRepositoryProvider = Provider<IAuthenticationRepository>(
 );
 
 abstract interface class IAuthenticationRepository {
-  Future<UserEntity> signIn({required String mail, required String password});
-  Future<String?> signUp({
+  Future<Result<UserEntity>> signIn({
+    required String mail,
+    required String password,
+  });
+
+  Future<Result<String?>> signUp({
     required String firstName,
     required String lastName,
     required String mail,
     required String password,
     required String passwordConfirmation,
   });
-  Future<String> signInWithLinkedIn(String code);
 
-  Future<void> logout();
+  Future<Result<void>> logout();
 
-  Future<UserEntity> me();
+  Future<Result<UserEntity>> me();
 
-  Future<List<UserEntity>> getSearchUsers(String query);
+  Future<Result<UserEntity?>> autoSignIn();
 
-  Future<UserEntity> updateUser({
-    String? firstName,
-    String? lastName,
-    String? email,
-  });
+  Future<Result<String?>> getStoredAuthUserToken();
 
-  Future<bool> checkTokenValidity();
+  Future<Result<bool?>> getTokenValidity();
 
-  Future<String> sendResetPasswordLink(String email);
+  Future<Result<void>> setTokenValidity(bool validity);
 
-  Future<UserEntity?> autoSignIn();
 }

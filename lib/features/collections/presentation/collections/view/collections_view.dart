@@ -21,7 +21,7 @@ class CollectionsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authenticationStatus = ref.watch(authenticationNotifierProvider);
+    final authenticationStatus = ref.watch(authGuardProvider);
     final isAuthenticated =
         authenticationStatus is AuthenticationStatusAuthenticated;
     final state = ref.watch(collectionsViewModelProvider);

@@ -1,26 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/authentication.dart';
 import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
-import 'package:geo_spots/features/home/presentation/route/route_data.dart';
 import 'package:geo_spots/features/map/presentation/route/route_data.dart';
-import 'package:geo_spots/features/welcome/presentation/route/route_data.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../entity/authentication_status/authentication_status.dart';
+part 'authentication_notifier.g.dart';
 
-final authenticationNotifierProvider =
-    NotifierProvider<AuthenticationNotifier, AuthenticationStatus>(
-      AuthenticationNotifier.new,
-    );
-
-class AuthenticationNotifier extends Notifier<AuthenticationStatus>
-    implements Listenable {
+@Riverpod(keepAlive: true)
+class AuthGuardNotifier extends _$AuthGuardNotifier implements Listenable {
   static final _excludedRoutes = [
     SignInRouteData().location,
     SignUpRouteData().location,
     ForgotPasswordRouteData().location,
-    WelcomeRouteData().location,
   ];
 
   VoidCallback? _routerListener;
@@ -32,29 +25,22 @@ class AuthenticationNotifier extends Notifier<AuthenticationStatus>
 
   Future<String?> redirect({
     required GoRouterState goRouterState,
-    required List<String> publicRoutes,
   }) async {
-    final currentRoute = goRouterState.uri.toString();
-    final isExcludedRoute = _excludedRoutes.contains(currentRoute);
+    final currentPath = goRouterState.uri.path;
+    final isExcludedRoute = _excludedRoutes.any(currentPath.startsWith);
 
-    if (publicRoutes.any(goRouterState.uri.path.startsWith)) {
-      return null;
-    }
-
-    final token = await ref
+    final tokenResult = await ref
         .read(authenticationLocalDatasourceProvider)
         .getAuthUserToken();
 
-    if ((token == null || state is AuthenticationStatusUnauthenticated) &&
-        !isExcludedRoute &&
-        currentRoute == HomeRouteData().location) {
-      return MapRouteData().location;
-    }
+    final token = switch (tokenResult) {
+      Ok(:final value) => value,
+      Err() => null,
+    };
+    final hasToken = token != null && token.isNotEmpty;
 
-    if (publicRoutes.any(currentRoute.startsWith) &&
-        token != null &&
-        !isExcludedRoute) {
-      return HomeRouteData().location;
+    if (isExcludedRoute && hasToken) {
+      return MapRouteData().location;
     }
 
     return null;

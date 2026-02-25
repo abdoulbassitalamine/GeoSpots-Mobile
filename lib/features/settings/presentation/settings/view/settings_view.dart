@@ -16,7 +16,7 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authStatus = ref.watch(authenticationNotifierProvider);
+    final authStatus = ref.watch(authGuardProvider);
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
     if (!isAuthenticated) {
       return const _GuestProfilePrompt();

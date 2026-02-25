@@ -1,19 +1,14 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:geo_spots/core/utils/extensions/sized_box_extension.dart';
+import 'package:geo_spots/core/utils/extensions/value_notifier_ext.dart';
+import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_in_controllers.dart';
+import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_in_handlers.dart';
+import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_in_validators.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
-import 'package:geo_spots/features/home/presentation/route/route_data.dart';
+import 'package:geo_spots/features/authentication/presentation/view_model/sign_in/sign_in_view_model.dart';
+import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import '../../../../../core/logger/gs_logger.dart';
-import '../../../../../core/utils/extensions/sized_box_extension.dart';
-import '../../../../../core/utils/extensions/validators_ext.dart';
-import '../../../../../core/utils/extensions/value_notifier_ext.dart';
-import '../../../../../shared/design_system/design_system.dart';
-import '../../../data/exception/auth_exception.dart';
-import '../../view_model/sign_in/sign_in_view_model.dart';
-import 'package:top_snackbar_flutter/custom_snack_bar.dart';
-import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class LoginForm extends HookConsumerWidget {
   const LoginForm({super.key});
@@ -21,46 +16,11 @@ class LoginForm extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.watch(signInViewModelProvider.notifier);
+    final controllers = SignInControllers.initialize();
 
-    // Set validator messages
-    notifier.requiredValidator.withErrorMessage('Ce champ est obligatoire');
-    notifier.emailValidator.withErrorMessage('Veuillez saisir un email valide');
-
-    // Email
-    final emailController = useTextEditingController();
-    final emailFocusNode = useFocusNode();
-    final emailError = useState<String?>(null);
-
-    // Password
-    final passwordController = useTextEditingController();
-    final passwordFocusNode = useFocusNode();
-    final passwordError = useState<String?>(null);
-
-    final hiddenPassword = useState<bool>(true);
-    final isLoading = useState<bool>(false);
-
-    useEffect(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (emailController.text.isNotEmpty) {
-          emailError.value = notifier.emailValidators
-              .executeWithPriorityMessage(emailController.text)
-              .message;
-        }
-        if (passwordController.text.isNotEmpty) {
-          passwordError.value = notifier.passwordValidators
-              .executeWithPriorityMessage(passwordController.text)
-              .message;
-        }
-        final updatedSignInState = ref
-            .read(signInViewModelProvider)
-            .copyWith(
-              password: passwordController.text,
-              email: emailController.text,
-            );
-        notifier.updateState(updatedSignInState);
-      });
-      return null;
-    }, []);
+    SignInValidators.setupValidatorMessages(context, notifier);
+    SignInValidators.setupInitialValidation(ref, notifier, controllers);
+    SignInValidators.setupAllFocusListeners(controllers, notifier);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -68,132 +28,62 @@ class LoginForm extends HookConsumerWidget {
         GSTextField(
           maxLines: 1,
           label: 'Email',
-          controller: emailController,
-          focusNode: emailFocusNode,
+          controller: controllers.emailController,
+          focusNode: controllers.emailFocusNode,
           keyboardType: TextInputType.emailAddress,
-          error: emailError.notEmptyOrNull(),
+          error: controllers.emailError.notEmptyOrNull(),
+          enabled: !controllers.isLoading.value,
           onValueChange: (value) {
-            emailError.value = notifier.emailValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            final updatedSignInState = ref
-                .read(signInViewModelProvider)
-                .copyWith(email: value);
-            notifier.updateState(updatedSignInState);
+            SignInValidators.validateEmail(
+              controllers.emailController,
+              notifier,
+              controllers.emailError,
+            );
+            SignInHandlers.onEmailChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => passwordFocusNode.requestFocus(),
+          onSubmitted: (_) => controllers.passwordFocusNode.requestFocus(),
         ),
         const SizedBox(height: GSSpacing.$200),
         GSPasswordField(
           label: 'Mot de passe',
-          controller: passwordController,
-          focusNode: passwordFocusNode,
-          error: passwordError.notEmptyOrNull(),
-          obscureText: hiddenPassword.value,
-          onVisibilityChanged: (value) => hiddenPassword.value = value,
+          controller: controllers.passwordController,
+          focusNode: controllers.passwordFocusNode,
+          error: controllers.passwordError.notEmptyOrNull(),
+          obscureText: controllers.hiddenPassword.value,
+          onVisibilityChanged: (value) => controllers.hiddenPassword.value = value,
           onChanged: (value) {
-            passwordError.value = notifier.passwordValidators
-                .executeWithPriorityMessage(value)
-                .message;
-            final updatedSignInState = ref
-                .read(signInViewModelProvider)
-                .copyWith(password: value);
-            notifier.updateState(updatedSignInState);
+            SignInValidators.validatePassword(
+              controllers.passwordController,
+              notifier,
+              controllers.passwordError,
+            );
+            SignInHandlers.onPasswordChanged(value, ref, notifier);
           },
           onSubmitted: (_) {
-            if (emailError.value == null && passwordError.value == null) {
-              _onSubmit(
-                ref,
-                context,
-                isLoading: isLoading,
-                emailError: emailError,
-                passwordError: passwordError,
-              );
+            if (controllers.emailError.value == null &&
+                controllers.passwordError.value == null) {
+              SignInHandlers.onSubmit(ref, context, controllers);
             }
           },
         ),
-        GSSpacing.$200.toInt().toHeight,
+        GSSpacing.$150.toInt().toHeight,
         _ForgotPasswordLink(
-          onClick: () {
-            const ForgotPasswordRouteData().push(context);
-          },
+          onClick: () => const ForgotPasswordRouteData().go(context),
         ),
         const SizedBox(height: GSSpacing.$600),
-
-        Consumer(
-          builder: (context, ref, _) {
-            ref.watch(signInViewModelProvider);
-
-            return Column(
-              spacing: GSSpacing.$150,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                GSContainerButton.filled(
-                  padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
-                  isLoading: isLoading.value,
-                  onPressed: () => _onSubmit(
-                    ref,
-                    context,
-                    isLoading: isLoading,
-                    emailError: emailError,
-                    passwordError: passwordError,
-                  ),
-                  text: 'Se connecter',
-                  enabled: notifier.isFormValid,
-                  gradient: GSColorTokens.primaryGradientHorizontal,
-                  radius: GSRadius.l,
-                ),
-              ],
-            );
-          },
+        GSContainerButton.filled(
+          padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
+          isLoading: controllers.isLoading.value,
+          onPressed: () => SignInHandlers.onSubmit(ref, context, controllers),
+          text: 'Se connecter',
+          enabled: notifier.isFormValid,
+          gradient: GSColorTokens.primaryGradientHorizontal,
+          radius: GSRadius.l,
         ),
+        GSSpacing.$300.toInt().toHeight,
+        _SignupLink(onClick: () => const SignUpRouteData().go(context)),
       ],
     );
-  }
-
-  Future<void> _onSubmit(
-    WidgetRef ref,
-    BuildContext context, {
-    required ValueNotifier<bool> isLoading,
-    required ValueNotifier<String?> emailError,
-    required ValueNotifier<String?> passwordError,
-  }) async {
-    if (isLoading.value) {
-      return;
-    }
-    isLoading.value = true;
-    FocusScope.of(context).requestFocus(FocusNode());
-
-    // Reset errors
-    emailError.clear();
-    passwordError.clear();
-
-    try {
-      // await ref
-      //     .read(authenticationViewModelProvider.notifier)
-      //     .signIn(mail: signInForm.email, password: signInForm.password);
-
-      const HomeRouteData().go(context);
-
-      isLoading.value = false;
-      return;
-    } on Exception catch (error) {
-      if (!context.mounted) return;
-      GsLogger().e(error);
-
-      if (error is WrongEmailOrPasswordException) {
-        passwordError.value = 'Email ou mot de passe incorrect.';
-        emailError.value = ' ';
-      } else {
-        showTopSnackBar(
-          Overlay.of(context),
-          snackBarPosition: SnackBarPosition.bottom,
-          CustomSnackBar.error(message: 'Veuillez réessayer plus tard.'),
-        );
-      }
-    } finally {
-      isLoading.value = false;
-    }
   }
 }
 
@@ -215,6 +105,40 @@ class _ForgotPasswordLink extends StatelessWidget {
             fontWeight: FontWeight.w400,
           ),
           recognizer: TapGestureRecognizer()..onTap = onClick,
+        ),
+      ),
+    );
+  }
+}
+
+class _SignupLink extends StatelessWidget {
+  const _SignupLink({required this.onClick});
+
+  final VoidCallback onClick;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: RichText(
+        textAlign: TextAlign.center,
+        text: TextSpan(
+          text: 'Vous n’avez pas de compte ? ',
+          style: context.bodyAccentSmall.copyWith(
+            color: GSColors.neutral900,
+            fontWeight: FontWeight.w400,
+          ),
+          children: [
+            TextSpan(
+              text: 'Créer un compte',
+              style: context.bodyAccentSmall.copyWith(
+                color: GSColors.neutral900,
+                fontWeight: FontWeight.bold,
+                decoration: TextDecoration.underline,
+              ),
+              recognizer: TapGestureRecognizer()..onTap = onClick,
+            ),
+          ],
         ),
       ),
     );

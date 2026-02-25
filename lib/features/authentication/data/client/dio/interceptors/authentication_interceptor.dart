@@ -1,11 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-
-import 'package:geo_spots/core/utils/extensions/string_ext.dart';
 
 const _kAuthorizationHeader = 'Authorization';
 const _kContentTypeHeader = 'Content-Type';
@@ -21,13 +20,18 @@ class AuthenticationInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final authUserRecord = await ref
+    final tokenResult = await ref
         .read(authenticationLocalDatasourceProvider)
         .getAuthUserToken();
 
+    final authUserToken = switch (tokenResult) {
+      Ok(:final value) => value,
+      Err() => null,
+    };
+
     GsLogger().d('**** request: ${options.path}');
-    if (authUserRecord != null) {
-      options.headers[_kAuthorizationHeader] = 'Bearer $authUserRecord';
+    if (authUserToken != null) {
+      options.headers[_kAuthorizationHeader] = 'Bearer $authUserToken';
 
       if (options.data is! FormData) {
         options.headers[_kContentTypeHeader] = 'application/json';
@@ -46,15 +50,20 @@ class AuthenticationInterceptor extends Interceptor {
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     GsLogger().d(err.response);
     if (err.response?.statusCode == 401) {
-      final authUserRecord = await ref
+      final tokenResult = await ref
           .read(authenticationLocalDatasourceProvider)
           .getAuthUserToken();
-      if (!authUserRecord.isNullOrEmpty) {
+
+      final authUserToken = switch (tokenResult) {
+        Ok(:final value) => value,
+        Err() => null,
+      };
+      if (authUserToken != null) {
         await ref
             .read(authenticationLocalDatasourceProvider)
             .setTokenValidity(false);
         ref
-            .read(authenticationNotifierProvider.notifier)
+            .read(authGuardProvider.notifier)
             .updateState(const AuthenticationStatus.unauthenticated(true));
       }
     }

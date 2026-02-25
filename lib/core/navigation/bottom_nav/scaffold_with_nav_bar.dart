@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/navigation/bottom_nav/utils/main_menu_extension.dart';
-import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
-import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,17 +13,7 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authenticationStatus = ref.watch(authenticationNotifierProvider);
-    final isAuthenticated =
-        authenticationStatus is AuthenticationStatusAuthenticated;
-    final visibleMenus = isAuthenticated
-        ? MainMenuKey.values
-        : const [
-            MainMenuKey.map,
-            MainMenuKey.collections,
-            MainMenuKey.profile,
-          ];
-    final selectedIndex = visibleMenus.indexWhere(
+    final selectedIndex = MainMenuKey.values.indexWhere(
       (key) => _branchIndexFor(key) == navigationShell.currentIndex,
     );
     final safeSelectedIndex = selectedIndex >= 0 ? selectedIndex : 0;
@@ -33,7 +21,7 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: GSColorTokens.backgroundPrimary,
       body: navigationShell,
-      bottomNavigationBar: visibleMenus.length >= 2
+      bottomNavigationBar: MainMenuKey.values.length >= 2
           ? Theme(
               data: Theme.of(context).copyWith(
                 splashColor: Colors.transparent,
@@ -53,10 +41,10 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
                     unselectedLabelStyle: context.captionDefault,
                     showUnselectedLabels: true,
                     iconSize: 24,
-                    items: visibleMenus
+                    items: MainMenuKey.values
                         .map((key) => key.toBottomNavItem(context))
                         .toList(),
-                    onTap: (index) => _goToLocation(visibleMenus[index]),
+                    onTap: (index) => _goToLocation(MainMenuKey.values[index]),
                   ),
                 ),
               ),
@@ -67,10 +55,9 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
 
   int _branchIndexFor(MainMenuKey key) {
     return switch (key) {
-      MainMenuKey.home => 0,
-      MainMenuKey.map => 1,
-      MainMenuKey.collections => 2,
-      MainMenuKey.profile => 3,
+      MainMenuKey.map => 0,
+      MainMenuKey.collections => 1,
+      MainMenuKey.profile => 2,
     };
   }
 

@@ -10,8 +10,5 @@ sealed class SignUpState with _$SignUpState {
     @Default('') String email,
     @Default('') String password,
     @Default('') String confirmPassword,
-    @Default(false) bool isLoading,
-    @Default(false) bool isPasswordVisible,
-    @Default(false) bool isConfirmPasswordVisible,
   }) = _SignUpState;
 }

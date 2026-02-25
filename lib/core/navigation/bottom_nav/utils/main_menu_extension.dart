@@ -8,7 +8,6 @@ import '../main_menu_key.dart';
 extension MainMenuExtension on MainMenuKey {
   String get path {
     return switch (this) {
-      MainMenuKey.home => RouteNames.home,
       MainMenuKey.map => RouteNames.map,
       MainMenuKey.collections => RouteNames.collections,
       MainMenuKey.profile => RouteNames.settings,
@@ -17,21 +16,6 @@ extension MainMenuExtension on MainMenuKey {
 
   BottomNavigationBarItem toBottomNavItem(BuildContext context) {
     return switch (this) {
-      MainMenuKey.home => BottomNavigationBarItem(
-        label: 'Home',
-        icon: GSIcons.icons.home.svg(
-          colorFilter: ColorFilter.mode(
-            GSColorTokens.navBarItemDefault,
-            BlendMode.srcIn,
-          ),
-        ),
-        activeIcon: GSIcons.icons.home.svg(
-          colorFilter: ColorFilter.mode(
-            GSColorTokens.navBarItemSelected,
-            BlendMode.srcIn,
-          ),
-        ),
-      ),
       MainMenuKey.map => BottomNavigationBarItem(
         label: 'Carte',
         icon: GSIcons.icons.map.svg(

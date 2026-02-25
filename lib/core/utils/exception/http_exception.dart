@@ -65,3 +65,28 @@ class ServiceUnavailableException extends HttpException {
   @override
   String toString() => 'ServiceUnavailableException: Service unavailable';
 }
+
+class ForbiddenException extends HttpException {
+  ForbiddenException() : super('Forbidden resource', 403);
+}
+
+class ConflictException extends HttpException {
+  ConflictException() : super('Conflict detected', 409);
+}
+
+class ValidationException extends HttpException {
+  ValidationException() : super('Validation error', 422);
+}
+
+class TooManyRequestsException extends HttpException {
+  TooManyRequestsException() : super('Too many requests', 429);
+}
+
+class BadGatewayException extends HttpException {
+  BadGatewayException() : super('Bad gateway', 502);
+}
+
+class GatewayTimeoutException extends HttpException {
+  GatewayTimeoutException() : super('Gateway timeout', 504);
+}
+

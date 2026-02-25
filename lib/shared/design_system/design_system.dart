@@ -51,6 +51,8 @@ export 'widgets/common/gs_page_transition.dart';
 export 'widgets/common/gs_scroll_sliver.dart';
 export 'widgets/common/gs_single_scroll.dart';
 
+export 'widgets/snackbar/snackbar.dart';
+
 
 export 'widgets/logo/logo_geo_spots.dart';
 export 'widgets/logo/logo_min.dart';

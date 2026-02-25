@@ -22,3 +22,12 @@ class ClientException extends AppException {
 class ServerException extends AppException {
   const ServerException([super.message]);
 }
+
+class ParsingException extends AppException {
+  const ParsingException([super.message]);
+}
+
+class UnknownException extends AppException {
+  const UnknownException([super.message]);
+}
+

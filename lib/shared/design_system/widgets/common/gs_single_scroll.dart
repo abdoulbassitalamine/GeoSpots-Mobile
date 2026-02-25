@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
 import '../../tokens/color_tokens.dart';
 
 class GSSingleScroll extends StatelessWidget {
@@ -35,9 +34,7 @@ class GSSingleScroll extends StatelessWidget {
               color: GSColorTokens.textInverse,
               backgroundColor: GSColorTokens.textAccent,
               onRefresh: () async {
-                if (await Vibration.hasVibrator()) {
-                  unawaited(Vibration.vibrate(duration: 50, amplitude: 50));
-                }
+                await HapticFeedback.lightImpact();
                 await onRefresh();
               },
               child: SingleChildScrollView(

@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:vibration/vibration.dart';
+import 'package:flutter/services.dart';
 import '../../tokens/color_tokens.dart';
 
 class GSScrollSliver extends StatefulWidget {
@@ -46,9 +45,7 @@ class _GSScrollSliverState extends State<GSScrollSliver> {
           color: GSColorTokens.textInverse,
           backgroundColor: GSColorTokens.textAccent,
           onRefresh: () async {
-            if (await Vibration.hasVibrator()) {
-              unawaited(Vibration.vibrate(duration: 50, amplitude: 50));
-            }
+            await HapticFeedback.lightImpact();
             await widget.onRefresh();
           },
           child: CustomScrollView(

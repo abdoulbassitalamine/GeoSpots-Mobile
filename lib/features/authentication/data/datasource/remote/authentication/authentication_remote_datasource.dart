@@ -1,24 +1,28 @@
 import 'dart:core';
 
 import 'package:geo_spots/core/network/dio_client.dart';
-import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/login_response_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/register_response_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/user_dto.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'authentication_remote_datasource_impl.dart';
 
-final authenticationRemoteDatasourceProvider =
-    Provider<IAuthenticationRemoteDatasource>(
-      (ref) => AuthenticationRemoteDatasourceImpl(
-        authenticationClient: ref.watch(dioClientProvider),
-      ),
+part 'authentication_remote_datasource.g.dart';
+
+@Riverpod(keepAlive: true)
+IAuthenticationRemoteDatasource authenticationRemoteDatasource(Ref ref) =>
+    AuthenticationRemoteDatasourceImpl(
+      authenticationClient: ref.watch(dioClientProvider),
     );
 
 abstract interface class IAuthenticationRemoteDatasource {
-  Future<String> signInWithEmailAndPassword({
+  Future<Result<LoginResponseDto>> signInWithEmailAndPassword({
     required String mail,
     required String password,
   });
 
-  Future<String?> signup({
+  Future<Result<RegisterResponseDto>> signup({
     required String firstName,
     required String lastName,
     required String mail,
@@ -26,13 +30,7 @@ abstract interface class IAuthenticationRemoteDatasource {
     required String passwordConfirmation,
   });
 
-  Future<void> logout();
+  Future<Result<void>> logout();
 
-  Future<UserEntity> getCurrentUser();
-
-  Future<String> updateUser(String user);
-
-  Future<String> checkTokenValidity();
-
-  Future<String> sendResetPasswordLink(String email);
+  Future<Result<UserDto>> getCurrentUser();
 }

@@ -50,7 +50,7 @@ class MapViewModel extends _$MapViewModel {
   }
 
   Future<List<PlaceEntity>> _loadPlacesForCurrentMode() async {
-    final authStatus = ref.read(authenticationNotifierProvider);
+    final authStatus = ref.read(authGuardProvider);
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
 
     if (isAuthenticated) {

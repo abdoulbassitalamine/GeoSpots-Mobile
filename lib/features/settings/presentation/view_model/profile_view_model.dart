@@ -48,7 +48,7 @@ class ProfileViewModel extends _$ProfileViewModel {
 
       // Code original (commenté pour l'instant)
       /*
-      final authState = ref.read(authenticationNotifierProvider);
+      final authState = ref.read(authGuardProvider);
       final user = authState.whenOrNull(authenticated: (user) => user);
 
       if (user == null) {
