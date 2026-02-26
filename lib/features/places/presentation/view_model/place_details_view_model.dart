@@ -18,8 +18,8 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
   Future<void> loadPlace(String placeId) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    final useCases = ref.read(placesUseCasesProvider);
-    final result = await useCases.getPlaceById(placeId);
+    final getPlaceById = ref.read(getPlaceByIdUseCaseProvider);
+    final result = await getPlaceById(placeId);
 
     switch (result) {
       case Ok(value: final remotePlace):
@@ -43,9 +43,8 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
   Future<void> deletePlace() async {
     if (state.place == null) return;
 
-    final result = await ref
-        .read(placesUseCasesProvider)
-        .deletePlace(state.place!.id);
+    final deletePlace = ref.read(deletePlaceUseCaseProvider);
+    final result = await deletePlace(state.place!.id);
 
     switch (result) {
       case Ok():
@@ -61,9 +60,8 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
       return;
     }
 
-    final result = await ref
-        .read(placesUseCasesProvider)
-        .sharePlace(id: place.id, canWrite: false);
+    final sharePlace = ref.read(sharePlaceUseCaseProvider);
+    final result = await sharePlace(id: place.id, canWrite: false);
 
     switch (result) {
       case Ok(value: final value):

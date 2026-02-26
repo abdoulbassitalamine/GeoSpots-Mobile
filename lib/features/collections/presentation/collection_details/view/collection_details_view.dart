@@ -57,13 +57,12 @@ class CollectionDetailsView extends HookConsumerWidget {
         state.sharedCollections.any((item) => item.id == collection.id);
     final effectiveSharedToken = activeSharedToken ?? tokenForCollection?.token;
     final effectiveRights = activeAccessRight ?? tokenForCollection?.rights;
+    final getCollectionPlaces = ref.read(getCollectionPlacesUseCaseProvider);
     final placesFuture = useMemoized(
-      () => ref
-          .read(collectionsUseCasesProvider)
-          .getCollectionPlaces(
-            collectionId: collection.id,
-            token: isSharedCollection ? effectiveSharedToken : null,
-          ),
+      () => getCollectionPlaces(
+        collectionId: collection.id,
+        token: isSharedCollection ? effectiveSharedToken : null,
+      ),
       [collection.id, isSharedCollection, effectiveSharedToken],
     );
     final placesSnapshot = useFuture(placesFuture);

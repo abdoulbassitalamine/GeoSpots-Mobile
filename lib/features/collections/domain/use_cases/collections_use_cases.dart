@@ -15,122 +15,195 @@ import '../repository/collections_repository.dart';
 part 'collections_use_cases.g.dart';
 
 @riverpod
-CollectionsUseCases collectionsUseCases(Ref ref) =>
-    CollectionsUseCases(ref: ref);
+Future<Result<List<CollectionEntity>>> Function() getOwnedCollectionsUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return () => _execute(repository.getOwnedCollections);
+}
 
-class CollectionsUseCases {
-  CollectionsUseCases({required this.ref});
+@riverpod
+Future<Result<List<CollectionEntity>>> Function() getSharedCollectionsUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return () => _execute(repository.getSharedCollections);
+}
 
-  final Ref ref;
-
-  CollectionsRepository get _repository =>
-      ref.read(collectionsRepositoryProvider);
-
-  Future<Result<List<CollectionEntity>>> getOwnedCollections() =>
-      _execute(() => _repository.getOwnedCollections());
-
-  Future<Result<List<CollectionEntity>>> getSharedCollections() =>
-      _execute(() => _repository.getSharedCollections());
-
-  Future<Result<List<PlaceEntity>>> getCollectionPlaces({
-    required String collectionId,
-    String? token,
-  }) => _execute(
-    () => _repository.getCollectionPlaces(
-      collectionId: collectionId,
-      token: token,
-    ),
+@riverpod
+Future<Result<List<PlaceEntity>>> Function({
+  required String collectionId,
+  String? token,
+})
+getCollectionPlacesUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({required String collectionId, String? token}) => _execute(
+    () => repository.getCollectionPlaces(collectionId: collectionId, token: token),
   );
+}
 
-  Future<Result<List<SharedAccessTokenEntity>>> getSharedAccessTokens() =>
-      _execute(() => _repository.getSharedAccessTokens());
+@riverpod
+Future<Result<List<SharedAccessTokenEntity>>> Function()
+getSharedAccessTokensUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return () => _execute(repository.getSharedAccessTokens);
+}
 
-  Future<Result<List<SharedAccessTokenEntity>>> getOwnedShareTokens() =>
-      _execute(() => _repository.getOwnedShareTokens());
+@riverpod
+Future<Result<List<SharedAccessTokenEntity>>> Function()
+getOwnedShareTokensUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return () => _execute(repository.getOwnedShareTokens);
+}
 
-  Future<Result<String>> exportCollection(
-    CollectionEntity collection,
-    ExportFormat format,
-  ) => _execute(
-    () => _repository.exportCollection(collection: collection, format: format),
+@riverpod
+Future<Result<String>> Function(CollectionEntity collection, ExportFormat format)
+exportCollectionRepositoryUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return (collection, format) => _execute(
+    () => repository.exportCollection(collection: collection, format: format),
   );
+}
 
-  Future<Result<CollectionImportResultEntity>> importCollectionFile({
+@riverpod
+Future<Result<CollectionImportResultEntity>> Function({
+  required String filePath,
+  required ExportFormat format,
+  List<String> defaultTags,
+  bool skipDuplicates,
+})
+importCollectionFileRepositoryUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({
     required String filePath,
     required ExportFormat format,
     List<String> defaultTags = const <String>[],
     bool skipDuplicates = true,
   }) => _execute(
-    () => _repository.importCollectionFile(
+    () => repository.importCollectionFile(
       filePath: filePath,
       format: format,
       defaultTags: defaultTags,
       skipDuplicates: skipDuplicates,
     ),
   );
+}
 
-  Future<Result<CollectionImportResultEntity>> importRawCollectionContent({
+@riverpod
+Future<Result<CollectionImportResultEntity>> Function({
+  required String content,
+  required ExportFormat format,
+  List<String> defaultTags,
+  bool skipDuplicates,
+})
+importRawCollectionContentRepositoryUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({
     required String content,
     required ExportFormat format,
     List<String> defaultTags = const <String>[],
     bool skipDuplicates = true,
   }) => _execute(
-    () => _repository.importRawCollectionContent(
+    () => repository.importRawCollectionContent(
       content: content,
       format: format,
       defaultTags: defaultTags,
       skipDuplicates: skipDuplicates,
     ),
   );
+}
 
-  Future<Result<CollectionShareResultEntity>> shareCollection({
+@riverpod
+Future<Result<CollectionShareResultEntity>> Function({
+  required CollectionEntity collection,
+  required ShareAccessRight rights,
+  DateTime? expiresAt,
+  String? label,
+})
+shareCollectionUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({
     required CollectionEntity collection,
     required ShareAccessRight rights,
     DateTime? expiresAt,
     String? label,
   }) => _execute(
-    () => _repository.shareCollection(
+    () => repository.shareCollection(
       collection: collection,
       rights: rights,
       expiresAt: expiresAt,
       label: label,
     ),
   );
+}
 
-  Future<Result<SharedAccessTokenEntity>> importSharedAccess({
-    required String baseUrl,
-    required String token,
-  }) => _execute(
-    () => _repository.importSharedAccess(baseUrl: baseUrl, token: token),
-  );
+@riverpod
+Future<Result<SharedAccessTokenEntity>> Function({
+  required String baseUrl,
+  required String token,
+})
+importSharedAccessUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({required String baseUrl, required String token}) =>
+      _execute(() => repository.importSharedAccess(baseUrl: baseUrl, token: token));
+}
 
-  Future<Result<void>> revokeSharedAccess(String token) =>
-      _execute(() => _repository.revokeSharedAccess(token));
+@riverpod
+Future<Result<void>> Function(String token) revokeSharedAccessUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return (token) => _execute(() => repository.revokeSharedAccess(token));
+}
 
-  Future<Result<void>> revokeOwnedShare(String token) =>
-      _execute(() => _repository.revokeOwnedShare(token));
+@riverpod
+Future<Result<void>> Function(String token) revokeOwnedShareUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return (token) => _execute(() => repository.revokeOwnedShare(token));
+}
 
-  Future<Result<SharedAccessTokenEntity?>> getTokenForResource({
+@riverpod
+Future<Result<SharedAccessTokenEntity?>> Function({
+  required ShareResourceType resourceType,
+  required String resourceId,
+})
+getTokenForResourceUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({
     required ShareResourceType resourceType,
     required String resourceId,
   }) => _execute(
-    () => _repository.getTokenForResource(
+    () => repository.getTokenForResource(
       resourceType: resourceType,
       resourceId: resourceId,
     ),
   );
+}
 
-  Future<Result<List<SharedAccessTokenEntity>>> getTokens() =>
-      _execute(() => _repository.getTokens());
+@riverpod
+Future<Result<List<SharedAccessTokenEntity>>> Function() getTokensUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return () => _execute(repository.getTokens);
+}
 
-  Future<Result<SharedAccessTokenEntity>> createToken({
+@riverpod
+Future<Result<SharedAccessTokenEntity>> Function({
+  required ShareResourceType resourceType,
+  required String resourceId,
+  required ShareAccessRight rights,
+  DateTime? expiresAt,
+  String? label,
+})
+createTokenUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({
     required ShareResourceType resourceType,
     required String resourceId,
     required ShareAccessRight rights,
     DateTime? expiresAt,
     String? label,
   }) => _execute(
-    () => _repository.createToken(
+    () => repository.createToken(
       resourceType: resourceType,
       resourceId: resourceId,
       rights: rights,
@@ -138,40 +211,55 @@ class CollectionsUseCases {
       label: label,
     ),
   );
+}
 
-  Future<Result<SharedAccessTokenEntity?>> getTokenById(String id) =>
-      _execute(() => _repository.getTokenById(id));
+@riverpod
+Future<Result<SharedAccessTokenEntity?>> Function(String id) getTokenByIdUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return (id) => _execute(() => repository.getTokenById(id));
+}
 
-  Future<Result<SharedAccessTokenEntity?>> updateTokenExpiration({
-    required String id,
-    required DateTime expiration,
-  }) => _execute(
-    () => _repository.updateTokenExpiration(id: id, expiration: expiration),
-  );
+@riverpod
+Future<Result<SharedAccessTokenEntity?>> Function({
+  required String id,
+  required DateTime expiration,
+})
+updateTokenExpirationUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return ({required String id, required DateTime expiration}) =>
+      _execute(() => repository.updateTokenExpiration(id: id, expiration: expiration));
+}
 
-  Future<Result<void>> revokeTokenById(String id) =>
-      _execute(() => _repository.revokeTokenById(id));
+@riverpod
+Future<Result<void>> Function(String id) revokeTokenByIdUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return (id) => _execute(() => repository.revokeTokenById(id));
+}
 
-  Future<Result<TokenDiscoverResultEntity>> discoverToken(String token) =>
-      _execute(() => _repository.discoverToken(token));
+@riverpod
+Future<Result<TokenDiscoverResultEntity>> Function(String token)
+discoverTokenUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return (token) => _execute(() => repository.discoverToken(token));
+}
 
-  String buildSharedUrl({
-    required String baseUrl,
-    required String token,
-    required ShareAccessRight rights,
-  }) {
-    return _repository.buildSharedUrl(
-      baseUrl: baseUrl,
-      token: token,
-      rights: rights,
-    );
-  }
+@riverpod
+String Function({
+  required String baseUrl,
+  required String token,
+  required ShareAccessRight rights,
+})
+buildSharedUrlUseCase(Ref ref) {
+  final repository = ref.read(collectionsRepositoryProvider);
+  return repository.buildSharedUrl;
+}
 
-  Future<Result<T>> _execute<T>(Future<T> Function() action) async {
-    try {
-      return Ok(await action());
-    } on Exception catch (e, st) {
-      return Err(e, st);
-    }
+Future<Result<T>> _execute<T>(Future<T> Function() action) async {
+  try {
+    return Ok(await action());
+  } on Exception catch (e, st) {
+    return Err(e, st);
   }
 }

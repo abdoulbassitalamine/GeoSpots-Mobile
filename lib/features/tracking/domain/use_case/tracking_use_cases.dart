@@ -9,56 +9,82 @@ import '../repository/tracking_repository.dart';
 part 'tracking_use_cases.g.dart';
 
 @riverpod
-TrackingUseCases trackingUseCases(Ref ref) => TrackingUseCases(ref: ref);
-
-class TrackingUseCases {
-  TrackingUseCases({required this.ref});
-
-  final Ref ref;
-
-  ITrackingRepository get _repository => ref.read(trackingRepositoryProvider);
-
-  Future<Result<void>> updatePosition({
+Future<Result<void>> Function({
+  required double latitude,
+  required double longitude,
+  required DateTime timestamp,
+})
+updatePositionUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return ({
     required double latitude,
     required double longitude,
     required DateTime timestamp,
   }) => _execute(
-    () => _repository.updatePosition(
+    () => repository.updatePosition(
       latitude: latitude,
       longitude: longitude,
       timestamp: timestamp,
     ),
   );
+}
 
-  Future<Result<CurrentLocationEntity?>> getCurrentLocation() =>
-      _execute(() => _repository.getCurrentLocation());
+@riverpod
+Future<Result<CurrentLocationEntity?>> Function() getCurrentLocationUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.getCurrentLocation);
+}
 
-  Future<Result<void>> deleteCurrentLocation() =>
-      _execute(() => _repository.deleteCurrentLocation());
+@riverpod
+Future<Result<void>> Function() deleteCurrentLocationUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.deleteCurrentLocation);
+}
 
-  Future<Result<LocationShareSessionEntity>> startLocationSharing() =>
-      _execute(() => _repository.startLocationSharing());
+@riverpod
+Future<Result<LocationShareSessionEntity>> Function()
+startLocationSharingUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.startLocationSharing);
+}
 
-  Future<Result<void>> stopLocationSharing() =>
-      _execute(() => _repository.stopLocationSharing());
+@riverpod
+Future<Result<void>> Function() stopLocationSharingUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.stopLocationSharing);
+}
 
-  Future<Result<PublicLocationEntity?>> getPublicLocation(String shareToken) =>
-      _execute(() => _repository.getPublicLocation(shareToken));
+@riverpod
+Future<Result<PublicLocationEntity?>> Function(String shareToken)
+getPublicLocationUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return (shareToken) => _execute(() => repository.getPublicLocation(shareToken));
+}
 
-  Future<Result<void>> enableTracking() =>
-      _execute(() => _repository.enableTracking());
+@riverpod
+Future<Result<void>> Function() enableTrackingUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.enableTracking);
+}
 
-  Future<Result<void>> disableTracking() =>
-      _execute(() => _repository.disableTracking());
+@riverpod
+Future<Result<void>> Function() disableTrackingUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.disableTracking);
+}
 
-  Future<Result<bool>> isTrackingEnabled() =>
-      _execute(() => _repository.isTrackingEnabled());
+@riverpod
+Future<Result<bool>> Function() isTrackingEnabledUseCase(Ref ref) {
+  final repository = ref.read(trackingRepositoryProvider);
+  return () => _execute(repository.isTrackingEnabled);
+}
 
-  Future<Result<T>> _execute<T>(Future<T> Function() action) async {
-    try {
-      return Ok(await action());
-    } on Exception catch (e, st) {
-      return Err(e, st);
-    }
+Future<Result<T>> _execute<T>(Future<T> Function() action) async {
+  try {
+    return Ok(await action());
+  } on Exception catch (e, st) {
+    return Err(e, st);
   }
 }

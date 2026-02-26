@@ -58,14 +58,16 @@ class MapViewModel extends _$MapViewModel {
   Future<Result<List<PlaceEntity>>> _loadPlacesForCurrentMode() async {
     final authStatus = ref.read(authGuardProvider);
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
+    final getAllPlaces = ref.read(getAllPlacesUseCaseProvider);
+    final getSharedCollections = ref.read(getSharedCollectionsUseCaseProvider);
+    final getSharedAccessTokens = ref.read(getSharedAccessTokensUseCaseProvider);
+    final getCollectionPlaces = ref.read(getCollectionPlacesUseCaseProvider);
 
     if (isAuthenticated) {
-      return ref.read(placesUseCasesProvider).getAllPlaces();
+      return getAllPlaces();
     }
 
-    final sharedCollectionsResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getSharedCollections();
+    final sharedCollectionsResult = await getSharedCollections();
     late final List<CollectionEntity> sharedCollections;
     switch (sharedCollectionsResult) {
       case Ok(:final value):
@@ -74,9 +76,7 @@ class MapViewModel extends _$MapViewModel {
         return Err(error, stackTrace);
     }
 
-    final sharedTokensResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getSharedAccessTokens();
+    final sharedTokensResult = await getSharedAccessTokens();
     late final List<SharedAccessTokenEntity> sharedTokens;
     switch (sharedTokensResult) {
       case Ok(:final value):
@@ -98,9 +98,7 @@ class MapViewModel extends _$MapViewModel {
 
       final placesResults = await Future.wait(
         sharedCollections.map(
-          (collection) => ref
-              .read(collectionsUseCasesProvider)
-              .getCollectionPlaces(
+          (collection) => getCollectionPlaces(
                 collectionId: collection.id,
                 token: sharedTokenByCollectionId[collection.id],
               ),

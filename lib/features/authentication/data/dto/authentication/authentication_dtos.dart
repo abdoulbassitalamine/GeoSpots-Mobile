@@ -7,3 +7,4 @@ export 'register_request_dto.dart';
 export 'register_response_dto.dart';
 export 'update_user_request_dto.dart';
 export 'user_dto.dart';
+export 'user_stats_dto.dart';

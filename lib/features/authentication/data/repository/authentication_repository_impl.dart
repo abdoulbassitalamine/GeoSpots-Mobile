@@ -3,6 +3,7 @@ import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
 import 'package:geo_spots/features/authentication/data/datasource/remote/authentication/authentication_remote_datasource.dart';
 import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
+import 'package:geo_spots/features/authentication/domain/entity/user/user_stats_entity.dart';
 import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
 
 class AuthenticationRepositoryImpl implements IAuthenticationRepository {
@@ -40,6 +41,15 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
     final result = await _authenticationRemoteDatasource.getCurrentUser();
     return switch (result) {
       Ok(:final value) => Ok(UserEntity.fromDto(value)),
+      Err(:final error, :final stackTrace) => Err(error, stackTrace),
+    };
+  }
+
+  @override
+  Future<Result<UserStatsEntity>> meStats() async {
+    final result = await _authenticationRemoteDatasource.getCurrentUserStats();
+    return switch (result) {
+      Ok(:final value) => Ok(UserStatsEntity.fromDto(value)),
       Err(:final error, :final stackTrace) => Err(error, stackTrace),
     };
   }

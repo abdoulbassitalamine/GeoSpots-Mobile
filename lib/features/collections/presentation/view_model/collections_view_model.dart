@@ -37,17 +37,20 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final useCases = ref.read(collectionsUseCasesProvider);
+      final getSharedAccessTokens = ref.read(getSharedAccessTokensUseCaseProvider);
+      final getSharedCollections = ref.read(getSharedCollectionsUseCaseProvider);
+      final getOwnedCollections = ref.read(getOwnedCollectionsUseCaseProvider);
+      final getOwnedShareTokens = ref.read(getOwnedShareTokensUseCaseProvider);
       final authStatus = ref.read(authGuardProvider);
       final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
 
-      final sharedTokensResult = await useCases.getSharedAccessTokens();
-      final sharedCollectionsResult = await useCases.getSharedCollections();
+      final sharedTokensResult = await getSharedAccessTokens();
+      final sharedCollectionsResult = await getSharedCollections();
       final ownedCollectionsResult = isAuthenticated
-          ? await useCases.getOwnedCollections()
+          ? await getOwnedCollections()
           : const Ok<List<CollectionEntity>>(<CollectionEntity>[]);
       final ownedShareTokensResult = isAuthenticated
-          ? await useCases.getOwnedShareTokens()
+          ? await getOwnedShareTokens()
           : const Ok<List<SharedAccessTokenEntity>>(
               <SharedAccessTokenEntity>[],
             );
@@ -209,9 +212,13 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     CollectionEntity collection,
     ShareAccessRight accessRight,
   ) async {
+    final shareCollection = ref.read(shareCollectionUseCaseProvider);
+    final getOwnedShareTokens = ref.read(getOwnedShareTokensUseCaseProvider);
     final result = await ref
-        .read(collectionsUseCasesProvider)
-        .shareCollection(collection: collection, rights: accessRight);
+        .read(shareCollectionUseCaseProvider)(
+          collection: collection,
+          rights: accessRight,
+        );
 
     switch (result) {
       case Ok(value: final value):
@@ -227,8 +234,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         );
 
         final ownedShareTokensResult = await ref
-            .read(collectionsUseCasesProvider)
-            .getOwnedShareTokens();
+            .read(getOwnedShareTokensUseCaseProvider)();
         switch (ownedShareTokensResult) {
           case Ok(value: final ownedShareTokens):
             state = state.copyWith(
@@ -251,9 +257,14 @@ class CollectionsViewModel extends _$CollectionsViewModel {
   }) async {
     state = state.copyWith(isImportingSharedAccess: true, error: null);
 
-    final importResult = await ref
-        .read(collectionsUseCasesProvider)
-        .importSharedAccess(baseUrl: baseUrl, token: token);
+    final importSharedAccess = ref.read(importSharedAccessUseCaseProvider);
+    final getSharedAccessTokens = ref.read(getSharedAccessTokensUseCaseProvider);
+    final getSharedCollections = ref.read(getSharedCollectionsUseCaseProvider);
+
+    final importResult = await importSharedAccess(
+      baseUrl: baseUrl,
+      token: token,
+    );
     if (importResult is Err) {
       state = state.copyWith(
         isImportingSharedAccess: false,
@@ -262,12 +273,8 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       return false;
     }
 
-    final sharedTokensResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getSharedAccessTokens();
-    final sharedCollectionsResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getSharedCollections();
+    final sharedTokensResult = await getSharedAccessTokens();
+    final sharedCollectionsResult = await getSharedCollections();
     if (sharedTokensResult is Err || sharedCollectionsResult is Err) {
       state = state.copyWith(
         isImportingSharedAccess: false,
@@ -289,9 +296,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   Future<void> revokeSharedAccess(String token) async {
     state = state.copyWith(isRevokingSharedAccess: true, error: null);
-    final revokeResult = await ref
-        .read(collectionsUseCasesProvider)
-        .revokeSharedAccess(token);
+    final revokeSharedAccess = ref.read(revokeSharedAccessUseCaseProvider);
+    final getSharedAccessTokens = ref.read(getSharedAccessTokensUseCaseProvider);
+    final getSharedCollections = ref.read(getSharedCollectionsUseCaseProvider);
+    final revokeResult = await revokeSharedAccess(token);
     if (revokeResult is Err) {
       state = state.copyWith(
         isRevokingSharedAccess: false,
@@ -300,12 +308,8 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       return;
     }
 
-    final sharedTokensResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getSharedAccessTokens();
-    final sharedCollectionsResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getSharedCollections();
+    final sharedTokensResult = await getSharedAccessTokens();
+    final sharedCollectionsResult = await getSharedCollections();
     if (sharedTokensResult is Err || sharedCollectionsResult is Err) {
       state = state.copyWith(
         isRevokingSharedAccess: false,
@@ -328,9 +332,9 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   Future<void> revokeOwnedShare(String token) async {
     state = state.copyWith(isRevokingSharedAccess: true, error: null);
-    final revokeResult = await ref
-        .read(collectionsUseCasesProvider)
-        .revokeOwnedShare(token);
+    final revokeOwnedShare = ref.read(revokeOwnedShareUseCaseProvider);
+    final getOwnedShareTokens = ref.read(getOwnedShareTokensUseCaseProvider);
+    final revokeResult = await revokeOwnedShare(token);
     if (revokeResult is Err) {
       state = state.copyWith(
         isRevokingSharedAccess: false,
@@ -339,9 +343,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       return;
     }
 
-    final ownedShareTokensResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getOwnedShareTokens();
+    final ownedShareTokensResult = await getOwnedShareTokens();
     switch (ownedShareTokensResult) {
       case Ok(value: final ownedShareTokens):
         state = state.copyWith(
@@ -385,12 +387,11 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       return;
     }
 
-    final tokenResult = await ref
-        .read(collectionsUseCasesProvider)
-        .getTokenForResource(
-          resourceType: ShareResourceType.collection,
-          resourceId: collection.id,
-        );
+    final getTokenForResource = ref.read(getTokenForResourceUseCaseProvider);
+    final tokenResult = await getTokenForResource(
+      resourceType: ShareResourceType.collection,
+      resourceId: collection.id,
+    );
     switch (tokenResult) {
       case Ok(value: final token):
         ref.read(activeSharedAccessTokenProvider.notifier).token = token?.token;

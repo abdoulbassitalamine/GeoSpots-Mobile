@@ -27,6 +27,16 @@ class CollectionsLocalDatasourceImpl implements ICollectionsLocalDatasource {
     return _upsertToken(kSecureStorageSharedAccessTokensKey, token);
   }
 
+  @override
+  Future<void> removeSharedAccessToken(String token) {
+    return _removeToken(kSecureStorageSharedAccessTokensKey, token);
+  }
+
+  @override
+  Future<void> clearSharedAccessTokens() {
+    return _secureStorage.delete(key: kSecureStorageSharedAccessTokensKey);
+  }
+
   Future<List<SharedAccessTokenEntity>> _readTokens(String key) async {
     final raw = await _secureStorage.read(key: key);
     if (raw == null || raw.trim().isEmpty) {
@@ -61,6 +71,12 @@ class CollectionsLocalDatasourceImpl implements ICollectionsLocalDatasource {
     } else {
       existing[index] = token;
     }
+    await _writeTokens(key, existing);
+  }
+
+  Future<void> _removeToken(String key, String token) async {
+    final existing = await _readTokens(key);
+    existing.removeWhere((item) => item.token == token);
     await _writeTokens(key, existing);
   }
 }

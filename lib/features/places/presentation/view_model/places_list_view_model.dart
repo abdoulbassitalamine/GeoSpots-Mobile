@@ -20,10 +20,11 @@ class PlacesListViewModel extends _$PlacesListViewModel {
       errorMessage: null,
     );
 
-    final useCases = ref.read(placesUseCasesProvider);
+    final getAllPlaces = ref.read(getAllPlacesUseCaseProvider);
+    final getPlacesByTag = ref.read(getPlacesByTagUseCaseProvider);
     final result = tag != null
-        ? await useCases.getPlacesByTag(tag)
-        : await useCases.getAllPlaces();
+        ? await getPlacesByTag(tag)
+        : await getAllPlaces();
 
     switch (result) {
       case Ok(value: final places):
@@ -39,8 +40,8 @@ class PlacesListViewModel extends _$PlacesListViewModel {
   Future<void> searchPlaces(String query) async {
     state = state.copyWith(searchQuery: query, isLoading: true);
 
-    final useCases = ref.read(placesUseCasesProvider);
-    final result = await useCases.searchPlaces(query);
+    final searchPlaces = ref.read(searchPlacesUseCaseProvider);
+    final result = await searchPlaces(query);
 
     switch (result) {
       case Ok(value: final places):

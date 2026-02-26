@@ -16,4 +16,8 @@ abstract interface class ICollectionsLocalDatasource {
   Future<void> saveSharedAccessTokens(List<SharedAccessTokenEntity> tokens);
 
   Future<void> upsertSharedAccessToken(SharedAccessTokenEntity token);
+
+  Future<void> removeSharedAccessToken(String token);
+
+  Future<void> clearSharedAccessTokens();
 }

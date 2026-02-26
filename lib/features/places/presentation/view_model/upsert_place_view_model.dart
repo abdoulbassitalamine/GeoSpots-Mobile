@@ -47,7 +47,8 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   Future<void> _loadPlace(String placeId) async {
     state = state.copyWith(isLoading: true);
 
-    final result = await ref.read(placesUseCasesProvider).getPlaceById(placeId);
+    final getPlaceById = ref.read(getPlaceByIdUseCaseProvider);
+    final result = await getPlaceById(placeId);
     switch (result) {
       case Ok(value: final place):
         if (place == null) {
@@ -209,7 +210,10 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     }
 
     state = state.copyWith(isSaving: true, errorMessage: null);
-    final useCases = ref.read(placesUseCasesProvider);
+    final updatePlace = ref.read(updatePlaceUseCaseProvider);
+    final createPlace = ref.read(createPlaceUseCaseProvider);
+    final uploadPlaceImage = ref.read(uploadPlaceImageUseCaseProvider);
+    final deletePlaceImage = ref.read(deletePlaceImageUseCaseProvider);
     final latitude = state.position!.latitude;
     final longitude = state.position!.longitude;
     final payload = PlaceUpsertPayload(
@@ -223,8 +227,8 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     final imagePath = state.imageUrl;
 
     final upsertResult = state.isEditMode
-        ? await useCases.updatePlace(state.placeId!, payload)
-        : await useCases.createPlace(payload);
+        ? await updatePlace(state.placeId!, payload)
+        : await createPlace(payload);
 
     String persistedPlaceId;
     switch (upsertResult) {
@@ -242,7 +246,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     }
 
     if (_isLocalImagePath(imagePath)) {
-      final imageResult = await useCases.uploadPlaceImage(
+      final imageResult = await uploadPlaceImage(
         id: persistedPlaceId,
         imagePath: imagePath!,
       );
@@ -260,9 +264,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     } else if (state.isEditMode &&
         _initialImageUrl != null &&
         imagePath == null) {
-      final deleteImageResult = await useCases.deletePlaceImage(
-        persistedPlaceId,
-      );
+      final deleteImageResult = await deletePlaceImage(persistedPlaceId);
       switch (deleteImageResult) {
         case Ok():
           break;

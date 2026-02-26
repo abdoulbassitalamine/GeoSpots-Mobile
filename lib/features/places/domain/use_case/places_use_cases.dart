@@ -10,109 +10,179 @@ import '../repository/places_repository.dart';
 part 'places_use_cases.g.dart';
 
 @riverpod
-PlacesUseCases placesUseCases(Ref ref) => PlacesUseCases(ref: ref);
+Future<Result<List<PlaceEntity>>> Function() getAllPlacesUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return () => _execute(repository.getAllPlaces);
+}
 
-class PlacesUseCases {
-  PlacesUseCases({required this.ref});
+@riverpod
+Future<Result<List<PlaceEntity>>> Function(String tag) getPlacesByTagUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (tag) => _execute(() => repository.getPlacesByTag(tag));
+}
 
-  final Ref ref;
+@riverpod
+Future<Result<List<PlaceEntity>>> Function(String query) searchPlacesUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (query) => _execute(
+    () => repository.searchPlaces(
+      PlaceSearchParams(query: query.trim().isEmpty ? null : query.trim()),
+    ),
+  );
+}
 
-  IPlacesRepository get _repository => ref.read(placesRepositoryProvider);
+@riverpod
+Future<Result<List<PlaceEntity>>> Function(PlaceSearchParams params)
+searchWithParamsUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (params) => _execute(() => repository.searchPlaces(params));
+}
 
-  Future<Result<List<PlaceEntity>>> getAllPlaces() =>
-      _execute(() => _repository.getAllPlaces());
-
-  Future<Result<List<PlaceEntity>>> getPlacesByTag(String tag) =>
-      _execute(() => _repository.getPlacesByTag(tag));
-
-  Future<Result<List<PlaceEntity>>> searchPlaces(String query) {
-    return _execute(
-      () => _repository.searchPlaces(
-        PlaceSearchParams(query: query.trim().isEmpty ? null : query.trim()),
-      ),
-    );
-  }
-
-  Future<Result<List<PlaceEntity>>> searchWithParams(
-    PlaceSearchParams params,
-  ) => _execute(() => _repository.searchPlaces(params));
-
-  Future<Result<List<PlaceEntity>>> getNearbyPlaces({
+@riverpod
+Future<Result<List<PlaceEntity>>> Function({
+  required double latitude,
+  required double longitude,
+  double radiusKm,
+  String? tag,
+})
+getNearbyPlacesUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return ({
     required double latitude,
     required double longitude,
     double radiusKm = 5,
     String? tag,
-  }) {
-    return _execute(
-      () => _repository.getNearbyPlaces(
-        PlaceSearchParams(
-          latitude: latitude,
-          longitude: longitude,
-          radiusKm: radiusKm,
-          tag: tag,
-        ),
+  }) => _execute(
+    () => repository.getNearbyPlaces(
+      PlaceSearchParams(
+        latitude: latitude,
+        longitude: longitude,
+        radiusKm: radiusKm,
+        tag: tag,
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Future<Result<List<String>>> getPlaceTags() =>
-      _execute(() => _repository.getPlaceTags());
+@riverpod
+Future<Result<List<String>>> Function() getPlaceTagsUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return () => _execute(repository.getPlaceTags);
+}
 
-  Future<Result<PlaceEntity?>> getPlaceById(String id, {String? token}) =>
-      _execute(() => _repository.getPlaceById(id, token: token));
+@riverpod
+Future<Result<PlaceEntity?>> Function(String id, {String? token})
+getPlaceByIdUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id, {String? token}) =>
+      _execute(() => repository.getPlaceById(id, token: token));
+}
 
-  Future<Result<PlaceEntity>> createPlace(PlaceUpsertPayload payload) =>
-      _execute(() => _repository.createPlace(payload));
+@riverpod
+Future<Result<PlaceEntity>> Function(PlaceUpsertPayload payload)
+createPlaceUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (payload) => _execute(() => repository.createPlace(payload));
+}
 
-  Future<Result<PlaceEntity>> updatePlace(
-    String id,
-    PlaceUpsertPayload payload,
-  ) => _execute(() => _repository.updatePlace(id, payload));
+@riverpod
+Future<Result<PlaceEntity>> Function(String id, PlaceUpsertPayload payload)
+updatePlaceUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id, payload) => _execute(() => repository.updatePlace(id, payload));
+}
 
-  Future<Result<void>> deletePlace(String id) =>
-      _execute(() => _repository.deletePlace(id));
+@riverpod
+Future<Result<void>> Function(String id) deletePlaceUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id) => _execute(() => repository.deletePlace(id));
+}
 
-  Future<Result<PlaceEntity>> addTag(String id, String tag) =>
-      _execute(() => _repository.addTag(id, tag));
+@riverpod
+Future<Result<PlaceEntity>> Function(String id, String tag) addPlaceTagUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id, tag) => _execute(() => repository.addTag(id, tag));
+}
 
-  Future<Result<PlaceEntity>> removeTag(String id, String tag) =>
-      _execute(() => _repository.removeTag(id, tag));
+@riverpod
+Future<Result<PlaceEntity>> Function(
+  String id,
+  String tag,
+)
+removePlaceTagUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id, tag) => _execute(() => repository.removeTag(id, tag));
+}
 
-  Future<Result<PlaceShareResultEntity>> sharePlace({
+@riverpod
+Future<Result<PlaceShareResultEntity>> Function({
+  required String id,
+  required bool canWrite,
+  DateTime? expiresAt,
+  String? label,
+})
+sharePlaceUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return ({
     required String id,
     required bool canWrite,
     DateTime? expiresAt,
     String? label,
-  }) {
-    return _execute(
-      () => _repository.sharePlace(
-        id: id,
-        permission: canWrite ? 'WRITE' : 'READ',
-        expiresAt: expiresAt,
-        label: label,
-      ),
-    );
-  }
+  }) => _execute(
+    () => repository.sharePlace(
+      id: id,
+      permission: canWrite ? 'WRITE' : 'READ',
+      expiresAt: expiresAt,
+      label: label,
+    ),
+  );
+}
 
-  Future<Result<PlaceEntity>> uploadPlaceImage({
+@riverpod
+Future<Result<PlaceEntity>> Function({
+  required String id,
+  required String imagePath,
+})
+uploadPlaceImageUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return ({
     required String id,
     required String imagePath,
-  }) => _execute(() => _repository.uploadPlaceImage(id, imagePath));
+  }) => _execute(() => repository.uploadPlaceImage(id, imagePath));
+}
 
-  Future<Result<PlaceEntity>> deletePlaceImage(String id) =>
-      _execute(() => _repository.deletePlaceImage(id));
+@riverpod
+Future<Result<PlaceEntity>> Function(String id) deletePlaceImageUseCase(
+  Ref ref,
+) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id) => _execute(() => repository.deletePlaceImage(id));
+}
 
-  Future<Result<List<int>>> getImageBytes(String id, {String? token}) =>
-      _execute(() => _repository.getImageBytes(id, token: token));
+@riverpod
+Future<Result<List<int>>> Function(String id, {String? token})
+getPlaceImageBytesUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id, {String? token}) =>
+      _execute(() => repository.getImageBytes(id, token: token));
+}
 
-  Future<Result<void>> deleteImage(String id) =>
-      _execute(() => _repository.deleteImage(id));
+@riverpod
+Future<Result<void>> Function(String id) deleteImageUseCase(Ref ref) {
+  final repository = ref.read(placesRepositoryProvider);
+  return (id) => _execute(() => repository.deleteImage(id));
+}
 
-  Future<Result<T>> _execute<T>(Future<T> Function() action) async {
-    try {
-      return Ok(await action());
-    } on Exception catch (e, st) {
-      return Err(e, st);
-    }
+Future<Result<T>> _execute<T>(Future<T> Function() action) async {
+  try {
+    return Ok(await action());
+  } on Exception catch (e, st) {
+    return Err(e, st);
   }
 }

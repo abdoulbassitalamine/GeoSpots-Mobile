@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/exception/exception.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_local_datasource.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
@@ -28,6 +29,7 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   @override
   Future<List<CollectionEntity>> getOwnedCollections() async {
     final collections = await _remoteDatasource.fetchCollections();
+    GsLogger().d('Fetched ${collections.length} collections from remote datasource');
     return collections
         .where((summary) => (summary.id?.toString().trim().isNotEmpty ?? false))
         .map(_toCollectionEntity)
@@ -230,9 +232,7 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
 
   @override
   Future<void> revokeSharedAccess(String token) async {
-    final saved = await _localDatasource.getSharedAccessTokens();
-    saved.removeWhere((item) => item.token == token);
-    await _localDatasource.saveSharedAccessTokens(saved);
+    await _localDatasource.removeSharedAccessToken(token);
   }
 
   @override

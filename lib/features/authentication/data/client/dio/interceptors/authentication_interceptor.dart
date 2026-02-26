@@ -59,7 +59,7 @@ class AuthenticationInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    GsLogger().d(err.response);
+    GsLogger().e(err.response);
     final appException = err.toAppException();
     if (appException is UnauthorizedException) {
       final request = err.requestOptions;
@@ -75,7 +75,6 @@ class AuthenticationInterceptor extends Interceptor {
               .isNotEmpty ??
           false;
 
-      // Shared token 401 must not invalidate the authenticated user session.
       if (!hasAuthHeader || hasSharedTokenHeader || hasSharedTokenQuery) {
         handler.next(err);
         return;

@@ -13,6 +13,7 @@ import 'package:geo_spots/features/authentication/data/dto/authentication/regist
 import 'package:geo_spots/features/authentication/data/dto/authentication/register_response_dto.dart';
 import 'package:geo_spots/features/authentication/data/dto/authentication/update_user_request_dto.dart';
 import 'package:geo_spots/features/authentication/data/dto/authentication/user_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/user_stats_dto.dart';
 
 class AuthenticationRemoteDatasourceImpl
     implements IAuthenticationRemoteDatasource {
@@ -35,6 +36,32 @@ class AuthenticationRemoteDatasourceImpl
       return Ok(dto.data ?? UserDto.fromJson(json));
     } on DioException catch (e, st) {
       GsLogger().e('getCurrentUser', e, st);
+      return Err(e.toAppException(), st);
+    }
+  }
+
+  @override
+  Future<Result<UserStatsDto>> getCurrentUserStats() async {
+    try {
+      final response = await _authenticationClient.get<Object>(
+        '/api/users/me/stats',
+      );
+      final json = response.asJsonMap();
+
+      if (json == null) {
+        return Err(ServerException('Invalid me stats response payload'));
+      }
+
+      final responseData = json['data'];
+      final payload = switch (responseData) {
+        Map<String, dynamic>() => responseData,
+        Map() => responseData.cast<String, dynamic>(),
+        _ => json,
+      };
+
+      return Ok(UserStatsDto.fromJson(payload));
+    } on DioException catch (e, st) {
+      GsLogger().e('getCurrentUserStats', e, st);
       return Err(e.toAppException(), st);
     }
   }

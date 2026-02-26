@@ -11,7 +11,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'authentication_view_model.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class AuthenticationViewModel extends _$AuthenticationViewModel {
   @override
   AuthenticationStatus build() {
@@ -19,20 +19,26 @@ class AuthenticationViewModel extends _$AuthenticationViewModel {
   }
 
   Future<void> autoSignIn() async {
+    final authGuardNotifier = ref.read(authGuardProvider.notifier);
     final authUserResult = await ref.read(autoSignInUseCaseProvider.future);
 
+    final AuthenticationStatus nextState;
     switch (authUserResult) {
       case Ok(:final value):
         if (value.user != null && (value.isTokenValid ?? false)) {
-          state = AuthenticationStatus.authenticated(user: value.user!);
+          nextState = AuthenticationStatus.authenticated(user: value.user!);
         } else {
-          state = const AuthenticationStatus.unauthenticated(false);
+          nextState = const AuthenticationStatus.unauthenticated(false);
         }
       case Err():
-        state = const AuthenticationStatus.unauthenticated(false);
+        nextState = const AuthenticationStatus.unauthenticated(false);
     }
 
-    ref.read(authGuardProvider.notifier).updateState(state);
+    authGuardNotifier.updateState(nextState);
+    if (!ref.mounted) {
+      return;
+    }
+    state = nextState;
   }
 
   Future<void> signIn({required String mail, required String password}) async {

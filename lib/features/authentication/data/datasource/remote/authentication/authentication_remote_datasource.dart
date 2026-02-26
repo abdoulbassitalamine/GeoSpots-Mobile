@@ -5,6 +5,7 @@ import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/data/dto/authentication/login_response_dto.dart';
 import 'package:geo_spots/features/authentication/data/dto/authentication/register_response_dto.dart';
 import 'package:geo_spots/features/authentication/data/dto/authentication/user_dto.dart';
+import 'package:geo_spots/features/authentication/data/dto/authentication/user_stats_dto.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'authentication_remote_datasource_impl.dart';
 
@@ -35,6 +36,8 @@ abstract interface class IAuthenticationRemoteDatasource {
   Future<Result<LoginResponseDto>> refreshToken({required String refreshToken});
 
   Future<Result<UserDto>> getCurrentUser();
+
+  Future<Result<UserStatsDto>> getCurrentUserStats();
 
   Future<Result<UserDto>> updateCurrentUser({
     String? firstName,

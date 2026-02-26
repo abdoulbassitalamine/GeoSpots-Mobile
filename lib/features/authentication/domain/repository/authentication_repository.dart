@@ -3,6 +3,7 @@ import 'package:geo_spots/features/authentication/data/datasource/local_datasour
 import 'package:geo_spots/features/authentication/data/datasource/remote/authentication/authentication_remote_datasource.dart';
 import 'package:geo_spots/features/authentication/data/repository/authentication_repository_impl.dart';
 import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
+import 'package:geo_spots/features/authentication/domain/entity/user/user_stats_entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'authentication_repository.g.dart';
@@ -37,6 +38,8 @@ abstract interface class IAuthenticationRepository {
   Future<Result<String>> refreshToken();
 
   Future<Result<UserEntity>> me();
+
+  Future<Result<UserStatsEntity>> meStats();
 
   Future<Result<UserEntity>> updateMe({
     String? firstName,
