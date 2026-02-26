@@ -39,7 +39,7 @@ class AuthenticationInterceptor extends Interceptor {
     final hasValidToken =
         authUserToken != null && authUserToken.isNotEmpty && tokenValidity;
 
-    GsLogger().d('**** request: ${options.path}');
+    GsLogger().d('**** METHOD ${options.method} : ${options.path}');
     if (hasValidToken) {
       options.headers[_kAuthorizationHeader] = 'Bearer $authUserToken';
 
@@ -55,6 +55,14 @@ class AuthenticationInterceptor extends Interceptor {
     GsLogger().d('**** BODY: ${options.data.toString()}');
 
     super.onRequest(options, handler);
+  }
+
+  @override
+  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
+     
+
+      GsLogger().d('**** RESPONSE [${response.statusCode}] ${response.requestOptions.method} : ${response.requestOptions.path}');
+    super.onResponse(response, handler);
   }
 
   @override

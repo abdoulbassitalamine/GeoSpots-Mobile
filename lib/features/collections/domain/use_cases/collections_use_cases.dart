@@ -38,7 +38,10 @@ Future<Result<List<PlaceEntity>>> Function({
 getCollectionPlacesUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
   return ({required String collectionId, String? token}) => _execute(
-    () => repository.getCollectionPlaces(collectionId: collectionId, token: token),
+    () => repository.getCollectionPlaces(
+      collectionId: collectionId,
+      token: token,
+    ),
   );
 }
 
@@ -57,7 +60,10 @@ getOwnedShareTokensUseCase(Ref ref) {
 }
 
 @riverpod
-Future<Result<String>> Function(CollectionEntity collection, ExportFormat format)
+Future<Result<String>> Function(
+  CollectionEntity collection,
+  ExportFormat format,
+)
 exportCollectionRepositoryUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
   return (collection, format) => _execute(
@@ -144,8 +150,9 @@ Future<Result<SharedAccessTokenEntity>> Function({
 })
 importSharedAccessUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
-  return ({required String baseUrl, required String token}) =>
-      _execute(() => repository.importSharedAccess(baseUrl: baseUrl, token: token));
+  return ({required String baseUrl, required String token}) => _execute(
+    () => repository.importSharedAccess(baseUrl: baseUrl, token: token),
+  );
 }
 
 @riverpod
@@ -155,9 +162,9 @@ Future<Result<void>> Function(String token) revokeSharedAccessUseCase(Ref ref) {
 }
 
 @riverpod
-Future<Result<void>> Function(String token) revokeOwnedShareUseCase(Ref ref) {
+Future<Result<void>> Function(String id) revokeOwnedShareUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
-  return (token) => _execute(() => repository.revokeOwnedShare(token));
+  return (id) => _execute(() => repository.revokeOwnedShare(id));
 }
 
 @riverpod
@@ -214,9 +221,8 @@ createTokenUseCase(Ref ref) {
 }
 
 @riverpod
-Future<Result<SharedAccessTokenEntity?>> Function(String id) getTokenByIdUseCase(
-  Ref ref,
-) {
+Future<Result<SharedAccessTokenEntity?>> Function(String id)
+getTokenByIdUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
   return (id) => _execute(() => repository.getTokenById(id));
 }
@@ -228,8 +234,9 @@ Future<Result<SharedAccessTokenEntity?>> Function({
 })
 updateTokenExpirationUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
-  return ({required String id, required DateTime expiration}) =>
-      _execute(() => repository.updateTokenExpiration(id: id, expiration: expiration));
+  return ({required String id, required DateTime expiration}) => _execute(
+    () => repository.updateTokenExpiration(id: id, expiration: expiration),
+  );
 }
 
 @riverpod

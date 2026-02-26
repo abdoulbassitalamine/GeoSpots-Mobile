@@ -10,13 +10,13 @@ class SharedByMeCollectionsTabView extends StatelessWidget {
     required this.collections,
     required this.tokensByCollection,
     required this.onCollectionTap,
-    required this.onRevokeToken,
+    required this.onRevokeTokenById,
   });
 
   final List<CollectionEntity> collections;
   final Map<String, List<SharedAccessTokenEntity>> tokensByCollection;
   final ValueChanged<CollectionEntity> onCollectionTap;
-  final ValueChanged<String> onRevokeToken;
+  final ValueChanged<String> onRevokeTokenById;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class SharedByMeCollectionsTabView extends StatelessWidget {
               collection: collections[i],
               tokens: tokensByCollection[collections[i].id] ?? const [],
               onOpenCollection: () => onCollectionTap(collections[i]),
-              onRevokeToken: onRevokeToken,
+              onRevokeTokenById: onRevokeTokenById,
             ),
           ),
       ],
@@ -53,13 +53,13 @@ class _SharedByMeCollectionCard extends StatelessWidget {
     required this.collection,
     required this.tokens,
     required this.onOpenCollection,
-    required this.onRevokeToken,
+    required this.onRevokeTokenById,
   });
 
   final CollectionEntity collection;
   final List<SharedAccessTokenEntity> tokens;
   final VoidCallback onOpenCollection;
-  final ValueChanged<String> onRevokeToken;
+  final ValueChanged<String> onRevokeTokenById;
 
   @override
   Widget build(BuildContext context) {
@@ -136,8 +136,10 @@ class _SharedByMeCollectionCard extends StatelessWidget {
               ),
             )
           else
-            ...tokens.map(
-              (token) => Container(
+            ...tokens.map((token) {
+              final isTokenValid = token.isValid;
+              final canRevoke = isTokenValid && token.id.trim().isNotEmpty;
+              return Container(
                 margin: const EdgeInsets.only(top: GSSpacing.s),
                 padding: const EdgeInsets.all(GSSpacing.m),
                 decoration: BoxDecoration(
@@ -163,6 +165,11 @@ class _SharedByMeCollectionCard extends StatelessWidget {
                                   label:
                                       'Expire ${_formatDate(token.expiresAt!)}',
                                 ),
+                              if (!isTokenValid)
+                                const _MetaPill(
+                                  icon: Icons.block_outlined,
+                                  label: 'Token révoqué',
+                                ),
                             ],
                           ),
                           const SizedBox(height: GSSpacing.s),
@@ -182,17 +189,28 @@ class _SharedByMeCollectionCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          if (!isTokenValid) ...[
+                            const SizedBox(height: GSSpacing.s),
+                            Text(
+                              'Ce token n\'est plus valide ou a été révoqué.',
+                              style: GSTypography.captionDefault.copyWith(
+                                color: GSColors.danger600,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => onRevokeToken(token.token),
-                      child: const Text('Révoquer'),
-                    ),
+                    if (canRevoke)
+                      TextButton(
+                        onPressed: () => onRevokeTokenById(token.id),
+                        child: const Text('Révoquer'),
+                      ),
                   ],
                 ),
-              ),
-            ),
+              );
+            }),
         ],
       ),
     );

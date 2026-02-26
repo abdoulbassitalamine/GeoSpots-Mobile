@@ -109,7 +109,7 @@ class CollectionsView extends ConsumerWidget {
         collections: sharedByMeCollections,
         tokensByCollection: ownedSharesByCollection,
         onCollectionTap: openCollectionDetails,
-        onRevokeToken: notifier.revokeOwnedShare,
+        onRevokeTokenById: notifier.revokeOwnedShare,
       ),
     };
 

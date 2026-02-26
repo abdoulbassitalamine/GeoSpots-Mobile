@@ -29,7 +29,9 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   @override
   Future<List<CollectionEntity>> getOwnedCollections() async {
     final collections = await _remoteDatasource.fetchCollections();
-    GsLogger().d('Fetched ${collections.length} collections from remote datasource');
+    GsLogger().d(
+      'Fetched ${collections.length} collections from remote datasource',
+    );
     return collections
         .where((summary) => (summary.id?.toString().trim().isNotEmpty ?? false))
         .map(_toCollectionEntity)
@@ -174,6 +176,7 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     final token = SharedAccessTokenEntity(
       token: remoteResult.token ?? '',
       baseUrl: _baseUrlFromShareUrl(remoteResult.url ?? ''),
+      isValid: true,
       rights: _mapPermission(remoteResult.permission ?? ''),
       resourceType: ShareResourceType.fromRaw(
         remoteResult.resourceType,
@@ -220,6 +223,7 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     final entity = SharedAccessTokenEntity(
       token: normalizedToken,
       baseUrl: normalizedUrl,
+      isValid: true,
       rights: rights,
       resourceType: resourceType,
       resourceId: resourceId,
@@ -236,15 +240,12 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   }
 
   @override
-  Future<void> revokeOwnedShare(String token) async {
-    final remoteTokens = await _remoteDatasource.fetchTokens();
-    final found = remoteTokens.where((candidate) => candidate.token == token);
-    for (final candidate in found) {
-      final candidateId = candidate.id;
-      if (candidateId != null) {
-        await _remoteDatasource.revokeTokenById(candidateId.toString());
-      }
+  Future<void> revokeOwnedShare(String id) async {
+    final normalizedId = id.trim();
+    if (normalizedId.isEmpty) {
+      throw const ServerException('Identifiant de token manquant');
     }
+    await _remoteDatasource.revokeTokenById(normalizedId);
   }
 
   @override
@@ -372,8 +373,10 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   SharedAccessTokenEntity _toSharedTokenEntity(AccessTokenDto token) {
     final fallbackBaseUrl = dotenv.env['API_BASE_URL'] ?? '';
     return SharedAccessTokenEntity(
+      id: token.id?.toString() ?? '',
       token: token.token ?? '',
       baseUrl: fallbackBaseUrl,
+      isValid: _resolveTokenValidity(token),
       rights: _mapPermission(token.permission ?? ''),
       resourceType: ShareResourceType.fromRaw(
         token.resourceType,
@@ -408,6 +411,19 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
       return ShareAccessRight.write;
     }
     return ShareAccessRight.read;
+  }
+
+  bool _resolveTokenValidity(AccessTokenDto token) {
+    if (token.isValid != null) {
+      return token.isValid!;
+    }
+    if (token.revokedAt != null) {
+      return false;
+    }
+    if (token.expiresAt == null) {
+      return true;
+    }
+    return token.expiresAt!.isAfter(DateTime.now());
   }
 
   bool _matchesResource(

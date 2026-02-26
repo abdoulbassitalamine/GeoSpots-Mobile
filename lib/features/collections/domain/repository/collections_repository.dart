@@ -67,7 +67,7 @@ abstract interface class CollectionsRepository {
   });
 
   Future<void> revokeSharedAccess(String token);
-  Future<void> revokeOwnedShare(String token);
+  Future<void> revokeOwnedShare(String id);
 
   Future<SharedAccessTokenEntity?> getTokenForResource({
     required ShareResourceType resourceType,

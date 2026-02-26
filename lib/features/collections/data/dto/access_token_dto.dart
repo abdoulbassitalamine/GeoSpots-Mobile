@@ -30,8 +30,16 @@ class AccessTokenDto {
   final DateTime? createdAt;
   final String? label;
   final int? accessCount;
+  @JsonKey(readValue: _readIsValid)
   final bool? isValid;
   final String? resourceName;
 
   Map<String, dynamic> toJson() => _$AccessTokenDtoToJson(this);
+}
+
+Object? _readIsValid(Map<dynamic, dynamic> json, String key) {
+  if (json.containsKey(key)) {
+    return json[key];
+  }
+  return json['is_valid'];
 }
