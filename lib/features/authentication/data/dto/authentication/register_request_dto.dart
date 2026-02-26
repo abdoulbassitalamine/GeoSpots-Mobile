@@ -2,7 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'register_request_dto.g.dart';
 
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable()
 class RegisterRequestDto {
   const RegisterRequestDto({
     required this.firstName,
@@ -14,12 +14,12 @@ class RegisterRequestDto {
 
   factory RegisterRequestDto.fromJson(Map<String, dynamic> json) =>
       _$RegisterRequestDtoFromJson(json);
-  
 
   final String firstName;
   final String lastName;
   final String email;
   final String password;
+  @JsonKey(name: 'confirmPassword')
   final String passwordConfirmation;
 
   Map<String, dynamic> toJson() => _$RegisterRequestDtoToJson(this);

@@ -5,7 +5,7 @@ import '../../domain/services/export_import_service.dart';
 
 class GPXService implements IExportImportService {
   @override
-  String export(CollectionEntity collection) {
+  String export(CollectionEntity collection, List<PlaceEntity> places) {
     final builder = XmlBuilder();
 
     builder.processing('xml', 'version="1.0" encoding="UTF-8"');
@@ -33,7 +33,7 @@ class GPXService implements IExportImportService {
           },
         );
 
-        for (final place in collection.places) {
+        for (final place in places) {
           if (place.hasCoordinates) {
             builder.element(
               'wpt',

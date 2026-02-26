@@ -9,6 +9,7 @@ import 'package:geo_spots/features/authentication/domain/entity/user/user_entity
 import 'package:shared_preferences/shared_preferences.dart';
 
 const _authUserTokenSecureStorageKey = 'authUserToken';
+const _authUserRefreshTokenSecureStorage = 'authUserRefreshToken';
 const _authUserSecureStorageKey = 'authUser';
 const _authUserDataSecureStorageKey = 'authUserData';
 const _authUserValidityStorageKey = 'authTokenValidity';
@@ -34,6 +35,19 @@ class AuthenticationLocalDatasourceImpl
       return Ok(token);
     } on Exception catch (e, st) {
       GsLogger().e('getAuthUserToken', e, st);
+      return Err(e, st);
+    }
+  }
+
+  @override
+  Future<Result<String?>> getAuthUserRefreshToken() async {
+    try {
+      final refreshToken = await _secureStorage.read(
+        key: _authUserRefreshTokenSecureStorage,
+      );
+      return Ok(refreshToken);
+    } on Exception catch (e, st) {
+      GsLogger().e('getAuthUserRefreshToken', e, st);
       return Err(e, st);
     }
   }
@@ -86,7 +100,11 @@ class AuthenticationLocalDatasourceImpl
   }
 
   @override
-  Future<Result<void>> upsertAuthUser(String token, UserEntity user) async {
+  Future<Result<void>> upsertAuthUser(
+    String token,
+    String refreshToken,
+    UserEntity user,
+  ) async {
     try {
       await _secureStorage.write(
         key: _authUserTokenSecureStorageKey,
@@ -95,6 +113,10 @@ class AuthenticationLocalDatasourceImpl
       await _secureStorage.write(
         key: _authUserSecureStorageKey,
         value: jsonEncode(user),
+      );
+      await _secureStorage.write(
+        key: _authUserRefreshTokenSecureStorage,
+        value: refreshToken,
       );
       return const Ok(null);
     } on Exception catch (e, st) {
@@ -108,6 +130,7 @@ class AuthenticationLocalDatasourceImpl
     try {
       await _secureStorage.delete(key: _authUserTokenSecureStorageKey);
       await _secureStorage.delete(key: _authUserSecureStorageKey);
+      await _secureStorage.delete(key: _authUserRefreshTokenSecureStorage);
       return const Ok(null);
     } on Exception catch (e, st) {
       GsLogger().e('deleteAuthUser', e, st);

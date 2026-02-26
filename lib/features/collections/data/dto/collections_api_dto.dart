@@ -1,0 +1,20 @@
+import 'package:geo_spots/features/places/data/dto/places_response_dto.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'collections_api_dto.g.dart';
+part 'api_response_list_collection_dto.dart';
+part 'api_response_collection_dto.dart';
+part 'collection_dto.dart';
+part 'api_response_collection_share_dto.dart';
+part 'collection_share_response_dto.dart';
+part 'collection_share_token_request_dto.dart';
+part 'api_response_list_access_token_dto.dart';
+part 'api_response_access_token_dto.dart';
+part 'access_token_dto.dart';
+part 'create_token_request_dto.dart';
+part 'update_token_expiration_request_dto.dart';
+part 'api_response_discover_response_dto.dart';
+part 'discover_response_dto.dart';
+part 'api_response_import_result_dto.dart';
+part 'import_result_dto.dart';
+part 'import_request_dto.dart';

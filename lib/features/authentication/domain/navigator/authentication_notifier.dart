@@ -39,7 +39,7 @@ class AuthGuardNotifier extends _$AuthGuardNotifier implements Listenable {
     };
     final hasToken = token != null && token.isNotEmpty;
 
-    if (isExcludedRoute && hasToken) {
+    if (isExcludedRoute && hasToken && state is AuthenticationStatusAuthenticated) {
       return MapRouteData().location;
     }
 

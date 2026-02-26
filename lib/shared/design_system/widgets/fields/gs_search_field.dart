@@ -8,7 +8,7 @@ import 'gs_text_field.dart';
 const _kExpanded = 'expanded';
 const _kCollapsed = 'collapsed';
 
-class GSSearchField extends StatefulWidget {
+class GSSearchField extends StatelessWidget {
   const GSSearchField({
     super.key,
     required this.title,
@@ -16,8 +16,10 @@ class GSSearchField extends StatefulWidget {
     this.onChanged,
     this.onClear,
     this.onBack,
-    this.controller,
-    this.initialExpanded = false,
+    required this.controller,
+    required this.focusNode,
+    this.isExpanded = false,
+    this.onExpandedChanged,
     this.collapsePadding,
     this.expandedPadding,
   });
@@ -27,67 +29,28 @@ class GSSearchField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final VoidCallback? onClear;
   final VoidCallback? onBack;
-  final TextEditingController? controller;
-  final bool initialExpanded;
+  final TextEditingController controller;
+  final FocusNode focusNode;
+  final bool isExpanded;
+  final ValueChanged<bool>? onExpandedChanged;
   final EdgeInsetsGeometry? collapsePadding;
   final EdgeInsetsGeometry? expandedPadding;
 
-  @override
-  State<GSSearchField> createState() => _GSSearchFieldState();
-}
-
-class _GSSearchFieldState extends State<GSSearchField> {
-  late TextEditingController _controller;
-  late FocusNode _focusNode;
-  late bool _isExpanded;
-  bool _hasText = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = widget.controller ?? TextEditingController();
-    _focusNode = FocusNode();
-    _isExpanded = widget.initialExpanded;
-    _controller.addListener(_onTextChanged);
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(_onTextChanged);
-    if (widget.controller == null) {
-      _controller.dispose();
-    }
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _onTextChanged() {
-    setState(() {
-      _hasText = _controller.text.isNotEmpty;
-    });
-    if (_isExpanded) {
-      widget.onChanged?.call(_controller.text);
-    }
-  }
-
   void _handleExpand() {
-    setState(() {
-      _isExpanded = true;
-    });
-    _focusNode.requestFocus();
+    onExpandedChanged?.call(true);
+    focusNode.requestFocus();
   }
 
   void _handleBack() {
-    setState(() {
-      _isExpanded = false;
-    });
-    _controller.clear();
-    widget.onBack?.call();
+    onExpandedChanged?.call(false);
+    controller.clear();
+    onBack?.call();
   }
 
   void _handleClear() {
-    _controller.clear();
-    widget.onClear?.call();
+    controller.clear();
+    onChanged?.call('');
+    onClear?.call();
   }
 
   @override
@@ -97,7 +60,7 @@ class _GSSearchFieldState extends State<GSSearchField> {
       decoration: BoxDecoration(color: GSColorTokens.backgroundSecondary),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        child: _isExpanded
+        child: isExpanded
             ? _buildExpandedState(context)
             : _buildCollapsedState(context),
       ),
@@ -110,13 +73,13 @@ class _GSSearchFieldState extends State<GSSearchField> {
       onTap: _handleExpand,
       child: Container(
         padding:
-            widget.collapsePadding ??
+            collapsePadding ??
             const EdgeInsets.symmetric(horizontal: GSSpacing.xl),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                widget.title,
+                title,
                 style: GSTypography.headingSmall.copyWith(
                   color: GSColorTokens.textPrimary,
                 ),
@@ -137,23 +100,25 @@ class _GSSearchFieldState extends State<GSSearchField> {
     );
 
     const border = OutlineInputBorder(borderSide: BorderSide.none);
+    final hasText = controller.text.isNotEmpty;
 
     return GSTextField(
       key: const ValueKey(_kExpanded),
       maxLines: 1,
       focusBorder: border,
       enabledBorder: border,
-      controller: _controller,
-      focusNode: _focusNode,
-      placeholder: widget.hintText,
+      controller: controller,
+      focusNode: focusNode,
+      placeholder: hintText,
       hintStyle: textStyle,
       inputStyle: textStyle,
+      onValueChange: onChanged,
       leadingIcon: IconButton(
         onPressed: _handleBack,
         icon: const Icon(Icons.arrow_back),
         color: GSColorTokens.textPrimary,
       ),
-      trailingIcon: _hasText
+      trailingIcon: hasText
           ? IconButton(
               onPressed: _handleClear,
               icon: const Icon(Icons.close),

@@ -1,24 +1,18 @@
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final activeSharedAccessTokenProvider =
-    NotifierProvider<ActiveSharedAccessTokenNotifier, String?>(
-      ActiveSharedAccessTokenNotifier.new,
-    );
+part 'shared_access_session.g.dart';
 
-class ActiveSharedAccessTokenNotifier extends Notifier<String?> {
+@riverpod
+class ActiveSharedAccessToken extends _$ActiveSharedAccessToken {
   @override
   String? build() => null;
 
   set token(String? value) => state = value;
 }
 
-final activeCollectionAccessRightProvider =
-    NotifierProvider<ActiveCollectionAccessRightNotifier, ShareAccessRight?>(
-      ActiveCollectionAccessRightNotifier.new,
-    );
-
-class ActiveCollectionAccessRightNotifier extends Notifier<ShareAccessRight?> {
+@riverpod
+class ActiveCollectionAccessRight extends _$ActiveCollectionAccessRight {
   @override
   ShareAccessRight? build() => null;
 

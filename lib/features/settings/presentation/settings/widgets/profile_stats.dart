@@ -3,7 +3,6 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../../authentication/domain/entity/user/user_entity.dart';
 
 class ProfileStats extends StatelessWidget {
-
   const ProfileStats({
     super.key,
     required this.user,
@@ -61,11 +60,7 @@ class ProfileStats extends StatelessWidget {
                 label: 'Collections',
               ),
               _VerticalDivider(),
-              _StatItem(
-                value: sharedPlaces.toString(),
-                label: 'Partagées',
-                isComingSoon: sharedPlaces == 0,
-              ),
+              _StatItem(value: sharedPlaces.toString(), label: 'Partagées'),
             ],
           ),
         ],
@@ -75,7 +70,6 @@ class ProfileStats extends StatelessWidget {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-
   const _ProfileAvatar({required this.user});
   final UserEntity user;
 
@@ -117,15 +111,9 @@ class _ProfileAvatar extends StatelessWidget {
 }
 
 class _StatItem extends StatelessWidget {
-
-  const _StatItem({
-    required this.value,
-    required this.label,
-    this.isComingSoon = false,
-  });
+  const _StatItem({required this.value, required this.label});
   final String value;
   final String label;
-  final bool isComingSoon;
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +122,7 @@ class _StatItem extends StatelessWidget {
         Text(
           value,
           style: GSTypography.headingMedium.copyWith(
-            color: isComingSoon ? GSColors.neutral400 : GSColors.primary600,
+            color: GSColors.primary600,
             fontSize: GSFontScale.sf08,
             fontWeight: FontWeight.bold,
           ),
@@ -146,27 +134,6 @@ class _StatItem extends StatelessWidget {
             color: GSColors.neutral600,
           ),
         ),
-        if (isComingSoon) ...[
-          const SizedBox(height: GSSpacing.xs),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: GSSpacing.s,
-              vertical: 2,
-            ),
-            decoration: BoxDecoration(
-              color: GSColors.warning100,
-              borderRadius: BorderRadius.circular(GSRadius.full),
-            ),
-            child: Text(
-              'Bientôt',
-              style: GSTypography.captionDefault.copyWith(
-                color: GSColors.warning600,
-                fontSize: 9,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ],
     );
   }

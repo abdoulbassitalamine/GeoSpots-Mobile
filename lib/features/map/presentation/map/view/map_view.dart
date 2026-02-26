@@ -1,63 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
+import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/map/presentation/view_model/map_view_model.dart';
+import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/features/places/presentation/place_details/wigets/navigation_options_dialog.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
-import '../widgets/map_category_chip.dart';
-import '../widgets/map_control_button.dart';
+import '../widgets/map_floating_controls.dart';
 import '../widgets/map_marker_dot.dart';
 import '../widgets/map_place_preview_card.dart';
 import '../widgets/map_place_search_delegate.dart';
+import '../widgets/map_top_panel.dart';
 
 class MapView extends HookConsumerWidget {
   const MapView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authenticationStatus = ref.watch(authGuardProvider);
+    final isAuthenticated =
+        authenticationStatus is AuthenticationStatusAuthenticated;
     final state = ref.watch(mapViewModelProvider);
     final notifier = ref.read(mapViewModelProvider.notifier);
     final mapController = useMemoized(MapController.new);
     final isMapReady = useState(false);
     final isPreviewVisible = useState(true);
+    final isShareInfoVisible = useState(true);
     final isSearchMode = state.searchQuery.trim().isNotEmpty;
+    final hasSecondaryTopCard =
+        !isSearchMode && (isAuthenticated || isShareInfoVisible.value);
 
-    final allMappedPlaces = state.allPlaces
-        .where((p) => p.hasCoordinates)
-        .map(
-          (place) => MapPlacePreviewModel(
-            place: place,
-            title: place.title,
-            subtitle: [
-              place.city,
-              place.country,
-            ].where((e) => e != null && e.isNotEmpty).join(', '),
-            category: place.tags.isNotEmpty ? place.tags.first : 'Sans tag',
-            icon: Icons.place,
-            point: LatLng(place.latitude!, place.longitude!),
-          ),
-        )
-        .toList();
+    ref.listen<AuthenticationStatus>(authGuardProvider, (
+      AuthenticationStatus? previous,
+      AuthenticationStatus next,
+    ) {
+      if (previous?.runtimeType != next.runtimeType) {
+        notifier.loadPlaces();
+      }
+    });
 
-    final visibleMappedPlaces = state.visiblePlaces
-        .where((p) => p.hasCoordinates)
-        .map(
-          (place) => MapPlacePreviewModel(
-            place: place,
-            title: place.title,
-            subtitle: [
-              place.city,
-              place.country,
-            ].where((e) => e != null && e.isNotEmpty).join(', '),
-            category: place.tags.isNotEmpty ? place.tags.first : 'Sans tag',
-            icon: Icons.place,
-            point: LatLng(place.latitude!, place.longitude!),
-          ),
-        )
-        .toList();
+    final allMappedPlaces = _mapPlacesToPreview(state.allPlaces);
+    final visibleMappedPlaces = _mapPlacesToPreview(state.visiblePlaces);
 
     final categories = state.categories
         .map<(String, IconData)>((category) => (category, Icons.label_outline))
@@ -171,11 +158,14 @@ class MapView extends HookConsumerWidget {
                     Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        GSCard(
-                          padding: const EdgeInsets.all(GSSpacing.l),
-                          borderRadius: BorderRadius.circular(GSRadius.l),
-                          shadows: [GSShadows.s()],
-                          onTap: () async {
+                        MapTopPanel(
+                          isAuthenticated: isAuthenticated,
+                          isShareInfoVisible: isShareInfoVisible.value,
+                          isSearchMode: isSearchMode,
+                          searchQuery: state.searchQuery,
+                          selectedCategory: state.selectedCategory,
+                          categories: categories,
+                          onSearchTap: () async {
                             final selection =
                                 await showSearch<MapPlaceSearchSelection?>(
                                   context: context,
@@ -196,120 +186,45 @@ class MapView extends HookConsumerWidget {
                               isPreviewVisible.value = true;
                             }
                           },
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.search,
-                                color: GSColors.slate400,
-                              ),
-                              const SizedBox(width: GSSpacing.m),
-                              Expanded(
-                                child: Text(
-                                  state.searchQuery.isEmpty
-                                      ? 'Rechercher un lieu...'
-                                      : state.searchQuery,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GSTypography.bodyDefaultMedium
-                                      .copyWith(
-                                        color: state.searchQuery.isEmpty
-                                            ? GSColors.slate400
-                                            : GSColors.neutral800,
-                                      ),
-                                ),
-                              ),
-                              if (state.searchQuery.isNotEmpty)
-                                GSIconButton(
-                                  icon: Icons.close,
-                                  tooltip: 'Effacer',
-                                  onPressed: () {
-                                    notifier.updateSearchQuery('');
-                                  },
-                                ),
-                            ],
-                          ),
+                          onDismissShareInfo: () {
+                            isShareInfoVisible.value = false;
+                          },
+                          onClearSearch: () => notifier.updateSearchQuery(''),
+                          onCategorySelected: notifier.selectCategory,
                         ),
-                        if (!isSearchMode) ...[
-                          const SizedBox(height: GSSpacing.l),
-                          GSCard(
-                            padding: const EdgeInsets.all(GSSpacing.l),
-                            borderRadius: BorderRadius.circular(GSRadius.l),
-                            shadows: [GSShadows.s()],
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  for (final category in categories)
-                                    Padding(
-                                      padding: const EdgeInsets.only(
-                                        right: GSSpacing.s,
-                                      ),
-                                      child: MapCategoryChip(
-                                        label: category.$1,
-                                        icon: category.$2,
-                                        isSelected:
-                                            state.selectedCategory ==
-                                            category.$1,
-                                        onTap: () => notifier.selectCategory(
-                                          category.$1,
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                     Positioned(
-                      top: 176,
+                      top: hasSecondaryTopCard ? 176 : 88,
                       right: 0,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          MapControlButton(
-                            icon: Icons.navigation,
-                            tooltip: 'Centrer',
-                            onPressed: () {
-                              if (!isMapReady.value) return;
-                              mapController.move(
-                                selectedPlace?.point ?? initialCenter,
-                                14.8,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: GSSpacing.m),
-                          MapControlButton(
-                            icon: Icons.add,
-                            tooltip: 'Zoom +',
-                            onPressed: () {
-                              if (!isMapReady.value) return;
-                              final nextZoom = (mapController.camera.zoom + 0.8)
-                                  .clamp(3.0, 19.0)
-                                  .toDouble();
-                              mapController.move(
-                                mapController.camera.center,
-                                nextZoom,
-                              );
-                            },
-                          ),
-                          const SizedBox(height: GSSpacing.m),
-                          MapControlButton(
-                            icon: Icons.remove,
-                            tooltip: 'Zoom -',
-                            onPressed: () {
-                              if (!isMapReady.value) return;
-                              final nextZoom = (mapController.camera.zoom - 0.8)
-                                  .clamp(3.0, 19.0)
-                                  .toDouble();
-                              mapController.move(
-                                mapController.camera.center,
-                                nextZoom,
-                              );
-                            },
-                          ),
-                        ],
+                      child: MapFloatingControls(
+                        onCenterTap: () {
+                          if (!isMapReady.value) return;
+                          mapController.move(
+                            selectedPlace?.point ?? initialCenter,
+                            14.8,
+                          );
+                        },
+                        onZoomInTap: () {
+                          if (!isMapReady.value) return;
+                          final nextZoom = (mapController.camera.zoom + 0.8)
+                              .clamp(3.0, 19.0)
+                              .toDouble();
+                          mapController.move(
+                            mapController.camera.center,
+                            nextZoom,
+                          );
+                        },
+                        onZoomOutTap: () {
+                          if (!isMapReady.value) return;
+                          final nextZoom = (mapController.camera.zoom - 0.8)
+                              .clamp(3.0, 19.0)
+                              .toDouble();
+                          mapController.move(
+                            mapController.camera.center,
+                            nextZoom,
+                          );
+                        },
                       ),
                     ),
                     if (isPreviewVisible.value && selectedPlace != null)
@@ -358,5 +273,24 @@ class MapView extends HookConsumerWidget {
       }
     }
     return places.first;
+  }
+
+  List<MapPlacePreviewModel> _mapPlacesToPreview(List<PlaceEntity> places) {
+    return places
+        .where((place) => place.hasCoordinates)
+        .map(
+          (place) => MapPlacePreviewModel(
+            place: place,
+            title: place.title,
+            subtitle: [
+              place.city,
+              place.country,
+            ].where((value) => value != null && value.isNotEmpty).join(', '),
+            category: place.tags.isNotEmpty ? place.tags.first : 'Sans tag',
+            icon: Icons.place,
+            point: LatLng(place.latitude!, place.longitude!),
+          ),
+        )
+        .toList();
   }
 }

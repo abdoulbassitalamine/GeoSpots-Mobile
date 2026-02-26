@@ -1,25 +1,31 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../entity/collection_entity.dart';
 import '../enums/export_format.dart';
-import '../services/export_import_service.dart';
+import '../repository/collections_repository.dart';
+
+part 'export_collection_use_case.g.dart';
 
 class ExportCollectionUseCase {
   ExportCollectionUseCase(this._ref);
 
   final Ref _ref;
 
-  Future<String> call(CollectionEntity collection, ExportFormat format) async {
-    switch (format) {
-      case ExportFormat.gpx:
-        return _ref.read(gpxServiceProvider).export(collection);
-      case ExportFormat.kml:
-        return _ref.read(kmlServiceProvider).export(collection);
-      case ExportFormat.geoJSON:
-        return _ref.read(geoJsonServiceProvider).export(collection);
+  Future<Result<String>> call(
+    CollectionEntity collection,
+    ExportFormat format,
+  ) async {
+    try {
+      final content = await _ref
+          .read(collectionsRepositoryProvider)
+          .exportCollection(collection: collection, format: format);
+      return Ok(content);
+    } on Exception catch (e, st) {
+      return Err(e, st);
     }
   }
 }
 
-final exportCollectionUseCaseProvider = Provider<ExportCollectionUseCase>(
-      ExportCollectionUseCase.new,
-);
+@riverpod
+ExportCollectionUseCase exportCollectionUseCase(Ref ref) =>
+    ExportCollectionUseCase(ref);

@@ -3,6 +3,7 @@ import 'package:geo_spots/features/authentication/domain/entity/authentication_s
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
+import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/add_shared_access_dialog.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_tabs.dart';
@@ -34,16 +35,27 @@ class CollectionsView extends ConsumerWidget {
 
     final ownedSharesByCollection = <String, List<SharedAccessTokenEntity>>{};
     for (final token in state.ownedShareTokens) {
-      if (token.resourceType != 'collection' || token.resourceId.isEmpty) {
+      if (ShareResourceType.fromRaw(token.resourceType) !=
+              ShareResourceType.collection ||
+          token.resourceId.isEmpty) {
         continue;
       }
-      ownedSharesByCollection.putIfAbsent(token.resourceId, () => []).add(token);
+      ownedSharesByCollection
+          .putIfAbsent(token.resourceId, () => [])
+          .add(token);
+    }
+    final sharedTokensByCollection = <String, SharedAccessTokenEntity>{};
+    for (final token in state.sharedTokens) {
+      if (ShareResourceType.fromRaw(token.resourceType) !=
+              ShareResourceType.collection ||
+          token.resourceId.isEmpty) {
+        continue;
+      }
+      sharedTokensByCollection[token.resourceId] = token;
     }
     final sharedByMeCollections = state.ownedCollections
         .where(
-          (collection) =>
-              collection.tag != 'all' &&
-              ownedSharesByCollection.containsKey(collection.tag),
+          (collection) => ownedSharesByCollection.containsKey(collection.id),
         )
         .toList();
     final effectiveTab = isAuthenticated
@@ -63,13 +75,13 @@ class CollectionsView extends ConsumerWidget {
     final placesCount = switch (effectiveTab) {
       CollectionsTab.owned => state.totalPlaces,
       CollectionsTab.sharedWithMe => collections.fold<int>(
-          0,
-          (sum, c) => sum + c.placesCount,
-        ),
+        0,
+        (sum, c) => sum + c.placesCount,
+      ),
       CollectionsTab.sharedByMe => sharedByMeCollections.fold<int>(
-          0,
-          (sum, c) => sum + c.placesCount,
-        ),
+        0,
+        (sum, c) => sum + c.placesCount,
+      ),
     };
     final totalCollections = collections.length;
     Future<void> openCollectionDetails(CollectionEntity collection) async {
@@ -84,20 +96,21 @@ class CollectionsView extends ConsumerWidget {
 
     final tabView = switch (effectiveTab) {
       CollectionsTab.owned => OwnedCollectionsTabView(
-          collections: state.ownedCollections,
-          onCollectionTap: openCollectionDetails,
-        ),
+        collections: state.ownedCollections,
+        onCollectionTap: openCollectionDetails,
+      ),
       CollectionsTab.sharedWithMe => SharedWithMeCollectionsTabView(
-          collections: state.sharedCollections,
-          onCollectionTap: openCollectionDetails,
-          onRemoveAccess: notifier.revokeSharedAccess,
-        ),
+        collections: state.sharedCollections,
+        sharedTokensByCollectionId: sharedTokensByCollection,
+        onCollectionTap: openCollectionDetails,
+        onRemoveAccess: notifier.revokeSharedAccess,
+      ),
       CollectionsTab.sharedByMe => SharedByMeCollectionsTabView(
-          collections: sharedByMeCollections,
-          tokensByCollection: ownedSharesByCollection,
-          onCollectionTap: openCollectionDetails,
-          onRevokeToken: notifier.revokeOwnedShare,
-        ),
+        collections: sharedByMeCollections,
+        tokensByCollection: ownedSharesByCollection,
+        onCollectionTap: openCollectionDetails,
+        onRevokeTokenById: notifier.revokeOwnedShare,
+      ),
     };
 
     return CustomScrollView(
@@ -107,9 +120,7 @@ class CollectionsView extends ConsumerWidget {
             title: title,
             totalCollections: totalCollections,
             totalPlaces: placesCount,
-            onImportPressed: isAuthenticated
-                ? notifier.importCollection
-                : null,
+            onImportPressed: isAuthenticated ? notifier.importCollection : null,
             onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
           ),
         ),

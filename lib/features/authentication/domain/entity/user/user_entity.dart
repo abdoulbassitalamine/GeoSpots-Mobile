@@ -16,12 +16,25 @@ sealed class UserEntity with _$UserEntity {
   factory UserEntity.fromJson(Map<String, dynamic> json) =>
       _$UserEntityFromJson(json);
 
-  factory UserEntity.fromDto(UserDto userDto) => UserEntity(
-    id: userDto.id.toString(),
-    firstName: userDto.name.split(' ').first,
-    lastName: userDto.name.split(' ').last,
-    email: userDto.email,
-  );
+  factory UserEntity.fromDto(UserDto userDto) {
+    final usernameParts =
+        userDto.username?.trim().split(' ') ?? const <String>[];
+    final usernameFirstPart = usernameParts.isEmpty
+        ? null
+        : usernameParts.first;
+    final firstName =
+        userDto.firstName ??
+        usernameFirstPart ??
+        userDto.email?.split('@').first;
+    final lastName = userDto.lastName;
+
+    return UserEntity(
+      id: userDto.id?.toString() ?? userDto.username ?? userDto.email ?? '0',
+      firstName: firstName,
+      lastName: lastName,
+      email: userDto.email,
+    );
+  }
 }
 
 extension UserEntityExtension on UserEntity {

@@ -71,14 +71,19 @@ class LoginForm extends HookConsumerWidget {
           onClick: () => const ForgotPasswordRouteData().go(context),
         ),
         const SizedBox(height: GSSpacing.$600),
-        GSContainerButton.filled(
-          padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
-          isLoading: controllers.isLoading.value,
-          onPressed: () => SignInHandlers.onSubmit(ref, context, controllers),
-          text: 'Se connecter',
-          enabled: notifier.isFormValid,
-          gradient: GSColorTokens.primaryGradientHorizontal,
-          radius: GSRadius.l,
+        Consumer(
+          builder: (context, ref, _) {
+            ref.watch(signInViewModelProvider);
+            return GSContainerButton.filled(
+              padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
+              isLoading: controllers.isLoading.value,
+              onPressed: () => SignInHandlers.onSubmit(ref, context, controllers),
+              text: 'Se connecter',
+              enabled: notifier.isFormValid,
+              gradient: GSColorTokens.primaryGradientHorizontal,
+              radius: GSRadius.l,
+            );
+          },
         ),
         GSSpacing.$300.toInt().toHeight,
         _SignupLink(onClick: () => const SignUpRouteData().go(context)),

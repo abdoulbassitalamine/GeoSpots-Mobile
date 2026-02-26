@@ -1,9 +1,13 @@
-import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart'
-    show UserEntity;
+import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/domain/entity/user/user_stats_entity.dart';
+import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
+import 'package:geo_spots/features/authentication/domain/use_case/me_use_case.dart';
 import 'package:geo_spots/features/authentication/presentation/view_model/authentication_view_model.dart';
 import 'package:geo_spots/features/tracking/data/services/location_tracking_service.dart';
-import 'package:geo_spots/features/tracking/domain/repository/tracking_repository.dart';
+import 'package:geo_spots/features/tracking/domain/use_case/tracking_use_cases.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+
 import 'profile_state.dart';
 
 part 'profile_view_model.g.dart';
@@ -17,91 +21,126 @@ class ProfileViewModel extends _$ProfileViewModel {
   }
 
   Future<void> _loadProfile() async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, errorMessage: null);
 
-    try {
-      final dummyUser = const UserEntity(
-        id: '123',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        email: 'jean@test.com',
-      );
+    final meFuture = ref.read(meInUseCaseProvider.future);
+    final meStatsFuture = ref.read(authenticationRepositoryProvider).meStats();
+    final isTrackingEnabledAction = ref.read(isTrackingEnabledUseCaseProvider);
 
-      final isTracking = await ref
-          .read(trackingRepositoryProvider)
-          .isTrackingEnabled();
+    final userResult = await meFuture;
+    final user = switch (userResult) {
+      Ok(:final value) => value,
+      Err(error: final error, stackTrace: final stackTrace) => () {
+        GsLogger().e(
+          '[ProfileViewModel] loadProfile -> me failed',
+          error,
+          stackTrace,
+        );
+        return null;
+      }(),
+    };
 
-
-
-      state = state.copyWith(
-        user: dummyUser,
-        totalPlaces: 42,
-        totalCollections: 8,
-        sharedPlaces: 15,
-        isTrackingEnabled: isTracking,
-        isLoading: false,
-      );
-      return;
-      // ============================================================
-      // FIN DUMMY DATA
-      // ============================================================
-
-      // Code original (commenté pour l'instant)
-      /*
-      final authState = ref.read(authGuardProvider);
-      final user = authState.whenOrNull(authenticated: (user) => user);
-
-      if (user == null) {
+    final statsResult = await meStatsFuture;
+    late final UserStatsEntity stats;
+    switch (statsResult) {
+      case Ok(value: final value):
+        stats = value;
+      case Err(error: final error, stackTrace: final stackTrace):
+        GsLogger().e(
+          '[ProfileViewModel] loadProfile -> meStats failed',
+          error,
+          stackTrace,
+        );
+        if (!ref.mounted) {
+          return;
+        }
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'Utilisateur non connecté',
+          errorMessage: 'Erreur lors du chargement du profil',
         );
         return;
-      }
-
-      final places = await ref.read(placesRepositoryProvider).getAllPlaces();
-
-      final collections = places.generateCollectionsFromTags();
-
-      final isTracking = await ref
-          .read(trackingRepositoryProvider)
-          .isTrackingEnabled();
-
-      // TODO: Calculer les lieux partagés (à implémenter plus tard)
-      final sharedPlaces = 0;
-
-      state = state.copyWith(
-        user: user,
-        totalPlaces: places.length,
-        totalCollections: collections.length - 1, // -1 pour exclure "all"
-        sharedPlaces: sharedPlaces,
-        isTrackingEnabled: isTracking,
-        isLoading: false,
-      );
-      */
-    } on Exception {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Erreur lors du chargement du profil',
-      );
     }
+
+    final trackingResult = await isTrackingEnabledAction();
+    late final bool trackingEnabled;
+    switch (trackingResult) {
+      case Ok(value: final value):
+        trackingEnabled = value;
+      case Err(error: final error, stackTrace: final stackTrace):
+        GsLogger().e(
+          '[ProfileViewModel] loadProfile -> isTrackingEnabled failed',
+          error,
+          stackTrace,
+        );
+        if (!ref.mounted) {
+          return;
+        }
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Erreur lors du chargement du profil',
+        );
+        return;
+    }
+
+    if (!ref.mounted) {
+      return;
+    }
+    state = state.copyWith(
+      user: user,
+      totalPlaces: stats.ownedPlaceCount,
+      totalCollections: stats.collectionCount,
+      sharedPlaces: stats.sharedCollectionCount,
+      isTrackingEnabled: trackingEnabled,
+      isLoading: false,
+    );
   }
 
   Future<void> toggleTracking(bool value) async {
-
     final trackingService = ref.read(locationTrackingServiceProvider);
-    final trackingRepository = ref.read(trackingRepositoryProvider);
+    final enableTracking = ref.read(enableTrackingUseCaseProvider);
+    final disableTracking = ref.read(disableTrackingUseCaseProvider);
+    state = state.copyWith(errorMessage: null);
 
-
-    if (value) {
-      await trackingRepository.enableTracking();
-      await trackingService.startTracking();
-    } else {
-      await trackingRepository.disableTracking();
-      await trackingService.stopTracking();
+    final result = value ? await enableTracking() : await disableTracking();
+    if (!ref.mounted) {
+      return;
+    }
+    if (result case Err(error: final error, stackTrace: final stackTrace)) {
+      GsLogger().e(
+        '[ProfileViewModel] toggleTracking -> ${value ? 'enable' : 'disable'} failed',
+        error,
+        stackTrace,
+      );
+      state = state.copyWith(
+        errorMessage: 'Erreur lors de la mise à jour du tracking',
+      );
+      return;
     }
 
-    state = state.copyWith(isTrackingEnabled: value);
+    try {
+      if (value) {
+        await trackingService.startTracking();
+      } else {
+        await trackingService.stopTracking();
+      }
+
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(isTrackingEnabled: value);
+    } on Exception catch (error, stackTrace) {
+      GsLogger().e(
+        '[ProfileViewModel] toggleTracking -> tracking service failed',
+        error,
+        stackTrace,
+      );
+      if (!ref.mounted) {
+        return;
+      }
+      state = state.copyWith(
+        errorMessage: 'Erreur lors de la mise à jour du tracking',
+      );
+    }
   }
 
   Future<void> logout() async {

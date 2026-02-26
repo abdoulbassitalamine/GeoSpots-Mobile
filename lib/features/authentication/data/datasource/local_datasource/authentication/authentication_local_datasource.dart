@@ -15,13 +15,19 @@ AuthenticationLocalDataSource authenticationLocalDatasource(Ref ref) =>
     );
 
 abstract interface class AuthenticationLocalDataSource {
-  Future<Result<void>> upsertAuthUser(String token, UserEntity user);
+  Future<Result<void>> upsertAuthUser(
+    String token,
+    String refreshToken,
+    UserEntity user,
+  );
 
   Future<Result<void>> deleteAuthUser();
 
   Future<Result<String?>> getUserAuthData();
 
   Future<Result<String?>> getAuthUserToken();
+
+  Future<Result<String?>> getAuthUserRefreshToken();
 
   Future<Result<UserEntity?>> getAuthUser();
 

@@ -4,7 +4,6 @@ import 'package:geo_spots/core/utils/utils/debounce.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class PlacesSearchBar extends HookWidget {
-
   const PlacesSearchBar({
     super.key,
     required this.searchQuery,
@@ -18,6 +17,8 @@ class PlacesSearchBar extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final controller = useTextEditingController(text: searchQuery);
+    final focusNode = useFocusNode();
+    final isExpanded = useState(false);
     final debouncer = Debouncer();
 
     return Padding(
@@ -27,6 +28,9 @@ class PlacesSearchBar extends HookWidget {
       ),
       child: GSSearchField(
         controller: controller,
+        focusNode: focusNode,
+        isExpanded: isExpanded.value,
+        onExpandedChanged: (value) => isExpanded.value = value,
         hintText: 'Rechercher un lieu...',
         onChanged: (value) {
           debouncer.run(() {
@@ -35,6 +39,7 @@ class PlacesSearchBar extends HookWidget {
         },
         onBack: () {
           controller.clear();
+          isExpanded.value = false;
           onClearSearch();
         },
         onClear: () {

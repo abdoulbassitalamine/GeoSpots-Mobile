@@ -8,8 +8,10 @@ part 'shared_access_token_entity.g.dart';
 @freezed
 sealed class SharedAccessTokenEntity with _$SharedAccessTokenEntity {
   const factory SharedAccessTokenEntity({
+    @Default('') String id,
     @Default('') String token,
     @Default('') String baseUrl,
+    @Default(false) bool isValid,
     @JsonKey(fromJson: _rightsFromJson, toJson: _rightsToJson)
     @Default(ShareAccessRight.read)
     ShareAccessRight rights,
