@@ -8,25 +8,21 @@ extension PlaceListExtension on List<PlaceEntity> {
       allTags.addAll(place.tags);
     }
 
-    final collections = <CollectionEntity>[CollectionEntity.all(this)];
+    final collections = <CollectionEntity>[];
 
     for (final tag in allTags) {
       final placesWithTag = where((place) => place.tags.contains(tag)).toList();
 
       collections.add(
         CollectionEntity(
+          id: 'tag:$tag',
           tag: tag,
           placesCount: placesWithTag.length,
-          places: placesWithTag,
         ),
       );
     }
 
-    collections.sort((a, b) {
-      if (a.tag == 'all') return -1;
-      if (b.tag == 'all') return 1;
-      return b.placesCount.compareTo(a.placesCount);
-    });
+    collections.sort((a, b) => b.placesCount.compareTo(a.placesCount));
 
     return collections;
   }

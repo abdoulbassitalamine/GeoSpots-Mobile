@@ -33,10 +33,12 @@ class SharedByMeCollectionsTabView extends StatelessWidget {
       children: [
         for (int i = 0; i < collections.length; i++)
           Padding(
-            padding: EdgeInsets.only(bottom: i == collections.length - 1 ? 0 : GSSpacing.l),
+            padding: EdgeInsets.only(
+              bottom: i == collections.length - 1 ? 0 : GSSpacing.l,
+            ),
             child: _SharedByMeCollectionCard(
               collection: collections[i],
-              tokens: tokensByCollection[collections[i].tag] ?? const [],
+              tokens: tokensByCollection[collections[i].id] ?? const [],
               onOpenCollection: () => onCollectionTap(collections[i]),
               onRevokeToken: onRevokeToken,
             ),
@@ -158,7 +160,8 @@ class _SharedByMeCollectionCard extends StatelessWidget {
                               if (token.expiresAt != null)
                                 _MetaPill(
                                   icon: Icons.schedule,
-                                  label: 'Expire ${_formatDate(token.expiresAt!)}',
+                                  label:
+                                      'Expire ${_formatDate(token.expiresAt!)}',
                                 ),
                             ],
                           ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
-import 'package:geo_spots/features/collections/domain/enums/collection_source.dart';
 import 'package:geo_spots/features/collections/presentation/view_model/collections_view_model.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../../shared/design_system/design_system.dart';
@@ -8,7 +7,6 @@ import 'export_dialog.dart';
 import 'share_collection_dialog.dart';
 
 class CollectionCard extends ConsumerWidget {
-
   const CollectionCard({
     super.key,
     required this.collection,
@@ -20,7 +18,6 @@ class CollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAllCollection = collection.tag == 'all';
-    final isShared = collection.source == CollectionSource.shared;
 
     return GSCard(
       onTap: onTap,
@@ -52,26 +49,6 @@ class CollectionCard extends ConsumerWidget {
                     fontSize: GSFontScale.sf05,
                   ),
                 ),
-                if (isShared) ...[
-                  const SizedBox(height: GSSpacing.xs),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: GSSpacing.s,
-                      vertical: GSSpacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: GSColors.warning100,
-                      borderRadius: BorderRadius.circular(GSRadius.full),
-                    ),
-                    child: Text(
-                      collection.rights.label,
-                      style: GSTypography.captionDefault.copyWith(
-                        color: GSColors.warning700,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
                 const SizedBox(height: GSSpacing.xs),
                 Text(
                   isAllCollection
@@ -84,7 +61,7 @@ class CollectionCard extends ConsumerWidget {
               ],
             ),
           ),
-          if (!isAllCollection && !isShared)
+          if (!isAllCollection)
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [

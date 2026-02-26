@@ -18,6 +18,6 @@ final geoJsonServiceProvider = Provider<IExportImportService>(
 );
 
 abstract interface class IExportImportService {
-  String export(CollectionEntity collection);
+  String export(CollectionEntity collection, List<PlaceEntity> places);
   List<PlaceEntity> import(String content);
 }

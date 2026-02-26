@@ -29,6 +29,19 @@ class ApiResponsePlaceDto {
 }
 
 @JsonSerializable()
+class ApiResponseListStringDto {
+  const ApiResponseListStringDto({this.message, this.data});
+
+  factory ApiResponseListStringDto.fromJson(Map<String, dynamic> json) =>
+      _$ApiResponseListStringDtoFromJson(json);
+
+  final String? message;
+  final List<String>? data;
+
+  Map<String, dynamic> toJson() => _$ApiResponseListStringDtoToJson(this);
+}
+
+@JsonSerializable()
 class PagePlaceDto {
   const PagePlaceDto({
     this.totalElements,
@@ -56,6 +69,51 @@ class PagePlaceDto {
   final bool? empty;
 
   Map<String, dynamic> toJson() => _$PagePlaceDtoToJson(this);
+}
+
+@JsonSerializable()
+class ApiResponsePagePlaceWithDistanceDto {
+  const ApiResponsePagePlaceWithDistanceDto({this.message, this.data});
+
+  factory ApiResponsePagePlaceWithDistanceDto.fromJson(
+    Map<String, dynamic> json,
+  ) => _$ApiResponsePagePlaceWithDistanceDtoFromJson(json);
+
+  final String? message;
+  final PagePlaceWithDistanceDto? data;
+
+  Map<String, dynamic> toJson() =>
+      _$ApiResponsePagePlaceWithDistanceDtoToJson(this);
+}
+
+@JsonSerializable()
+class PagePlaceWithDistanceDto {
+  const PagePlaceWithDistanceDto({
+    this.totalElements,
+    this.totalPages,
+    this.size,
+    this.content,
+    this.number,
+    this.numberOfElements,
+    this.first,
+    this.last,
+    this.empty,
+  });
+
+  factory PagePlaceWithDistanceDto.fromJson(Map<String, dynamic> json) =>
+      _$PagePlaceWithDistanceDtoFromJson(json);
+
+  final int? totalElements;
+  final int? totalPages;
+  final int? size;
+  final List<PlaceWithDistanceDto>? content;
+  final int? number;
+  final int? numberOfElements;
+  final bool? first;
+  final bool? last;
+  final bool? empty;
+
+  Map<String, dynamic> toJson() => _$PagePlaceWithDistanceDtoToJson(this);
 }
 
 @JsonSerializable()
@@ -90,4 +148,40 @@ class PlaceDto {
   final int? collectionCount;
 
   Map<String, dynamic> toJson() => _$PlaceDtoToJson(this);
+}
+
+@JsonSerializable()
+class PlaceWithDistanceDto {
+  const PlaceWithDistanceDto({
+    this.id,
+    this.title,
+    this.description,
+    this.latitude,
+    this.longitude,
+    this.imageUrl,
+    this.tags,
+    this.createdAt,
+    this.updatedAt,
+    this.username,
+    this.collectionCount,
+    this.distanceKm,
+  });
+
+  factory PlaceWithDistanceDto.fromJson(Map<String, dynamic> json) =>
+      _$PlaceWithDistanceDtoFromJson(json);
+
+  final int? id;
+  final String? title;
+  final String? description;
+  final double? latitude;
+  final double? longitude;
+  final String? imageUrl;
+  final List<String>? tags;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? username;
+  final int? collectionCount;
+  final double? distanceKm;
+
+  Map<String, dynamic> toJson() => _$PlaceWithDistanceDtoToJson(this);
 }

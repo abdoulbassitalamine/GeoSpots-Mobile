@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
-import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import '../../domain/entity/collection_entity.dart';
 
 part 'collections_state.freezed.dart';
@@ -14,7 +13,6 @@ sealed class CollectionsState with _$CollectionsState {
     @Default([]) List<CollectionEntity> sharedCollections,
     @Default([]) List<SharedAccessTokenEntity> sharedTokens,
     @Default([]) List<SharedAccessTokenEntity> ownedShareTokens,
-    @Default([]) List<PlaceEntity> allPlaces,
     @Default(0) int totalPlaces,
     @Default(CollectionsTab.owned) CollectionsTab selectedTab,
     @Default(false) bool isLoading,

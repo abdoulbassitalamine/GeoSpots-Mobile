@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/utils/exception/dio_exception.dart';
+import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/data/datasource/local_datasource/authentication/authentication_local_datasource.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
@@ -22,17 +24,23 @@ class AuthenticationInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final tokenResult = await ref
-        .read(authenticationLocalDatasourceProvider)
-        .getAuthUserToken();
+    final localDatasource = ref.read(authenticationLocalDatasourceProvider);
+    final tokenResult = await localDatasource.getAuthUserToken();
+    final tokenValidityResult = await localDatasource.getTokenValidity();
 
     final authUserToken = switch (tokenResult) {
       Ok(:final value) => value,
       Err() => null,
     };
+    final tokenValidity = switch (tokenValidityResult) {
+      Ok(:final value) => value ?? false,
+      Err() => false,
+    };
+    final hasValidToken =
+        authUserToken != null && authUserToken.isNotEmpty && tokenValidity;
 
     GsLogger().d('**** request: ${options.path}');
-    if (authUserToken != null) {
+    if (hasValidToken) {
       options.headers[_kAuthorizationHeader] = 'Bearer $authUserToken';
 
       if (options.data is! FormData) {
@@ -52,26 +60,42 @@ class AuthenticationInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     GsLogger().d(err.response);
-    if (err.response?.statusCode == 401 &&
-        (err.response?.headers[_kAccessTokenHeader] == null ||
-            err.response?.headers[kAccessTokenQueryParam] == null)) {
-      final tokenResult = await ref
-          .read(authenticationLocalDatasourceProvider)
-          .getAuthUserToken();
+    final appException = err.toAppException();
+    if (appException is UnauthorizedException) {
+      final request = err.requestOptions;
+      final hasAuthHeader = _hasNonEmptyHeader(request, _kAuthorizationHeader);
+      final hasSharedTokenHeader = _hasNonEmptyHeader(
+        request,
+        _kAccessTokenHeader,
+      );
+      final hasSharedTokenQuery =
+          request.queryParameters[kAccessTokenQueryParam]
+              ?.toString()
+              .trim()
+              .isNotEmpty ??
+          false;
 
-      final authUserToken = switch (tokenResult) {
-        Ok(:final value) => value,
-        Err() => null,
-      };
-      if (authUserToken != null) {
-        await ref
-            .read(authenticationLocalDatasourceProvider)
-            .setTokenValidity(false);
-        ref
-            .read(authGuardProvider.notifier)
-            .updateState(const AuthenticationStatus.unauthenticated(true));
+      // Shared token 401 must not invalidate the authenticated user session.
+      if (!hasAuthHeader || hasSharedTokenHeader || hasSharedTokenQuery) {
+        handler.next(err);
+        return;
       }
+
+      final localDatasource = ref.read(authenticationLocalDatasourceProvider);
+      await localDatasource.setTokenValidity(false);
+      await localDatasource.deleteAuthUser();
+      ref
+          .read(authGuardProvider.notifier)
+          .updateState(const AuthenticationStatus.unauthenticated(true));
     }
     handler.next(err);
+  }
+
+  bool _hasNonEmptyHeader(RequestOptions request, String key) {
+    final value = request.headers[key];
+    if (value == null) {
+      return false;
+    }
+    return value.toString().trim().isNotEmpty;
   }
 }

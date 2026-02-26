@@ -1,5 +1,6 @@
+import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../domain/repository/places_repository.dart';
+import '../../domain/use_case/places_use_cases.dart';
 import 'places_list_state.dart';
 
 part 'places_list_view_model.g.dart';
@@ -19,34 +20,36 @@ class PlacesListViewModel extends _$PlacesListViewModel {
       errorMessage: null,
     );
 
-    try {
-      final repository = ref.read(placesRepositoryProvider);
-      final places = tag != null
-          ? await repository.getPlacesByTag(tag)
-          : await repository.getAllPlaces();
+    final useCases = ref.read(placesUseCasesProvider);
+    final result = tag != null
+        ? await useCases.getPlacesByTag(tag)
+        : await useCases.getAllPlaces();
 
-      state = state.copyWith(places: places, isLoading: false);
-    } on Exception {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Erreur lors du chargement des lieux',
-      );
+    switch (result) {
+      case Ok(value: final places):
+        state = state.copyWith(places: places, isLoading: false);
+      case Err():
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Erreur lors du chargement des lieux',
+        );
     }
   }
 
   Future<void> searchPlaces(String query) async {
     state = state.copyWith(searchQuery: query, isLoading: true);
 
-    try {
-      final repository = ref.read(placesRepositoryProvider);
-      final places = await repository.searchPlaces(query);
+    final useCases = ref.read(placesUseCasesProvider);
+    final result = await useCases.searchPlaces(query);
 
-      state = state.copyWith(places: places, isLoading: false);
-    } on Exception {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Erreur lors de la recherche',
-      );
+    switch (result) {
+      case Ok(value: final places):
+        state = state.copyWith(places: places, isLoading: false);
+      case Err():
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Erreur lors de la recherche',
+        );
     }
   }
 

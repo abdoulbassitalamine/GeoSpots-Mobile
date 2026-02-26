@@ -3,18 +3,20 @@ import 'package:geo_spots/features/authentication/data/datasource/local_datasour
 import 'package:geo_spots/features/authentication/data/datasource/remote/authentication/authentication_remote_datasource.dart';
 import 'package:geo_spots/features/authentication/data/repository/authentication_repository_impl.dart';
 import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final authenticationRepositoryProvider = Provider<IAuthenticationRepository>(
-  (ref) => AuthenticationRepositoryImpl(
-    authenticationRemoteDatasource: ref.watch(
-      authenticationRemoteDatasourceProvider,
-    ),
-    authenticationLocalDatasource: ref.watch(
-      authenticationLocalDatasourceProvider,
-    ),
-  ),
-);
+part 'authentication_repository.g.dart';
+
+@Riverpod(keepAlive: true)
+IAuthenticationRepository authenticationRepository(Ref ref) =>
+    AuthenticationRepositoryImpl(
+      authenticationRemoteDatasource: ref.watch(
+        authenticationRemoteDatasourceProvider,
+      ),
+      authenticationLocalDatasource: ref.watch(
+        authenticationLocalDatasourceProvider,
+      ),
+    );
 
 abstract interface class IAuthenticationRepository {
   Future<Result<UserEntity>> signIn({
@@ -35,6 +37,17 @@ abstract interface class IAuthenticationRepository {
   Future<Result<String>> refreshToken();
 
   Future<Result<UserEntity>> me();
+
+  Future<Result<UserEntity>> updateMe({
+    String? firstName,
+    String? lastName,
+    String? email,
+  });
+
+  Future<Result<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 
   Future<Result<UserEntity?>> autoSignIn();
 

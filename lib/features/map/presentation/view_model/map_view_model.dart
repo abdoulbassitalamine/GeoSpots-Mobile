@@ -1,8 +1,12 @@
+import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
-import 'package:geo_spots/features/collections/domain/repository/collections_repository.dart';
+import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
+import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
+import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
+import 'package:geo_spots/features/collections/domain/use_cases/collections_use_cases.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
-import 'package:geo_spots/features/places/domain/repository/places_repository.dart';
+import 'package:geo_spots/features/places/domain/use_case/places_use_cases.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'map_state.dart';
@@ -20,59 +24,112 @@ class MapViewModel extends _$MapViewModel {
   Future<void> loadPlaces() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    try {
-      final places = await _loadPlacesForCurrentMode();
-      final categories = _buildCategories(places);
-      final visiblePlaces = _filterPlaces(
-        places: places,
-        category: state.selectedCategory,
-        query: state.searchQuery,
-      );
+    final result = await _loadPlacesForCurrentMode();
+    switch (result) {
+      case Ok(value: final places):
+        final categories = _buildCategories(places);
+        final visiblePlaces = _filterPlaces(
+          places: places,
+          category: state.selectedCategory,
+          query: state.searchQuery,
+        );
 
-      state = state.copyWith(
-        allPlaces: places,
-        categories: categories,
-        visiblePlaces: visiblePlaces,
-        selectedCategory:
-            categories.contains(state.selectedCategory) ? state.selectedCategory : 'Tous',
-        selectedPlaceId: _resolveSelectedPlaceId(
-          preferred: state.selectedPlaceId,
+        state = state.copyWith(
+          allPlaces: places,
+          categories: categories,
           visiblePlaces: visiblePlaces,
-        ),
-        isLoading: false,
-      );
-    } on Exception {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Erreur lors du chargement de la carte',
-      );
+          selectedCategory: categories.contains(state.selectedCategory)
+              ? state.selectedCategory
+              : 'Tous',
+          selectedPlaceId: _resolveSelectedPlaceId(
+            preferred: state.selectedPlaceId,
+            visiblePlaces: visiblePlaces,
+          ),
+          isLoading: false,
+        );
+      case Err():
+        state = state.copyWith(
+          isLoading: false,
+          errorMessage: 'Erreur lors du chargement de la carte',
+        );
     }
   }
 
-  Future<List<PlaceEntity>> _loadPlacesForCurrentMode() async {
+  Future<Result<List<PlaceEntity>>> _loadPlacesForCurrentMode() async {
     final authStatus = ref.read(authGuardProvider);
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
 
     if (isAuthenticated) {
-      return ref.read(placesRepositoryProvider).getAllPlaces();
+      return ref.read(placesUseCasesProvider).getAllPlaces();
     }
 
-    final sharedCollections = await ref
-        .read(collectionsRepositoryProvider)
+    final sharedCollectionsResult = await ref
+        .read(collectionsUseCasesProvider)
         .getSharedCollections();
-    final placesById = <String, PlaceEntity>{};
-    for (final collection in sharedCollections) {
-      for (final place in collection.places) {
-        placesById.putIfAbsent(place.id, () => place);
-      }
+    late final List<CollectionEntity> sharedCollections;
+    switch (sharedCollectionsResult) {
+      case Ok(:final value):
+        sharedCollections = value;
+      case Err(:final error, :final stackTrace):
+        return Err(error, stackTrace);
     }
-    return placesById.values.toList();
+
+    final sharedTokensResult = await ref
+        .read(collectionsUseCasesProvider)
+        .getSharedAccessTokens();
+    late final List<SharedAccessTokenEntity> sharedTokens;
+    switch (sharedTokensResult) {
+      case Ok(:final value):
+        sharedTokens = value;
+      case Err(:final error, :final stackTrace):
+        return Err(error, stackTrace);
+    }
+
+    try {
+      final sharedTokenByCollectionId = <String, String>{};
+      for (final token in sharedTokens) {
+        if (ShareResourceType.fromRaw(token.resourceType) !=
+                ShareResourceType.collection ||
+            token.resourceId.isEmpty) {
+          continue;
+        }
+        sharedTokenByCollectionId[token.resourceId] = token.token;
+      }
+
+      final placesResults = await Future.wait(
+        sharedCollections.map(
+          (collection) => ref
+              .read(collectionsUseCasesProvider)
+              .getCollectionPlaces(
+                collectionId: collection.id,
+                token: sharedTokenByCollectionId[collection.id],
+              ),
+        ),
+      );
+
+      final placesById = <String, PlaceEntity>{};
+      for (final result in placesResults) {
+        switch (result) {
+          case Ok(value: final places):
+            for (final place in places) {
+              placesById.putIfAbsent(place.id, () => place);
+            }
+          case Err(error: final error, stackTrace: final stackTrace):
+            return Err(error, stackTrace);
+        }
+      }
+      return Ok(placesById.values.toList());
+    } on Exception catch (e, st) {
+      return Err(e, st);
+    }
   }
 
   void updateSearchQuery(String query) {
     _applyFilters(
       searchQuery: query,
-      selectedCategory: query.trim().isNotEmpty ? 'Tous' : state.selectedCategory,
+      selectedCategory: query.trim().isNotEmpty
+          ? 'Tous'
+          : state.selectedCategory,
     );
   }
 
@@ -90,13 +147,12 @@ class MapViewModel extends _$MapViewModel {
     }
   }
 
-  void _applyFilters({
-    String? searchQuery,
-    String? selectedCategory,
-  }) {
+  void _applyFilters({String? searchQuery, String? selectedCategory}) {
     final nextQuery = searchQuery ?? state.searchQuery;
     final nextCategory = selectedCategory ?? state.selectedCategory;
-    final effectiveCategory = nextQuery.trim().isNotEmpty ? 'Tous' : nextCategory;
+    final effectiveCategory = nextQuery.trim().isNotEmpty
+        ? 'Tous'
+        : nextCategory;
     final nextVisiblePlaces = _filterPlaces(
       places: state.allPlaces,
       category: effectiveCategory,
@@ -129,8 +185,10 @@ class MapViewModel extends _$MapViewModel {
     required String query,
   }) {
     final normalizedQuery = _normalize(query);
-    final queryTerms =
-        normalizedQuery.split(' ').where((term) => term.isNotEmpty).toList();
+    final queryTerms = normalizedQuery
+        .split(' ')
+        .where((term) => term.isNotEmpty)
+        .toList();
 
     final filtered = places.where((place) {
       if (place.latitude == null || place.longitude == null) {
@@ -230,10 +288,12 @@ class MapViewModel extends _$MapViewModel {
     return false;
   }
 
-
   String _normalize(String value) {
     return value
-        .replaceAll(RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'), '')
+        .replaceAll(
+          RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'),
+          '',
+        )
         .toLowerCase()
         .trim()
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -274,7 +334,8 @@ class MapViewModel extends _$MapViewModel {
       return null;
     }
 
-    if (preferred != null && visiblePlaces.any((place) => place.id == preferred)) {
+    if (preferred != null &&
+        visiblePlaces.any((place) => place.id == preferred)) {
       return preferred;
     }
 

@@ -1,13 +1,17 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../shared/storage/shared_preferences/gs_shared_preferences.dart';
 import '../../data/datasource/tracking_remote_datasource.dart';
+import '../entity/current_location_entity.dart';
+import '../entity/location_share_session_entity.dart';
+import '../entity/public_location_entity.dart';
 
-final trackingRepositoryProvider = Provider<ITrackingRepository>(
-  (ref) => TrackingRepositoryImpl(
-    remoteDatasource: ref.watch(trackingRemoteDatasourceProvider),
-    sharedPreferences: ref.watch(sharedPreferencesDataSourceProvider),
-  ),
+part 'tracking_repository.g.dart';
+
+@Riverpod(keepAlive: true)
+ITrackingRepository trackingRepository(Ref ref) => TrackingRepositoryImpl(
+  remoteDatasource: ref.watch(trackingRemoteDatasourceProvider),
+  sharedPreferences: ref.watch(sharedPreferencesDataSourceProvider),
 );
 
 abstract interface class ITrackingRepository {
@@ -16,6 +20,16 @@ abstract interface class ITrackingRepository {
     required double longitude,
     required DateTime timestamp,
   });
+
+  Future<CurrentLocationEntity?> getCurrentLocation();
+
+  Future<void> deleteCurrentLocation();
+
+  Future<LocationShareSessionEntity> startLocationSharing();
+
+  Future<void> stopLocationSharing();
+
+  Future<PublicLocationEntity?> getPublicLocation(String shareToken);
 
   Future<void> enableTracking();
   Future<void> disableTracking();
@@ -44,6 +58,31 @@ class TrackingRepositoryImpl implements ITrackingRepository {
       longitude: longitude,
       timestamp: timestamp,
     );
+  }
+
+  @override
+  Future<CurrentLocationEntity?> getCurrentLocation() {
+    return remoteDatasource.getCurrentLocation();
+  }
+
+  @override
+  Future<void> deleteCurrentLocation() {
+    return remoteDatasource.deleteCurrentLocation();
+  }
+
+  @override
+  Future<LocationShareSessionEntity> startLocationSharing() {
+    return remoteDatasource.startSharing();
+  }
+
+  @override
+  Future<void> stopLocationSharing() {
+    return remoteDatasource.stopSharing();
+  }
+
+  @override
+  Future<PublicLocationEntity?> getPublicLocation(String shareToken) {
+    return remoteDatasource.getPublicLocation(shareToken);
   }
 
   @override

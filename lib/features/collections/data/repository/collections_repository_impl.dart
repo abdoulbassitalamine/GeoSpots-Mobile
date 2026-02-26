@@ -1,60 +1,188 @@
-import 'dart:math';
-
-import 'package:geo_spots/features/collections/data/datasource/shared_access_secure_datasource.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:geo_spots/core/utils/exception/exception.dart';
+import 'package:geo_spots/features/collections/data/datasource/collections_local_datasource.dart';
+import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
+import 'package:geo_spots/features/collections/data/dto/collections_api_dto.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
+import 'package:geo_spots/features/collections/domain/entity/collection_import_result_entity.dart';
+import 'package:geo_spots/features/collections/domain/entity/collection_share_result_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
-import 'package:geo_spots/features/collections/domain/enums/collection_source.dart';
+import 'package:geo_spots/features/collections/domain/entity/token_discover_result_entity.dart';
+import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
+import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
 import 'package:geo_spots/features/collections/domain/repository/collections_repository.dart';
+import 'package:geo_spots/features/places/data/dto/places_response_dto.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
-import 'package:geo_spots/features/places/domain/entity/place_list_extension.dart';
 
 class CollectionsRepositoryImpl implements CollectionsRepository {
-  CollectionsRepositoryImpl({required SharedAccessSecureDatasource sharedAccessSecureDatasource})
-      : _sharedAccessSecureDatasource = sharedAccessSecureDatasource;
+  CollectionsRepositoryImpl({
+    required ICollectionsRemoteDatasource remoteDatasource,
+    required ICollectionsLocalDatasource localDatasource,
+  }) : _remoteDatasource = remoteDatasource,
+       _localDatasource = localDatasource;
 
-  final SharedAccessSecureDatasource _sharedAccessSecureDatasource;
+  final ICollectionsRemoteDatasource _remoteDatasource;
+  final ICollectionsLocalDatasource _localDatasource;
 
   @override
-  List<CollectionEntity> getOwnedCollections(List<PlaceEntity> allPlaces) {
-    final collections = allPlaces.generateCollectionsFromTags();
+  Future<List<CollectionEntity>> getOwnedCollections() async {
+    final collections = await _remoteDatasource.fetchCollections();
     return collections
-        .map(
-          (collection) => collection.copyWith(
-            source: CollectionSource.owned,
-            rights: ShareAccessRight.write,
-          ),
-        )
+        .where((summary) => (summary.id?.toString().trim().isNotEmpty ?? false))
+        .map(_toCollectionEntity)
         .toList();
   }
 
   @override
   Future<List<SharedAccessTokenEntity>> getSharedAccessTokens() {
-    return _sharedAccessSecureDatasource.getAll();
+    return _localDatasource.getSharedAccessTokens();
   }
 
   @override
-  Future<List<SharedAccessTokenEntity>> getOwnedShareTokens() {
-    return _sharedAccessSecureDatasource.getOwnedShares();
+  Future<List<SharedAccessTokenEntity>> getOwnedShareTokens() async {
+    final remoteTokens = await _remoteDatasource.fetchTokens();
+    return remoteTokens
+        .where(
+          (token) => (token.resourceType ?? '').toUpperCase() == 'COLLECTION',
+        )
+        .map(_toSharedTokenEntity)
+        .toList();
   }
 
   @override
   Future<List<CollectionEntity>> getSharedCollections() async {
-    final tokens = await _sharedAccessSecureDatasource.getAll();
-    return tokens
-        .map((token) {
-          final places = _buildSharedPlaces(token);
-          return CollectionEntity(
-            tag: _formatSharedCollectionName(token.resourceId),
-            placesCount: places.length,
-            places: places,
-            source: CollectionSource.shared,
-            rights: token.rights,
-            sharedToken: token.token,
-            sharedResourceId: token.resourceId,
+    final savedTokens = await _localDatasource.getSharedAccessTokens();
+    final sharedCollections = <CollectionEntity>[];
+
+    for (final token in savedTokens) {
+      if (ShareResourceType.fromRaw(token.resourceType) !=
+          ShareResourceType.collection) {
+        continue;
+      }
+
+      try {
+        final resourceId = token.resourceId.trim();
+        if (resourceId.isNotEmpty) {
+          final byId = await _remoteDatasource.fetchCollectionById(
+            resourceId,
+            token: token.token,
           );
-        })
-        .toList();
+          if (byId != null &&
+              (byId.id?.toString().trim().isNotEmpty ?? false)) {
+            sharedCollections.add(_toCollectionEntity(byId));
+            continue;
+          }
+        }
+
+        final discovered = await _remoteDatasource.discoverToken(token.token);
+        final discoveredCollections =
+            discovered.collections ?? const <CollectionDto>[];
+        for (final discoveredCollection in discoveredCollections) {
+          if (discoveredCollection.id?.toString().trim().isEmpty ?? true) {
+            continue;
+          }
+          sharedCollections.add(_toCollectionEntity(discoveredCollection));
+        }
+      } on Exception {
+        continue;
+      }
+    }
+
+    return _deduplicateCollections(sharedCollections);
+  }
+
+  @override
+  Future<List<PlaceEntity>> getCollectionPlaces({
+    required String collectionId,
+    String? token,
+  }) {
+    return _remoteDatasource.fetchCollectionPlaces(collectionId, token: token);
+  }
+
+  @override
+  Future<String> exportCollection({
+    required CollectionEntity collection,
+    required ExportFormat format,
+  }) {
+    final collectionId = _resolveCollectionId(collection);
+    return _remoteDatasource.exportCollection(collectionId, format: format);
+  }
+
+  @override
+  Future<CollectionImportResultEntity> importCollectionFile({
+    required String filePath,
+    required ExportFormat format,
+    List<String> defaultTags = const <String>[],
+    bool skipDuplicates = true,
+  }) async {
+    final result = await _remoteDatasource.importFile(
+      filePath: filePath,
+      format: format,
+      defaultTags: defaultTags,
+      skipDuplicates: skipDuplicates,
+    );
+    return CollectionImportResultEntity(
+      imported: result.imported ?? 0,
+      skipped: result.skipped ?? 0,
+      errors: result.errors ?? const <String>[],
+      places:
+          result.places?.map(_toPlaceEntityFromDto).toList() ??
+          const <PlaceEntity>[],
+    );
+  }
+
+  @override
+  Future<CollectionImportResultEntity> importRawCollectionContent({
+    required String content,
+    required ExportFormat format,
+    List<String> defaultTags = const <String>[],
+    bool skipDuplicates = true,
+  }) async {
+    final result = await _remoteDatasource.importRawContent(
+      content: content,
+      format: format,
+      defaultTags: defaultTags,
+      skipDuplicates: skipDuplicates,
+    );
+    return CollectionImportResultEntity(
+      imported: result.imported ?? 0,
+      skipped: result.skipped ?? 0,
+      errors: result.errors ?? const <String>[],
+      places:
+          result.places?.map(_toPlaceEntityFromDto).toList() ??
+          const <PlaceEntity>[],
+    );
+  }
+
+  @override
+  Future<CollectionShareResultEntity> shareCollection({
+    required CollectionEntity collection,
+    required ShareAccessRight rights,
+    DateTime? expiresAt,
+    String? label,
+  }) async {
+    final collectionId = _resolveCollectionId(collection);
+    final remoteResult = await _remoteDatasource.shareCollection(
+      id: collectionId,
+      permission: rights == ShareAccessRight.write ? 'WRITE' : 'READ',
+      expiresAt: expiresAt,
+      label: label,
+    );
+    final token = SharedAccessTokenEntity(
+      token: remoteResult.token ?? '',
+      baseUrl: _baseUrlFromShareUrl(remoteResult.url ?? ''),
+      rights: _mapPermission(remoteResult.permission ?? ''),
+      resourceType: ShareResourceType.fromRaw(
+        remoteResult.resourceType,
+      ).normalizedValue,
+      resourceId: remoteResult.resourceId?.toString() ?? '',
+      expiresAt: remoteResult.expiresAt,
+    );
+    return CollectionShareResultEntity(
+      url: remoteResult.url ?? '',
+      token: token,
+    );
   }
 
   @override
@@ -66,54 +194,155 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     final normalizedToken = token.trim();
 
     if (normalizedUrl.isEmpty || normalizedToken.isEmpty) {
-      throw Exception('URL et token sont obligatoires');
-    }
-
-    if (normalizedToken.length < 12) {
-      throw Exception('Token invalide');
+      throw const ServerException('URL et token sont obligatoires');
     }
 
     final rights = _inferRightsFromToken(normalizedToken);
-    final metadata = SharedAccessTokenEntity(
+    final resourceType = ShareResourceType.collection.normalizedValue;
+    var resourceId = '';
+
+    try {
+      final discovered = await _remoteDatasource.discoverToken(normalizedToken);
+      final firstCollection = discovered.collections?.firstWhere(
+        (collection) => collection.id != null,
+        orElse: () => const CollectionDto(),
+      );
+      final discoveredId = firstCollection?.id?.toString().trim() ?? '';
+      if (discoveredId.isNotEmpty) {
+        resourceId = discoveredId;
+      }
+    } on Exception {
+      // Keep fallback values when discovery fails.
+    }
+
+    final entity = SharedAccessTokenEntity(
       token: normalizedToken,
       baseUrl: normalizedUrl,
       rights: rights,
-      resourceType: 'collection',
-      resourceId: _buildResourceId(normalizedToken),
-      expiresAt: DateTime.now().add(const Duration(days: 30)),
+      resourceType: resourceType,
+      resourceId: resourceId,
+      expiresAt: null,
     );
 
-    await _sharedAccessSecureDatasource.upsert(metadata);
-    return metadata;
+    await _localDatasource.upsertSharedAccessToken(entity);
+    return entity;
   }
 
   @override
-  Future<void> revokeSharedAccess(String token) {
-    return _sharedAccessSecureDatasource.removeByToken(token);
+  Future<void> revokeSharedAccess(String token) async {
+    final saved = await _localDatasource.getSharedAccessTokens();
+    saved.removeWhere((item) => item.token == token);
+    await _localDatasource.saveSharedAccessTokens(saved);
   }
 
   @override
-  Future<void> revokeOwnedShare(String token) {
-    return _sharedAccessSecureDatasource.removeOwnedShareByToken(token);
-  }
-
-  @override
-  Future<void> saveOwnedShareToken(SharedAccessTokenEntity token) {
-    return _sharedAccessSecureDatasource.upsertOwnedShare(token);
+  Future<void> revokeOwnedShare(String token) async {
+    final remoteTokens = await _remoteDatasource.fetchTokens();
+    final found = remoteTokens.where((candidate) => candidate.token == token);
+    for (final candidate in found) {
+      final candidateId = candidate.id;
+      if (candidateId != null) {
+        await _remoteDatasource.revokeTokenById(candidateId.toString());
+      }
+    }
   }
 
   @override
   Future<SharedAccessTokenEntity?> getTokenForResource({
-    required String resourceType,
+    required ShareResourceType resourceType,
     required String resourceId,
   }) async {
-    final tokens = await _sharedAccessSecureDatasource.getAll();
-    for (final token in tokens) {
-      if (token.resourceType == resourceType && token.resourceId == resourceId) {
+    final sharedTokens = await _localDatasource.getSharedAccessTokens();
+    for (final token in sharedTokens) {
+      if (_matchesResource(token, resourceType, resourceId)) {
         return token;
       }
     }
+
+    try {
+      final remoteTokens = await _remoteDatasource.fetchTokens();
+      for (final remoteToken in remoteTokens) {
+        final token = _toSharedTokenEntity(remoteToken);
+        if (_matchesResource(token, resourceType, resourceId)) {
+          return token;
+        }
+      }
+    } on Exception {
+      // Ignore remote failure here and fall back to local shared tokens only.
+    }
+
     return null;
+  }
+
+  @override
+  Future<List<SharedAccessTokenEntity>> getTokens() async {
+    final tokens = await _remoteDatasource.fetchTokens();
+    return tokens.map(_toSharedTokenEntity).toList();
+  }
+
+  @override
+  Future<SharedAccessTokenEntity> createToken({
+    required ShareResourceType resourceType,
+    required String resourceId,
+    required ShareAccessRight rights,
+    DateTime? expiresAt,
+    String? label,
+  }) async {
+    final token = await _remoteDatasource.createToken(
+      resourceType: resourceType,
+      resourceId: resourceId,
+      permission: rights == ShareAccessRight.write ? 'WRITE' : 'READ',
+      expiresAt: expiresAt,
+      label: label,
+    );
+    return _toSharedTokenEntity(token);
+  }
+
+  @override
+  Future<SharedAccessTokenEntity?> getTokenById(String id) async {
+    final token = await _remoteDatasource.fetchTokenById(id);
+    if (token == null) {
+      return null;
+    }
+    return _toSharedTokenEntity(token);
+  }
+
+  @override
+  Future<SharedAccessTokenEntity?> updateTokenExpiration({
+    required String id,
+    required DateTime expiration,
+  }) async {
+    final updated = await _remoteDatasource.updateTokenExpiration(
+      id: id,
+      expiration: expiration,
+    );
+    if (updated == null) {
+      return null;
+    }
+    return _toSharedTokenEntity(updated);
+  }
+
+  @override
+  Future<void> revokeTokenById(String id) {
+    return _remoteDatasource.revokeTokenById(id);
+  }
+
+  @override
+  Future<TokenDiscoverResultEntity> discoverToken(String token) async {
+    final discovered = await _remoteDatasource.discoverToken(token);
+    final collections = (discovered.collections ?? const <CollectionDto>[])
+        .map(_toCollectionEntity)
+        .toList();
+
+    return TokenDiscoverResultEntity(
+      serverUrl: discovered.serverUrl ?? '',
+      tokenLabel: discovered.tokenLabel ?? '',
+      collections: collections,
+      places:
+          discovered.places?.map(_toPlaceEntityFromDto).toList() ??
+          const <PlaceEntity>[],
+      locationAvailable: discovered.locationAvailable ?? false,
+    );
   }
 
   @override
@@ -126,6 +355,54 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     return '$normalized/shared/collections?token=$token&rights=${rights.value}';
   }
 
+  CollectionEntity _toCollectionEntity(CollectionDto summary) {
+    final id = summary.id?.toString() ?? '';
+    final name = summary.name?.trim() ?? '';
+    final tagFilter = summary.tagFilter?.trim();
+    final effectiveTag = name.isEmpty
+        ? (tagFilter?.isNotEmpty ?? false)
+              ? tagFilter!
+              : 'Collection $id'
+        : name;
+    final count = summary.placeCount ?? 0;
+
+    return CollectionEntity(id: id, tag: effectiveTag, placesCount: count);
+  }
+
+  SharedAccessTokenEntity _toSharedTokenEntity(AccessTokenDto token) {
+    final fallbackBaseUrl = dotenv.env['API_BASE_URL'] ?? '';
+    return SharedAccessTokenEntity(
+      token: token.token ?? '',
+      baseUrl: fallbackBaseUrl,
+      rights: _mapPermission(token.permission ?? ''),
+      resourceType: ShareResourceType.fromRaw(
+        token.resourceType,
+      ).normalizedValue,
+      resourceId: token.resourceId?.toString() ?? '',
+      expiresAt: token.expiresAt,
+    );
+  }
+
+  PlaceEntity _toPlaceEntityFromDto(PlaceDto dto) {
+    return PlaceEntity(
+      id: dto.id?.toString() ?? '0',
+      title: dto.title ?? 'Lieu sans titre',
+      description: dto.description ?? '',
+      tags: dto.tags ?? const <String>[],
+      date: _formatDate(dto.updatedAt ?? dto.createdAt),
+      imageUrl: dto.imageUrl,
+      latitude: dto.latitude,
+      longitude: dto.longitude,
+      userId: dto.username,
+    );
+  }
+
+  ShareAccessRight _mapPermission(String rawPermission) {
+    return rawPermission.toUpperCase() == 'WRITE'
+        ? ShareAccessRight.write
+        : ShareAccessRight.read;
+  }
+
   ShareAccessRight _inferRightsFromToken(String token) {
     if (token.startsWith('w_') || token.startsWith('W_')) {
       return ShareAccessRight.write;
@@ -133,65 +410,49 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     return ShareAccessRight.read;
   }
 
-  String _buildResourceId(String token) {
-    final demoMatch = RegExp(r'^(w_)?demo_received_([a-zA-Z0-9-]+)').firstMatch(token);
-    if (demoMatch != null) {
-      return demoMatch.group(2) ?? 'shared-demo';
+  bool _matchesResource(
+    SharedAccessTokenEntity token,
+    ShareResourceType resourceType,
+    String resourceId,
+  ) {
+    return ShareResourceType.fromRaw(token.resourceType) == resourceType &&
+        token.resourceId == resourceId;
+  }
+
+  String _resolveCollectionId(CollectionEntity collection) {
+    final id = collection.id.trim();
+    if (id.isEmpty) {
+      throw const ServerException('Identifiant de collection manquant');
     }
-    final seed = token.codeUnits.fold<int>(0, (acc, c) => acc + c);
-    return 'shared-${seed % 100000 + Random(seed).nextInt(500)}';
+    return id;
   }
 
-  String _formatSharedCollectionName(String resourceId) {
-    final raw = resourceId.replaceAll('-', ' ').trim();
-    if (raw.isEmpty) {
-      return 'Collection partagée';
+  String _baseUrlFromShareUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || uri.host.isEmpty) {
+      return dotenv.env['API_BASE_URL'] ?? '';
     }
-    return raw
-        .split(RegExp(r'\s+'))
-        .map((word) => word.isEmpty
-            ? word
-            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
-        .join(' ');
+    return '${uri.scheme}://${uri.host}${uri.hasPort ? ':${uri.port}' : ''}';
   }
 
-  int _estimateSharedPlacesCount(String token) {
-    final seed = token.codeUnits.fold<int>(0, (acc, c) => acc + c);
-    return seed % 12 + 1;
+  List<CollectionEntity> _deduplicateCollections(List<CollectionEntity> raw) {
+    final map = <String, CollectionEntity>{};
+    for (final collection in raw) {
+      if (collection.id.trim().isEmpty) {
+        continue;
+      }
+      map[collection.id] = collection;
+    }
+    return map.values.toList();
   }
 
-  List<PlaceEntity> _buildSharedPlaces(SharedAccessTokenEntity token) {
-    final count = _estimateSharedPlacesCount(token.token).clamp(2, 8);
-    final cityPool = ['Paris', 'Dakar', 'Casablanca', 'Lyon', 'Berlin', 'Rome'];
-    final cityCoordinates = <String, (double lat, double lon)>{
-      'Paris': (48.8566, 2.3522),
-      'Dakar': (14.7167, -17.4677),
-      'Casablanca': (33.5731, -7.5898),
-      'Lyon': (45.7640, 4.8357),
-      'Berlin': (52.5200, 13.4050),
-      'Rome': (41.9028, 12.4964),
-    };
-    final collectionTag = _formatSharedCollectionName(token.resourceId);
-
-    return List<PlaceEntity>.generate(count, (index) {
-      final seed = (token.token.hashCode + index).abs();
-      final city = cityPool[seed % cityPool.length];
-      final base = cityCoordinates[city] ?? (48.8566, 2.3522);
-      final latOffset = ((seed % 17) - 8) * 0.0045;
-      final lonOffset = ((seed % 19) - 9) * 0.0045;
-      return PlaceEntity(
-        id: 'shared_${token.resourceId}_$index',
-        title: '$collectionTag ${index + 1}',
-        description: 'Lieu partagé via token (${token.rights.label}).',
-        tags: [collectionTag],
-        date: '15 janvier 2026',
-        latitude: base.$1 + latOffset,
-        longitude: base.$2 + lonOffset,
-        city: city,
-        country: 'France',
-        isShared: true,
-        sharedToken: token.token,
-      );
-    });
+  String _formatDate(DateTime? value) {
+    if (value == null) {
+      return '';
+    }
+    final date = value.toLocal();
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
   }
 }

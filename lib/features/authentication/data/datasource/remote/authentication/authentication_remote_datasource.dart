@@ -35,4 +35,15 @@ abstract interface class IAuthenticationRemoteDatasource {
   Future<Result<LoginResponseDto>> refreshToken({required String refreshToken});
 
   Future<Result<UserDto>> getCurrentUser();
+
+  Future<Result<UserDto>> updateCurrentUser({
+    String? firstName,
+    String? lastName,
+    String? email,
+  });
+
+  Future<Result<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }

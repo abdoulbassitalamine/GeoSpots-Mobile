@@ -1,4 +1,3 @@
-
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
@@ -71,7 +70,7 @@ class AuthenticationViewModel extends _$AuthenticationViewModel {
 
     switch (result) {
       case Ok():
-       break;
+        break;
       case Err(:final error, :final stackTrace):
         Error.throwWithStackTrace(error, stackTrace ?? StackTrace.current);
     }
@@ -79,7 +78,13 @@ class AuthenticationViewModel extends _$AuthenticationViewModel {
 
   Future<void> logOut() async {
     final authGuardNotifier = ref.read(authGuardProvider.notifier);
-    ref.read(logOutUseCaseProvider);
+    final result = await ref.read(logOutUseCaseProvider)();
+
+    switch (result) {
+      case Ok():
+      case Err():
+        break;
+    }
 
     const newState = AuthenticationStatus.unauthenticated(false);
     if (ref.mounted) state = newState;

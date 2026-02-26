@@ -1,12 +1,14 @@
 import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../../core/utils/validator/validator.dart';
-import '../../domain/repository/places_repository.dart';
+import '../../domain/entity/place_upsert_payload.dart';
+import '../../domain/use_case/places_use_cases.dart';
 import 'upsert_place_state.dart';
 
 part 'upsert_place_view_model.g.dart';
@@ -24,6 +26,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   late final longitudeValidators = Validators(
     validators: [requiredValidator, longitudeValidator],
   );
+  String? _initialImageUrl;
 
   @override
   UpsertPlaceState build(String placeId) {
@@ -44,40 +47,40 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   Future<void> _loadPlace(String placeId) async {
     state = state.copyWith(isLoading: true);
 
-    try {
-      final repository = ref.read(placesRepositoryProvider);
-      final place = await repository.getPlaceById(placeId);
+    final result = await ref.read(placesUseCasesProvider).getPlaceById(placeId);
+    switch (result) {
+      case Ok(value: final place):
+        if (place == null) {
+          state = state.copyWith(
+            isLoading: false,
+            errorMessage: 'Lieu non trouvé',
+          );
+          return;
+        }
 
-      if (place == null) {
+        _initialImageUrl = place.imageUrl;
+        state = state.copyWith(
+          title: place.title,
+          description: place.description,
+          tags: place.tags,
+          imageUrl: place.imageUrl,
+          position: place.hasCoordinates
+              ? LatLng(place.latitude!, place.longitude!)
+              : null,
+          manualLatitude: place.latitude?.toStringAsFixed(6) ?? '',
+          manualLongitude: place.longitude?.toStringAsFixed(6) ?? '',
+          address: place.address ?? '',
+          isLoading: false,
+        );
+
+        GsLogger().d('Place loaded for editing: ${place.id}');
+        GsLogger().d('Place loaded : $place');
+      case Err(error: final error):
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'Lieu non trouvé',
+          errorMessage: 'Erreur lors du chargement',
         );
-        return;
-      }
-
-      state = state.copyWith(
-        title: place.title,
-        description: place.description,
-        tags: place.tags,
-        imageUrl: place.imageUrl,
-        position: place.hasCoordinates
-            ? LatLng(place.latitude!, place.longitude!)
-            : null,
-        manualLatitude: place.latitude?.toStringAsFixed(6) ?? '',
-        manualLongitude: place.longitude?.toStringAsFixed(6) ?? '',
-        address: place.address ?? '',
-        isLoading: false,
-      );
-
-      GsLogger().d('Place loaded for editing: ${place.id}');
-      GsLogger().d('Place loaded : $place');
-    } on Exception catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        errorMessage: 'Erreur lors du chargement',
-      );
-      GsLogger().e(e);
+        GsLogger().e(error);
     }
   }
 
@@ -93,12 +96,16 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
 
   String? get latitudeError {
     if (!_hasManualCoordinatesDraft) return null;
-    return latitudeValidators.executeWithPriorityMessage(state.manualLatitude).message;
+    return latitudeValidators
+        .executeWithPriorityMessage(state.manualLatitude)
+        .message;
   }
 
   String? get longitudeError {
     if (!_hasManualCoordinatesDraft) return null;
-    return longitudeValidators.executeWithPriorityMessage(state.manualLongitude).message;
+    return longitudeValidators
+        .executeWithPriorityMessage(state.manualLongitude)
+        .message;
   }
 
   bool get _manualCoordinatesValid =>
@@ -202,36 +209,105 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     }
 
     state = state.copyWith(isSaving: true, errorMessage: null);
+    final useCases = ref.read(placesUseCasesProvider);
+    final latitude = state.position!.latitude;
+    final longitude = state.position!.longitude;
+    final payload = PlaceUpsertPayload(
+      title: state.title.trim(),
+      description: state.description.trim(),
+      latitude: latitude,
+      longitude: longitude,
+      imageUrl: _resolvedRemoteImageUrl(state.imageUrl),
+      tags: state.tags,
+    );
+    final imagePath = state.imageUrl;
 
-    try {
-      // TODO(dev): Implement save via repository.
-      // final repository = ref.read(placesRepositoryProvider);
+    final upsertResult = state.isEditMode
+        ? await useCases.updatePlace(state.placeId!, payload)
+        : await useCases.createPlace(payload);
 
-      if (state.isEditMode) {
-        // Mode modification
-        // await repository.updatePlace(state.placeId!, ...);
-        GsLogger().d('Updating place: ${state.placeId}');
-      } else {
-        // Mode création
-        // await repository.createPlace(...);
-        GsLogger().d('Creating new place');
-      }
-
-      await Future<void>.delayed(const Duration(seconds: 1));
-      state = state.copyWith(isSaving: false);
-    } on Exception catch (e) {
-      state = state.copyWith(
-        isSaving: false,
-        errorMessage: state.isEditMode
-            ? 'Erreur lors de la mise à jour'
-            : 'Erreur lors de la création',
-      );
-      GsLogger().e(e);
+    String persistedPlaceId;
+    switch (upsertResult) {
+      case Ok(value: final place):
+        persistedPlaceId = place.id;
+      case Err(error: final error):
+        state = state.copyWith(
+          isSaving: false,
+          errorMessage: state.isEditMode
+              ? 'Erreur lors de la mise à jour'
+              : 'Erreur lors de la création',
+        );
+        GsLogger().e(error);
+        return;
     }
+
+    if (_isLocalImagePath(imagePath)) {
+      final imageResult = await useCases.uploadPlaceImage(
+        id: persistedPlaceId,
+        imagePath: imagePath!,
+      );
+      switch (imageResult) {
+        case Ok():
+          break;
+        case Err(error: final error):
+          state = state.copyWith(
+            isSaving: false,
+            errorMessage: 'Erreur lors de l\'upload de l\'image',
+          );
+          GsLogger().e(error);
+          return;
+      }
+    } else if (state.isEditMode &&
+        _initialImageUrl != null &&
+        imagePath == null) {
+      final deleteImageResult = await useCases.deletePlaceImage(
+        persistedPlaceId,
+      );
+      switch (deleteImageResult) {
+        case Ok():
+          break;
+        case Err(error: final error):
+          state = state.copyWith(
+            isSaving: false,
+            errorMessage: 'Erreur lors de la suppression de l\'image',
+          );
+          GsLogger().e(error);
+          return;
+      }
+    }
+
+    state = state.copyWith(isSaving: false);
   }
 
   double? _parseCoordinate(String raw) {
     final normalized = raw.trim().replaceAll(',', '.');
     return double.tryParse(normalized);
+  }
+
+  String? _resolvedRemoteImageUrl(String? value) {
+    if (value == null) {
+      return null;
+    }
+    final normalized = value.trim();
+    if (normalized.isEmpty || _isLocalImagePath(normalized)) {
+      return null;
+    }
+    return normalized;
+  }
+
+  bool _isLocalImagePath(String? value) {
+    if (value == null) {
+      return false;
+    }
+    final normalized = value.trim().toLowerCase();
+    if (normalized.isEmpty) {
+      return false;
+    }
+    return (normalized.startsWith('/') &&
+            !normalized.startsWith('/api/images/')) ||
+        normalized.startsWith('file://') ||
+        (!normalized.startsWith('http://') &&
+            !normalized.startsWith('https://') &&
+            !normalized.startsWith('/api/images/'));
   }
 }

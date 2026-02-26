@@ -1,25 +1,38 @@
-import 'package:geo_spots/features/collections/domain/services/export_import_service.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../places/domain/entity/place_entity.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import '../entity/collection_import_result_entity.dart';
 import '../enums/export_format.dart';
+import '../repository/collections_repository.dart';
+
+part 'import_collection_use_case.g.dart';
 
 class ImportCollectionUseCase {
   ImportCollectionUseCase(this._ref);
 
   final Ref _ref;
 
-  Future<List<PlaceEntity>> call(String content, ExportFormat format) async {
-    switch (format) {
-      case ExportFormat.gpx:
-        return _ref.read(gpxServiceProvider).import(content);
-      case ExportFormat.kml:
-        return _ref.read(kmlServiceProvider).import(content);
-      case ExportFormat.geoJSON:
-        return _ref.read(geoJsonServiceProvider).import(content);
+  Future<Result<CollectionImportResultEntity>> call({
+    required String filePath,
+    required ExportFormat format,
+    List<String> defaultTags = const <String>[],
+    bool skipDuplicates = true,
+  }) async {
+    try {
+      final result = await _ref
+          .read(collectionsRepositoryProvider)
+          .importCollectionFile(
+            filePath: filePath,
+            format: format,
+            defaultTags: defaultTags,
+            skipDuplicates: skipDuplicates,
+          );
+      return Ok(result);
+    } on Exception catch (e, st) {
+      return Err(e, st);
     }
   }
 }
 
-final importCollectionUseCaseProvider = Provider<ImportCollectionUseCase>(
-  ImportCollectionUseCase.new,
-);
+@riverpod
+ImportCollectionUseCase importCollectionUseCase(Ref ref) =>
+    ImportCollectionUseCase(ref);

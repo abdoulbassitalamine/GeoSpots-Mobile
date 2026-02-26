@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
-import 'package:geo_spots/features/collections/domain/enums/collection_source.dart';
+import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
+import 'package:geo_spots/features/collections/domain/use_cases/collections_use_cases.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/features/places/presentation/places_list/widgets/place_list_item.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
@@ -49,18 +51,55 @@ class CollectionDetailsView extends HookConsumerWidget {
       );
     }
 
-    final filteredPlaces = _filterPlaces(collection.places, query.value);
+    final tokenForCollection = _findTokenForCollection(state, collection.id);
     final isSharedCollection =
-        hasSharedContext || collection.source == CollectionSource.shared;
-    final effectiveRights = activeAccessRight ?? collection.rights;
+        hasSharedContext ||
+        state.sharedCollections.any((item) => item.id == collection.id);
+    final effectiveSharedToken = activeSharedToken ?? tokenForCollection?.token;
+    final effectiveRights = activeAccessRight ?? tokenForCollection?.rights;
+    final placesFuture = useMemoized(
+      () => ref
+          .read(collectionsUseCasesProvider)
+          .getCollectionPlaces(
+            collectionId: collection.id,
+            token: isSharedCollection ? effectiveSharedToken : null,
+          ),
+      [collection.id, isSharedCollection, effectiveSharedToken],
+    );
+    final placesSnapshot = useFuture(placesFuture);
+
+    if (placesSnapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: GSCircularLoader());
+    }
+
+    final placesResult = placesSnapshot.data;
+    if (placesResult == null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: GSSpacing.xl),
+        child: Text(
+          'Impossible de charger les lieux de la collection.',
+          style: GSTypography.bodyDefaultMedium.copyWith(
+            color: GSColors.neutral600,
+          ),
+        ),
+      );
+    }
+
+    final places = switch (placesResult) {
+      Ok(value: final value) => value,
+      Err() => const <PlaceEntity>[],
+    };
+    final filteredPlaces = _filterPlaces(places, query.value);
 
     return Column(
       children: [
         CollectionDetailsSummary(
-          total: collection.places.length,
+          total: places.length,
           filtered: filteredPlaces.length,
-          sourceLabel: isSharedCollection ? 'Collection partagée' : 'Ma collection',
-          rightsLabel: isSharedCollection ? effectiveRights.label : null,
+          sourceLabel: isSharedCollection
+              ? 'Collection partagée'
+              : 'Ma collection',
+          rightsLabel: isSharedCollection ? effectiveRights?.label : null,
         ),
         const SizedBox(height: GSSpacing.m),
         CollectionSearchField(
@@ -98,20 +137,26 @@ class CollectionDetailsView extends HookConsumerWidget {
                   onTap: () {
                     if (isSharedCollection) {
                       ref
-                          .read(activeCollectionAccessRightProvider.notifier)
-                          .right = effectiveRights;
-                      ref
-                          .read(activeSharedAccessTokenProvider.notifier)
-                          .token = collection.sharedToken ?? activeSharedToken;
+                              .read(
+                                activeCollectionAccessRightProvider.notifier,
+                              )
+                              .right =
+                          effectiveRights;
+                      ref.read(activeSharedAccessTokenProvider.notifier).token =
+                          effectiveSharedToken;
                     } else {
                       ref
-                          .read(activeCollectionAccessRightProvider.notifier)
-                          .right = null;
-                      ref
-                          .read(activeSharedAccessTokenProvider.notifier)
-                          .token = null;
+                              .read(
+                                activeCollectionAccessRightProvider.notifier,
+                              )
+                              .right =
+                          null;
+                      ref.read(activeSharedAccessTokenProvider.notifier).token =
+                          null;
                     }
-                    PlaceDetailsRouteData(placeId: place.id).push<void>(context);
+                    PlaceDetailsRouteData(
+                      placeId: place.id,
+                    ).push<void>(context);
                   },
                 ),
               );
@@ -119,6 +164,18 @@ class CollectionDetailsView extends HookConsumerWidget {
           ),
       ],
     );
+  }
+
+  SharedAccessTokenEntity? _findTokenForCollection(
+    CollectionsState state,
+    String collectionId,
+  ) {
+    for (final token in state.sharedTokens) {
+      if (token.resourceId == collectionId) {
+        return token;
+      }
+    }
+    return null;
   }
 
   CollectionEntity? _findCollection(

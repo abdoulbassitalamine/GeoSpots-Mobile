@@ -45,8 +45,40 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
   }
 
   @override
+  Future<Result<UserEntity>> updateMe({
+    String? firstName,
+    String? lastName,
+    String? email,
+  }) async {
+    final result = await _authenticationRemoteDatasource.updateCurrentUser(
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+    );
+    return switch (result) {
+      Ok(:final value) => Ok(UserEntity.fromDto(value)),
+      Err(:final error, :final stackTrace) => Err(error, stackTrace),
+    };
+  }
+
+  @override
+  Future<Result<void>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) {
+    return _authenticationRemoteDatasource.changePassword(
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+    );
+  }
+
+  @override
   Future<Result<void>> logout() async {
-    await _authenticationRemoteDatasource.logout();
+    try {
+      await _authenticationRemoteDatasource.logout();
+    } on Exception {
+      // Local cleanup must always happen even if remote logout fails/401.
+    }
     await _authenticationLocalDataSource.setTokenValidity(false);
     return _authenticationLocalDataSource.deleteAuthUser();
   }

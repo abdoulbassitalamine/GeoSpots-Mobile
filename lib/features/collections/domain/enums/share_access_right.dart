@@ -1,6 +1,6 @@
 enum ShareAccessRight {
-  read('read', 'Lecture'),
-  write('write', 'Lecture / Ecriture');
+  read('READ', 'Lecture'),
+  write('WRITE', 'Lecture / Ecriture');
 
   const ShareAccessRight(this.value, this.label);
 

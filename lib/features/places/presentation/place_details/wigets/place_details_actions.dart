@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/features/places/domain/services/share_service.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
@@ -8,7 +7,6 @@ import '../../view_model/place_details_view_model.dart';
 import 'navigation_options_dialog.dart';
 
 class PlaceDetailsActions extends StatelessWidget {
-
   const PlaceDetailsActions({
     super.key,
     required this.place,
@@ -25,9 +23,17 @@ class PlaceDetailsActions extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: GSSpacing.xl),
       child: Column(
         children: [
-          _PrimaryActionsRow(placeId: placeId, place: place, readOnly: readOnly),
+          _PrimaryActionsRow(
+            placeId: placeId,
+            place: place,
+            readOnly: readOnly,
+          ),
           const SizedBox(height: GSSpacing.l),
-          _SecondaryActionsRow(placeId: placeId, place: place, readOnly: readOnly),
+          _SecondaryActionsRow(
+            placeId: placeId,
+            place: place,
+            readOnly: readOnly,
+          ),
         ],
       ),
     );
@@ -85,7 +91,6 @@ class _PrimaryActionsRow extends StatelessWidget {
 }
 
 class _SecondaryActionsRow extends ConsumerWidget {
-
   const _SecondaryActionsRow({
     required this.placeId,
     required this.place,
@@ -106,8 +111,8 @@ class _SecondaryActionsRow extends ConsumerWidget {
           label: 'Partager',
           onPressed: () async {
             await ref
-                .read(shareServiceProvider)
-                .sharePlaceWithCoordinates(place);
+                .read(placeDetailsViewModelProvider(placeId).notifier)
+                .sharePlace();
           },
         ),
         _ActionButton(
@@ -144,7 +149,6 @@ class _SecondaryActionsRow extends ConsumerWidget {
 }
 
 class _ActionButton extends StatelessWidget {
-
   const _ActionButton({
     required this.icon,
     required this.label,

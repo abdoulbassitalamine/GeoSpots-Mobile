@@ -5,10 +5,10 @@ import '../../domain/services/export_import_service.dart';
 
 class GeoJSONService implements IExportImportService {
   @override
-  String export(CollectionEntity collection) {
+  String export(CollectionEntity collection, List<PlaceEntity> places) {
     final features = <Map<String, dynamic>>[];
 
-    for (final place in collection.places) {
+    for (final place in places) {
       if (place.hasCoordinates) {
         features.add({
           'type': 'Feature',
