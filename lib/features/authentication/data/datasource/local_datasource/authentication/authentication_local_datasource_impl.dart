@@ -40,6 +40,19 @@ class AuthenticationLocalDatasourceImpl
   }
 
   @override
+  Future<Result<String?>> getAuthUserRefreshToken() async {
+    try {
+      final refreshToken = await _secureStorage.read(
+        key: _authUserRefreshTokenSecureStorage,
+      );
+      return Ok(refreshToken);
+    } on Exception catch (e, st) {
+      GsLogger().e('getAuthUserRefreshToken', e, st);
+      return Err(e, st);
+    }
+  }
+
+  @override
   Future<Result<bool?>> getTokenValidity() async {
     try {
       final value = _sharedPreferences.getBool(_authUserValidityStorageKey);
@@ -117,6 +130,7 @@ class AuthenticationLocalDatasourceImpl
     try {
       await _secureStorage.delete(key: _authUserTokenSecureStorageKey);
       await _secureStorage.delete(key: _authUserSecureStorageKey);
+      await _secureStorage.delete(key: _authUserRefreshTokenSecureStorage);
       return const Ok(null);
     } on Exception catch (e, st) {
       GsLogger().e('deleteAuthUser', e, st);

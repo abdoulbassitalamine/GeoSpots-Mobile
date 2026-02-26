@@ -9,6 +9,7 @@ class RegisterRequestDto {
     required this.lastName,
     required this.email,
     required this.password,
+    required this.passwordConfirmation,
   });
 
   factory RegisterRequestDto.fromJson(Map<String, dynamic> json) =>
@@ -18,6 +19,8 @@ class RegisterRequestDto {
   final String lastName;
   final String email;
   final String password;
+  @JsonKey(name: 'confirmPassword')
+  final String passwordConfirmation;
 
   Map<String, dynamic> toJson() => _$RegisterRequestDtoToJson(this);
 }

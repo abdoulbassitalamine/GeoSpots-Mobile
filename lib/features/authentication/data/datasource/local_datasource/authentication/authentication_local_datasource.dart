@@ -27,6 +27,8 @@ abstract interface class AuthenticationLocalDataSource {
 
   Future<Result<String?>> getAuthUserToken();
 
+  Future<Result<String?>> getAuthUserRefreshToken();
+
   Future<Result<UserEntity?>> getAuthUser();
 
   Future<Result<void>> setTokenValidity(bool validity);

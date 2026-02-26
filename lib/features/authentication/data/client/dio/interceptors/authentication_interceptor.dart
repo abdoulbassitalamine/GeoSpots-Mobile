@@ -9,6 +9,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 const _kAuthorizationHeader = 'Authorization';
 const _kContentTypeHeader = 'Content-Type';
 const _kAcceptHeader = 'Accept';
+const _kAccessTokenHeader = 'X-Access-Token';
+const kAccessTokenQueryParam = 'token';
 
 class AuthenticationInterceptor extends Interceptor {
   AuthenticationInterceptor({required this.ref});
@@ -40,6 +42,7 @@ class AuthenticationInterceptor extends Interceptor {
     //options.headers[_kContentTypeHeader] = 'application/json';
     options.headers[_kAcceptHeader] = 'application/json';
 
+    GsLogger().d('**** QUERY PARAM ${options.queryParameters.toString()}');
     GsLogger().d('**** HEADERS: ${options.headers.toString()}');
     GsLogger().d('**** BODY: ${options.data.toString()}');
 
@@ -49,7 +52,9 @@ class AuthenticationInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     GsLogger().d(err.response);
-    if (err.response?.statusCode == 401) {
+    if (err.response?.statusCode == 401 &&
+        (err.response?.headers[_kAccessTokenHeader] == null ||
+            err.response?.headers[kAccessTokenQueryParam] == null)) {
       final tokenResult = await ref
           .read(authenticationLocalDatasourceProvider)
           .getAuthUserToken();

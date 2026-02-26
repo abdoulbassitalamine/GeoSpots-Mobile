@@ -54,6 +54,27 @@ class AuthenticationRemoteDatasourceImpl
   }
 
   @override
+  Future<Result<LoginResponseDto>> refreshToken({
+    required String refreshToken,
+  }) async {
+    try {
+      final response = await _authenticationClient.post<Object>(
+        '/api/auth/refresh',
+        data: {'refreshToken': refreshToken},
+      );
+      final json = response.asJsonMap();
+      if (json == null) {
+        return Err(ServerException('Invalid refresh response payload'));
+      }
+
+      return Ok(LoginResponseDto.fromJson(json));
+    } on DioException catch (e, st) {
+      GsLogger().e('refreshToken', e, st);
+      return Err(e.toAppException(), st);
+    }
+  }
+
+  @override
   Future<Result<LoginResponseDto>> signInWithEmailAndPassword({
     required String mail,
     required String password,
@@ -94,6 +115,7 @@ class AuthenticationRemoteDatasourceImpl
         lastName: lastName,
         email: mail,
         password: password,
+        passwordConfirmation: passwordConfirmation,
       );
 
       final response = await _authenticationClient.post<Object>(

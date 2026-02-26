@@ -52,6 +52,82 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
   }
 
   @override
+  Future<Result<String>> refreshToken() async {
+    final storedRefreshTokenResult = await _authenticationLocalDataSource
+        .getAuthUserRefreshToken();
+
+    String? storedRefreshToken;
+    switch (storedRefreshTokenResult) {
+      case Ok(:final value):
+        storedRefreshToken = value;
+      case Err(:final error, :final stackTrace):
+        return Err(error, stackTrace);
+    }
+
+    if (storedRefreshToken == null || storedRefreshToken.isEmpty) {
+      await _authenticationLocalDataSource.setTokenValidity(false);
+      return Err(ServerException('Missing refresh token'));
+    }
+
+    final refreshResult = await _authenticationRemoteDatasource.refreshToken(
+      refreshToken: storedRefreshToken,
+    );
+
+    switch (refreshResult) {
+      case Ok(:final value):
+        final accessToken = value.accessToken;
+        final refreshToken = value.refreshToken;
+
+        if (accessToken == null || accessToken.isEmpty) {
+          return Err(
+            ServerException('Missing access token in refresh response'),
+          );
+        }
+        if (refreshToken == null || refreshToken.isEmpty) {
+          return Err(
+            ServerException('Missing refresh token in refresh response'),
+          );
+        }
+
+        final storedUserResult = await _authenticationLocalDataSource
+            .getAuthUser();
+        final storedUser = switch (storedUserResult) {
+          Ok(:final value) => value,
+          Err() => null,
+        };
+
+        final fallbackEntity = UserEntity(
+          id: value.userId?.toString() ?? value.username ?? value.email ?? '0',
+          firstName: value.username,
+          email: value.email,
+        );
+
+        await _authenticationLocalDataSource.upsertAuthUser(
+          accessToken,
+          refreshToken,
+          storedUser ?? fallbackEntity,
+        );
+
+        final meResult = await _authenticationRemoteDatasource.getCurrentUser();
+        final user = switch (meResult) {
+          Ok(:final value) => UserEntity.fromDto(value),
+          Err() => storedUser ?? fallbackEntity,
+        };
+
+        await _authenticationLocalDataSource.upsertAuthUser(
+          accessToken,
+          refreshToken,
+          user,
+        );
+        await _authenticationLocalDataSource.setTokenValidity(true);
+        return Ok(accessToken);
+      case Err(:final error, :final stackTrace):
+        await _authenticationLocalDataSource.setTokenValidity(false);
+        return Err(error, stackTrace);
+    }
+  }
+
+  @override
   Future<Result<UserEntity>> signIn({
     required String mail,
     required String password,
@@ -63,12 +139,12 @@ class AuthenticationRepositoryImpl implements IAuthenticationRepository {
       case Ok(:final value):
         final accessToken = value.accessToken;
         final refreshToken = value.refreshToken;
-        if (accessToken == null || accessToken.isEmpty ) {
+        if (accessToken == null || accessToken.isEmpty) {
           return Err(
             ServerException('Missing access token in sign-in response'),
           );
         }
-        if(refreshToken == null || refreshToken.isEmpty) {
+        if (refreshToken == null || refreshToken.isEmpty) {
           return Err(
             ServerException('Missing refresh token in sign-in response'),
           );

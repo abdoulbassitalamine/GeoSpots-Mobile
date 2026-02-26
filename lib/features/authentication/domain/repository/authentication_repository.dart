@@ -32,6 +32,8 @@ abstract interface class IAuthenticationRepository {
 
   Future<Result<void>> logout();
 
+  Future<Result<String>> refreshToken();
+
   Future<Result<UserEntity>> me();
 
   Future<Result<UserEntity?>> autoSignIn();
@@ -41,5 +43,4 @@ abstract interface class IAuthenticationRepository {
   Future<Result<bool?>> getTokenValidity();
 
   Future<Result<void>> setTokenValidity(bool validity);
-
 }
