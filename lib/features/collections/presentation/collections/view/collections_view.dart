@@ -62,28 +62,11 @@ class CollectionsView extends ConsumerWidget {
         ? state.selectedTab
         : CollectionsTab.sharedWithMe;
 
-    final collections = switch (effectiveTab) {
-      CollectionsTab.owned => state.ownedCollections,
-      CollectionsTab.sharedWithMe => state.sharedCollections,
-      CollectionsTab.sharedByMe => sharedByMeCollections,
-    };
     final title = switch (effectiveTab) {
       CollectionsTab.owned => 'Mes Collections',
       CollectionsTab.sharedWithMe => 'Partagées avec moi',
       CollectionsTab.sharedByMe => 'Partagées par moi',
     };
-    final placesCount = switch (effectiveTab) {
-      CollectionsTab.owned => state.totalPlaces,
-      CollectionsTab.sharedWithMe => collections.fold<int>(
-        0,
-        (sum, c) => sum + c.placesCount,
-      ),
-      CollectionsTab.sharedByMe => sharedByMeCollections.fold<int>(
-        0,
-        (sum, c) => sum + c.placesCount,
-      ),
-    };
-    final totalCollections = collections.length;
     Future<void> openCollectionDetails(CollectionEntity collection) async {
       await notifier.activateSharedCollection(collection);
       if (!context.mounted) {
@@ -118,8 +101,6 @@ class CollectionsView extends ConsumerWidget {
         SliverToBoxAdapter(
           child: CollectionsHeader(
             title: title,
-            totalCollections: totalCollections,
-            totalPlaces: placesCount,
             onImportPressed: isAuthenticated ? notifier.importCollection : null,
             onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
           ),

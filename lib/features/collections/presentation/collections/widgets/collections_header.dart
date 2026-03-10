@@ -5,14 +5,10 @@ class CollectionsHeader extends StatelessWidget {
 
   const CollectionsHeader({
     super.key,
-    required this.totalCollections,
-    required this.totalPlaces,
     required this.title,
     this.onImportPressed,
     required this.onAddSharedAccessPressed,
   });
-  final int totalCollections;
-  final int totalPlaces;
   final String title;
   final VoidCallback? onImportPressed;
   final VoidCallback onAddSharedAccessPressed;
@@ -44,13 +40,6 @@ class CollectionsHeader extends StatelessWidget {
                       style: GSTypography.headingMedium.copyWith(
                         color: GSColors.neutral000,
                         fontSize: GSFontScale.sf07,
-                      ),
-                    ),
-                    const SizedBox(height: GSSpacing.s),
-                    Text(
-                      '$totalCollections ${totalCollections > 1 ? 'collections' : 'collection'} • $totalPlaces ${totalPlaces > 1 ? 'lieux' : 'lieu'}',
-                      style: GSTypography.bodyDefaultMedium.copyWith(
-                        color: GSColors.neutral000.withValues(alpha: 0.8),
                       ),
                     ),
                   ],

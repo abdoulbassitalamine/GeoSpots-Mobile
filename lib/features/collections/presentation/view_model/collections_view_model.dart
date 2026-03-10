@@ -5,6 +5,7 @@ import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
+import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
 import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
@@ -91,13 +92,25 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         ownedShareTokens = const <SharedAccessTokenEntity>[];
       }
 
-      final totalPlaces = ownedCollections.fold<int>(
-        0,
-        (sum, collection) => sum + collection.placesCount,
+      var totalPlaces = 0;
+      if (effectiveAuthenticated) {
+        final statsResult = await ref
+            .read(authenticationRepositoryProvider)
+            .meStats();
+        if (statsResult case Ok(value: final stats)) {
+          totalPlaces = stats.ownedPlaceCount;
+        }
+      }
+
+      final allCollection = CollectionEntity(
+        id: 'all',
+        tag: 'all',
+        placesCount: totalPlaces,
       );
+      final collectionsWithAll = [allCollection, ...ownedCollections];
 
       state = state.copyWith(
-        ownedCollections: ownedCollections,
+        ownedCollections: collectionsWithAll,
         sharedCollections: sharedCollections,
         sharedTokens: sharedTokens,
         ownedShareTokens: ownedShareTokens,
