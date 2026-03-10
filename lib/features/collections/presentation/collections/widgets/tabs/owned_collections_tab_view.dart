@@ -29,7 +29,9 @@ class OwnedCollectionsTabView extends StatelessWidget {
       children: [
         for (int i = 0; i < collections.length; i++)
           Padding(
-            padding: EdgeInsets.only(bottom: i == collections.length - 1 ? 0 : GSSpacing.l),
+            padding: EdgeInsets.only(
+              bottom: i == collections.length - 1 ? 0 : GSSpacing.l,
+            ),
             child: CollectionCard(
               collection: collections[i],
               onTap: () => onCollectionTap(collections[i]),
