@@ -4,8 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
+import '../../helpers/place_action_handler.dart';
 import '../../view_model/place_details_view_model.dart';
-import 'navigation_options_dialog.dart';
 
 class PlaceDetailsActions extends StatelessWidget {
   const PlaceDetailsActions({
@@ -66,12 +66,8 @@ class _PrimaryActionsRow extends StatelessWidget {
             text: 'Itinéraire',
             icon: Icons.directions_outlined,
             fullWidth: true,
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) => NavigationOptionsDialog(place: place),
-              );
-            },
+            onPressed: () =>
+                PlaceActionHandler.openDirections(context, place: place),
           ),
         ),
         const SizedBox(width: GSSpacing.l),
@@ -116,11 +112,8 @@ class _SecondaryActionsRow extends ConsumerWidget {
           child: _ActionButton(
             icon: Icons.share_outlined,
             label: 'Partager',
-            onPressed: () async {
-              await ref
-                  .read(placeDetailsViewModelProvider(placeId).notifier)
-                  .sharePlace();
-            },
+            onPressed: () =>
+                PlaceActionHandler.share(context, ref, place: place),
           ),
         ),
         const SizedBox(width: GSSpacing.s),

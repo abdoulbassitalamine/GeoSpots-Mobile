@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
+import '../../helpers/place_action_handler.dart';
 
-class PlaceListItem extends StatelessWidget {
+class PlaceListItem extends ConsumerWidget {
   const PlaceListItem({super.key, required this.place, required this.onTap});
 
   final PlaceEntity place;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GSPremiumPanel(
       onTap: onTap,
       padding: const EdgeInsets.all(GSSpacing.xl),
@@ -117,16 +119,14 @@ class PlaceListItem extends StatelessWidget {
               const Spacer(),
               _QuickActionButton(
                 icon: Icons.directions_outlined,
-                onPressed: () {
-                  // TODO(dev): Open in maps.
-                },
+                onPressed: () =>
+                    PlaceActionHandler.openDirections(context, place: place),
               ),
               const SizedBox(width: GSSpacing.s),
               _QuickActionButton(
                 icon: Icons.ios_share_outlined,
-                onPressed: () {
-                  // TODO(dev): Share place.
-                },
+                onPressed: () =>
+                    PlaceActionHandler.share(context, ref, place: place),
               ),
             ],
           ),
