@@ -5,7 +5,7 @@ import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
-import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
+import 'package:geo_spots/features/authentication/domain/use_case/me_stats_use_case.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
 import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
@@ -95,9 +95,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
       var totalPlaces = 0;
       if (effectiveAuthenticated) {
-        final statsResult = await ref
-            .read(authenticationRepositoryProvider)
-            .meStats();
+        final statsResult = await ref.read(meStatsUseCaseProvider.future);
         if (statsResult case Ok(value: final stats)) {
           totalPlaces = stats.ownedPlaceCount;
         }
@@ -230,8 +228,6 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     CollectionEntity collection,
     ShareAccessRight accessRight,
   ) async {
-    final shareCollection = ref.read(shareCollectionUseCaseProvider);
-    final getOwnedShareTokens = ref.read(getOwnedShareTokensUseCaseProvider);
     final result = await ref.read(shareCollectionUseCaseProvider)(
       collection: collection,
       rights: accessRight,

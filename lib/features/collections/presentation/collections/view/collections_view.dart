@@ -96,33 +96,34 @@ class CollectionsView extends ConsumerWidget {
       ),
     };
 
-    return CustomScrollView(
-      slivers: [
-        SliverToBoxAdapter(
-          child: CollectionsHeader(
-            title: title,
-            onImportPressed: isAuthenticated ? notifier.importCollection : null,
-            onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
-          ),
+    return Column(
+      children: [
+        CollectionsHeader(
+          title: title,
+          onImportPressed: isAuthenticated ? notifier.importCollection : null,
+          onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
         ),
         if (isAuthenticated)
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                GSSpacing.xl,
-                GSSpacing.m,
-                GSSpacing.xl,
-                0,
-              ),
-              child: CollectionsTabs(
-                selectedTab: state.selectedTab,
-                onTabChanged: notifier.selectTab,
-              ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              GSSpacing.xl,
+              GSSpacing.m,
+              GSSpacing.xl,
+              0,
+            ),
+            child: CollectionsTabs(
+              selectedTab: state.selectedTab,
+              onTabChanged: notifier.selectTab,
             ),
           ),
-        SliverPadding(
-          padding: const EdgeInsets.all(GSSpacing.xl),
-          sliver: SliverToBoxAdapter(child: tabView),
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(GSSpacing.xl),
+              child: tabView,
+            ),
+          ),
         ),
       ],
     );

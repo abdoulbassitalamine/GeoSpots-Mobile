@@ -1,7 +1,7 @@
 import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/user/user_stats_entity.dart';
-import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
+import 'package:geo_spots/features/authentication/domain/use_case/me_stats_use_case.dart';
 import 'package:geo_spots/features/authentication/domain/use_case/me_use_case.dart';
 import 'package:geo_spots/features/authentication/presentation/view_model/authentication_view_model.dart';
 import 'package:geo_spots/features/tracking/data/services/location_tracking_service.dart';
@@ -24,7 +24,7 @@ class ProfileViewModel extends _$ProfileViewModel {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     final meFuture = ref.watch(meInUseCaseProvider.future);
-    final meStatsFuture = ref.watch(authenticationRepositoryProvider).meStats();
+    final meStatsFuture = ref.watch(meStatsUseCaseProvider.future);
     final isTrackingEnabledAction = ref.watch(isTrackingEnabledUseCaseProvider);
 
     final userResult = await meFuture;
