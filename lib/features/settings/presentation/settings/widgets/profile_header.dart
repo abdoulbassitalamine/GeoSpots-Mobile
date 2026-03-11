@@ -35,21 +35,6 @@ class ProfileHeader extends StatelessWidget {
                           fontSize: GSFontScale.sf09,
                         ),
                       ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: GSColors.neutral000.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(GSRadius.m),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.settings,
-                            color: GSColors.neutral000,
-                          ),
-                          onPressed: () {
-                            // TODO(dev): Navigate to advanced settings.
-                          },
-                        ),
-                      ),
                     ],
                   ),
                 ],
