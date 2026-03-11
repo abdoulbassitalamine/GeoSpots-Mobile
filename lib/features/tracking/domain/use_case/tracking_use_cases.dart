@@ -60,7 +60,8 @@ Future<Result<void>> Function() stopLocationSharingUseCase(Ref ref) {
 Future<Result<PublicLocationEntity?>> Function(String shareToken)
 getPublicLocationUseCase(Ref ref) {
   final repository = ref.watch(trackingRepositoryProvider);
-  return (shareToken) => _execute(() => repository.getPublicLocation(shareToken));
+  return (shareToken) =>
+      _execute(() => repository.getPublicLocation(shareToken));
 }
 
 @riverpod

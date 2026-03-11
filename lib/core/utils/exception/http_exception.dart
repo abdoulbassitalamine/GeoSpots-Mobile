@@ -1,5 +1,3 @@
-
-
 import 'package:geo_spots/core/utils/exception/exception.dart';
 
 class HttpException extends ServerException {
@@ -62,7 +60,7 @@ class NoContentException extends HttpException {
 
 class BadRequestException extends HttpException {
   BadRequestException([String? details])
-      : super(details ?? 'Bad request — invalid syntax or parameters', 400);
+    : super(details ?? 'Bad request — invalid syntax or parameters', 400);
 
   @override
   String toString() => 'BadRequestException(400): $message';
@@ -70,7 +68,7 @@ class BadRequestException extends HttpException {
 
 class UnauthorizedException extends HttpException {
   UnauthorizedException()
-      : super('Unauthorized — authentication required or token expired', 401);
+    : super('Unauthorized — authentication required or token expired', 401);
 
   @override
   String toString() => 'UnauthorizedException(401): $message';
@@ -78,7 +76,7 @@ class UnauthorizedException extends HttpException {
 
 class PaymentRequiredException extends HttpException {
   PaymentRequiredException()
-      : super('Payment required to access this resource', 402);
+    : super('Payment required to access this resource', 402);
 
   @override
   String toString() => 'PaymentRequiredException(402): $message';
@@ -86,8 +84,10 @@ class PaymentRequiredException extends HttpException {
 
 class ForbiddenException extends HttpException {
   ForbiddenException()
-      : super('Forbidden — insufficient permissions to access this resource',
-            403);
+    : super(
+        'Forbidden — insufficient permissions to access this resource',
+        403,
+      );
 
   @override
   String toString() => 'ForbiddenException(403): $message';
@@ -102,7 +102,7 @@ class NotFoundException extends HttpException {
 
 class MethodNotAllowedException extends HttpException {
   MethodNotAllowedException()
-      : super('HTTP method not allowed on this endpoint', 405);
+    : super('HTTP method not allowed on this endpoint', 405);
 
   @override
   String toString() => 'MethodNotAllowedException(405): $message';
@@ -110,8 +110,10 @@ class MethodNotAllowedException extends HttpException {
 
 class NotAcceptableException extends HttpException {
   NotAcceptableException()
-      : super('Server cannot produce a response matching the accepted types',
-            406);
+    : super(
+        'Server cannot produce a response matching the accepted types',
+        406,
+      );
 
   @override
   String toString() => 'NotAcceptableException(406): $message';
@@ -119,8 +121,7 @@ class NotAcceptableException extends HttpException {
 
 class RequestTimeoutException extends HttpException {
   RequestTimeoutException()
-      : super('Request timed out — server did not receive a timely request',
-            408);
+    : super('Request timed out — server did not receive a timely request', 408);
 
   @override
   String toString() => 'RequestTimeoutException(408): $message';
@@ -128,8 +129,10 @@ class RequestTimeoutException extends HttpException {
 
 class ConflictException extends HttpException {
   ConflictException([String? details])
-      : super(details ?? 'Conflict — resource already exists or state mismatch',
-            409);
+    : super(
+        details ?? 'Conflict — resource already exists or state mismatch',
+        409,
+      );
 
   @override
   String toString() => 'ConflictException(409): $message';
@@ -137,7 +140,7 @@ class ConflictException extends HttpException {
 
 class GoneException extends HttpException {
   GoneException()
-      : super('Resource is permanently deleted and no longer available', 410);
+    : super('Resource is permanently deleted and no longer available', 410);
 
   @override
   String toString() => 'GoneException(410): $message';
@@ -145,7 +148,7 @@ class GoneException extends HttpException {
 
 class PayloadTooLargeException extends HttpException {
   PayloadTooLargeException()
-      : super('Request payload exceeds the server size limit', 413);
+    : super('Request payload exceeds the server size limit', 413);
 
   @override
   String toString() => 'PayloadTooLargeException(413): $message';
@@ -153,7 +156,7 @@ class PayloadTooLargeException extends HttpException {
 
 class UnsupportedMediaTypeException extends HttpException {
   UnsupportedMediaTypeException()
-      : super('Media type not supported by the server', 415);
+    : super('Media type not supported by the server', 415);
 
   @override
   String toString() => 'UnsupportedMediaTypeException(415): $message';
@@ -161,10 +164,11 @@ class UnsupportedMediaTypeException extends HttpException {
 
 class UnprocessableEntityException extends HttpException {
   UnprocessableEntityException([String? details])
-      : super(
-            details ??
-                'Unprocessable entity — validation failed or semantic errors',
-            422);
+    : super(
+        details ??
+            'Unprocessable entity — validation failed or semantic errors',
+        422,
+      );
 
   @override
   String toString() => 'UnprocessableEntityException(422): $message';
@@ -179,8 +183,7 @@ class LockedException extends HttpException {
 
 class TooManyRequestsException extends HttpException {
   TooManyRequestsException()
-      : super('Too many requests — rate limit exceeded, please retry later',
-            429);
+    : super('Too many requests — rate limit exceeded, please retry later', 429);
 
   @override
   String toString() => 'TooManyRequestsException(429): $message';
@@ -188,7 +191,7 @@ class TooManyRequestsException extends HttpException {
 
 class UnavailableForLegalReasonsException extends HttpException {
   UnavailableForLegalReasonsException()
-      : super('Resource unavailable for legal reasons', 451);
+    : super('Resource unavailable for legal reasons', 451);
 
   @override
   String toString() => 'UnavailableForLegalReasonsException(451): $message';
@@ -198,7 +201,7 @@ class UnavailableForLegalReasonsException extends HttpException {
 
 class InternalServerErrorException extends HttpException {
   InternalServerErrorException()
-      : super('Internal server error — unexpected condition on server', 500);
+    : super('Internal server error — unexpected condition on server', 500);
 
   @override
   String toString() => 'InternalServerErrorException(500): $message';
@@ -206,7 +209,7 @@ class InternalServerErrorException extends HttpException {
 
 class NotImplementedException extends HttpException {
   NotImplementedException()
-      : super('Functionality not implemented by the server', 501);
+    : super('Functionality not implemented by the server', 501);
 
   @override
   String toString() => 'NotImplementedException(501): $message';
@@ -214,8 +217,7 @@ class NotImplementedException extends HttpException {
 
 class BadGatewayException extends HttpException {
   BadGatewayException()
-      : super('Bad gateway — upstream server returned an invalid response',
-            502);
+    : super('Bad gateway — upstream server returned an invalid response', 502);
 
   @override
   String toString() => 'BadGatewayException(502): $message';
@@ -223,7 +225,7 @@ class BadGatewayException extends HttpException {
 
 class ServiceUnavailableException extends HttpException {
   ServiceUnavailableException()
-      : super('Service unavailable — server is down or overloaded', 503);
+    : super('Service unavailable — server is down or overloaded', 503);
 
   @override
   String toString() => 'ServiceUnavailableException(503): $message';
@@ -231,7 +233,7 @@ class ServiceUnavailableException extends HttpException {
 
 class GatewayTimeoutException extends HttpException {
   GatewayTimeoutException()
-      : super('Gateway timeout — upstream server did not respond in time', 504);
+    : super('Gateway timeout — upstream server did not respond in time', 504);
 
   @override
   String toString() => 'GatewayTimeoutException(504): $message';
@@ -239,7 +241,7 @@ class GatewayTimeoutException extends HttpException {
 
 class HttpVersionNotSupportedException extends HttpException {
   HttpVersionNotSupportedException()
-      : super('HTTP version used in the request is not supported', 505);
+    : super('HTTP version used in the request is not supported', 505);
 
   @override
   String toString() => 'HttpVersionNotSupportedException(505): $message';

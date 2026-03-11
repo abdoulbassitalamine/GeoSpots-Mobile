@@ -31,11 +31,11 @@ class GSRefreshScaffold extends StatelessWidget {
           padding: padding ?? const EdgeInsets.all(GSSpacing.xl),
           child: enableRefresh && onRefresh != null
               ? RefreshIndicator(
-            color: GSColorTokens.textInverse,
-            backgroundColor: GSColorTokens.textAccent,
-            onRefresh: onRefresh!,
-            child: child,
-          )
+                  color: GSColorTokens.textInverse,
+                  backgroundColor: GSColorTokens.textAccent,
+                  onRefresh: onRefresh!,
+                  child: child,
+                )
               : child,
         ),
       ),

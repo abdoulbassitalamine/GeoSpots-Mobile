@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:geolocator/geolocator.dart';
 import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/features/authentication/authentication.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/logger/gs_logger.dart';
@@ -146,9 +146,7 @@ class LocationTrackingService {
   Future<void> restoreTrackingIfEnabled() async {
     try {
       if (!_isAuthenticated()) {
-        GsLogger().d(
-          'Tracking restore skipped: user is not authenticated',
-        );
+        GsLogger().d('Tracking restore skipped: user is not authenticated');
         return;
       }
 

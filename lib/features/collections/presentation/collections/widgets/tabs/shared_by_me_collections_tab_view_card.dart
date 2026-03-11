@@ -17,8 +17,9 @@ class _SharedByMeCollectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final sharesCount = tokens.length;
 
-    return GSCard(
+    return GSPremiumPanel(
       padding: const EdgeInsets.all(GSSpacing.xl),
+      borderColor: GSColors.neutral150,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -26,30 +27,40 @@ class _SharedByMeCollectionCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
-                  color: GSColors.primary600.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(GSRadius.m),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [GSColors.info100, GSColors.primary100],
+                  ),
+                  borderRadius: BorderRadius.circular(GSRadius.l),
                 ),
                 child: const Icon(
                   Icons.share_outlined,
-                  color: GSColors.primary600,
+                  color: GSColors.primary700,
                 ),
               ),
-              const SizedBox(width: GSSpacing.m),
+              const SizedBox(width: GSSpacing.l),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const GSInfoChip(
+                      icon: Icons.key_outlined,
+                      label: 'Partages actifs',
+                      backgroundColor: GSColors.neutral100,
+                      borderColor: GSColors.neutral150,
+                    ),
+                    const SizedBox(height: GSSpacing.m),
                     Text(
                       collection.tag,
-                      style: GSTypography.bodyAccentMedium.copyWith(
+                      style: GSTypography.bodyAccentLarge.copyWith(
                         color: GSColors.neutral1000,
-                        fontSize: GSFontScale.sf05,
                       ),
                     ),
-                    const SizedBox(height: GSSpacing.xs),
+                    const SizedBox(height: GSSpacing.s),
                     Wrap(
                       spacing: GSSpacing.s,
                       runSpacing: GSSpacing.s,
@@ -70,7 +81,7 @@ class _SharedByMeCollectionCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: GSSpacing.m),
+          const SizedBox(height: GSSpacing.xl),
           Align(
             alignment: Alignment.centerRight,
             child: GSOutlinedButton(
@@ -79,7 +90,7 @@ class _SharedByMeCollectionCard extends StatelessWidget {
               icon: Icons.open_in_new,
             ),
           ),
-          const SizedBox(height: GSSpacing.m),
+          const SizedBox(height: GSSpacing.xl),
           if (tokens.isEmpty)
             Text(
               'Aucun lien de partage actif.',
@@ -93,12 +104,12 @@ class _SharedByMeCollectionCard extends StatelessWidget {
               final canRevoke = isTokenValid && token.id.trim().isNotEmpty;
 
               return Container(
-                margin: const EdgeInsets.only(top: GSSpacing.s),
-                padding: const EdgeInsets.all(GSSpacing.m),
+                margin: const EdgeInsets.only(top: GSSpacing.m),
+                padding: const EdgeInsets.all(GSSpacing.l),
                 decoration: BoxDecoration(
-                  color: GSColors.neutral100.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(GSRadius.m),
-                  border: Border.all(color: GSColors.neutral300),
+                  color: GSColors.neutral050,
+                  borderRadius: BorderRadius.circular(GSRadius.l),
+                  border: Border.all(color: GSColors.neutral150),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,7 +154,7 @@ class _SharedByMeCollectionCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (!isTokenValid) ...[
-                            const SizedBox(height: GSSpacing.s),
+                            const SizedBox(height: GSSpacing.m),
                             Text(
                               'Ce token n\'est plus valide ou a été révoqué.',
                               style: GSTypography.captionDefault.copyWith(
@@ -156,9 +167,18 @@ class _SharedByMeCollectionCard extends StatelessWidget {
                       ),
                     ),
                     if (canRevoke)
-                      TextButton(
-                        onPressed: () => onRevokeTokenById(token.id),
-                        child: const Text('Révoquer'),
+                      Padding(
+                        padding: const EdgeInsets.only(left: GSSpacing.m),
+                        child: GSOutlinedButton(
+                          onPressed: () => onRevokeTokenById(token.id),
+                          text: 'Révoquer',
+                          textColor: GSColors.danger600,
+                          borderColor: GSColors.danger200,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: GSSpacing.l,
+                            vertical: GSSpacing.m,
+                          ),
+                        ),
                       ),
                   ],
                 ),

@@ -3,7 +3,6 @@ import 'package:geo_spots/features/authentication/presentation/sign_up/view/sign
 import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-
 class SignUpPage extends ConsumerWidget {
   const SignUpPage({super.key});
 

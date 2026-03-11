@@ -4,4 +4,5 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'secure_storage_datasource.g.dart';
 
 @Riverpod(keepAlive: true)
-FlutterSecureStorage secureStorageDataSource(Ref ref) => throw UnimplementedError();
+FlutterSecureStorage secureStorageDataSource(Ref ref) =>
+    throw UnimplementedError();

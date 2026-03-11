@@ -5,7 +5,6 @@ double calculateTextWidth(String text, TextStyle style) {
     text: TextSpan(text: text, style: style),
     maxLines: 1,
     textDirection: TextDirection.ltr,
-  )
-    ..layout();
+  )..layout();
   return textPainter.width;
 }

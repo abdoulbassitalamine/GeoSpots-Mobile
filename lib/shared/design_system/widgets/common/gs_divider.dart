@@ -9,7 +9,8 @@ class GSDividerSize {
   factory GSDividerSize.small() => const GSDividerSize._(thickness: 1);
   factory GSDividerSize.medium() => const GSDividerSize._(thickness: 2);
   factory GSDividerSize.large() => const GSDividerSize._(thickness: 8);
-  factory GSDividerSize.custom(double thickness) => GSDividerSize._(thickness: thickness);
+  factory GSDividerSize.custom(double thickness) =>
+      GSDividerSize._(thickness: thickness);
 
   final double thickness;
 }
@@ -20,39 +21,35 @@ class GSDividerColors {
 
   /// Primary divider color
   factory GSDividerColors.primaryColors(
-      BuildContext context, {
-        Color? borderColor,
-      }) =>
-      GSDividerColors._(
-        borderColor: borderColor ?? GSColorTokens.dividerPrimary,
-      );
+    BuildContext context, {
+    Color? borderColor,
+  }) => GSDividerColors._(
+    borderColor: borderColor ?? GSColorTokens.dividerPrimary,
+  );
 
   /// Secondary divider color
   factory GSDividerColors.secondaryColors(
-      BuildContext context, {
-        Color? borderColor,
-      }) =>
-      GSDividerColors._(
-        borderColor: borderColor ?? GSColorTokens.dividerSecondary,
-      );
+    BuildContext context, {
+    Color? borderColor,
+  }) => GSDividerColors._(
+    borderColor: borderColor ?? GSColorTokens.dividerSecondary,
+  );
 
   /// Tertiary divider color
   factory GSDividerColors.tertiaryColors(
-      BuildContext context, {
-        Color? borderColor,
-      }) =>
-      GSDividerColors._(
-        borderColor: borderColor ?? GSColorTokens.dividerTertiary,
-      );
+    BuildContext context, {
+    Color? borderColor,
+  }) => GSDividerColors._(
+    borderColor: borderColor ?? GSColorTokens.dividerTertiary,
+  );
 
   /// Inverse divider color
   factory GSDividerColors.inverseColors(
-      BuildContext context, {
-        Color? borderColor,
-      }) =>
-      GSDividerColors._(
-        borderColor: borderColor ?? GSColorTokens.dividerInverse,
-      );
+    BuildContext context, {
+    Color? borderColor,
+  }) => GSDividerColors._(
+    borderColor: borderColor ?? GSColorTokens.dividerInverse,
+  );
 
   final Color borderColor;
 }
@@ -114,18 +111,18 @@ class GSDivider extends StatelessWidget {
 
     return isVertical
         ? VerticalDivider(
-      thickness: _thickness,
-      color: dividerColor,
-      indent: _indent,
-      endIndent: _endIndent,
-      width: height ?? (_thickness + GSSpacing.none),
-    )
+            thickness: _thickness,
+            color: dividerColor,
+            indent: _indent,
+            endIndent: _endIndent,
+            width: height ?? (_thickness + GSSpacing.none),
+          )
         : Divider(
-      thickness: _thickness,
-      color: dividerColor,
-      indent: _indent,
-      endIndent: _endIndent,
-      height: height ?? (_thickness + GSSpacing.none),
-    );
+            thickness: _thickness,
+            color: dividerColor,
+            indent: _indent,
+            endIndent: _endIndent,
+            height: height ?? (_thickness + GSSpacing.none),
+          );
   }
 }

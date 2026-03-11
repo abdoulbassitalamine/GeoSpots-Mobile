@@ -26,26 +26,21 @@ class GSTextBetweenDivider extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            height: lineHeight,
-            color: dividerColor,
-          ),
+          child: Container(height: lineHeight, color: dividerColor),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: spacing),
           child: Text(
             text,
-            style: textStyle ??
+            style:
+                textStyle ??
                 GSTypography.bodyAccentSmall.copyWith(
                   color: GSColorTokens.textSecondary,
                 ),
           ),
         ),
         Expanded(
-          child: Container(
-            height: lineHeight,
-            color: dividerColor,
-          ),
+          child: Container(height: lineHeight, color: dividerColor),
         ),
       ],
     );

@@ -83,6 +83,21 @@ class CollectionsView extends ConsumerWidget {
       CollectionsTab.sharedWithMe => 'Partagées avec moi',
       CollectionsTab.sharedByMe => 'Partagées par moi',
     };
+    final subtitle = switch (effectiveTab) {
+      CollectionsTab.owned =>
+        'Organisez vos lieux dans des ensembles clairs et faciles à retrouver.',
+      CollectionsTab.sharedWithMe =>
+        'Retrouvez les collections auxquelles vous avez accès en un coup d\'oeil.',
+      CollectionsTab.sharedByMe =>
+        'Pilotez les partages actifs de vos collections sans quitter cette vue.',
+    };
+    final statLabel = switch (effectiveTab) {
+      CollectionsTab.owned => '${state.ownedCollections.length} collections',
+      CollectionsTab.sharedWithMe =>
+        '${state.sharedCollections.length} collections accessibles',
+      CollectionsTab.sharedByMe =>
+        '${sharedByMeCollections.length} collections partagées',
+    };
     Future<void> openCollectionDetails(CollectionEntity collection) async {
       await notifier.activateSharedCollection(collection);
       if (!context.mounted) {
@@ -116,6 +131,8 @@ class CollectionsView extends ConsumerWidget {
       children: [
         CollectionsHeader(
           title: title,
+          subtitle: subtitle,
+          statLabel: statLabel,
           onImportPressed: isAuthenticated ? notifier.importCollection : null,
           onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
         ),
@@ -136,7 +153,12 @@ class CollectionsView extends ConsumerWidget {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.all(GSSpacing.xl),
+              padding: const EdgeInsets.fromLTRB(
+                GSSpacing.xl,
+                GSSpacing.xl,
+                GSSpacing.xl,
+                GSSpacing.xl4,
+              ),
               child: tabView,
             ),
           ),

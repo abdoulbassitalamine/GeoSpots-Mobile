@@ -82,17 +82,20 @@ class PlaceDetailsView extends ConsumerWidget {
       slivers: [
         PlaceDetailsHeader(place: state.place!),
         SliverToBoxAdapter(
-          child: Column(
-            children: [
-              PlaceDetailsContent(place: state.place!),
-              const SizedBox(height: GSSpacing.xl3),
-              PlaceDetailsActions(
-                place: state.place!,
-                placeId: placeId,
-                readOnly: effectiveReadOnly,
-              ),
-              const SizedBox(height: GSSpacing.xl3),
-            ],
+          child: Transform.translate(
+            offset: const Offset(0, -28),
+            child: Column(
+              children: [
+                PlaceDetailsContent(place: state.place!),
+                const SizedBox(height: GSSpacing.xl3),
+                PlaceDetailsActions(
+                  place: state.place!,
+                  placeId: placeId,
+                  readOnly: effectiveReadOnly,
+                ),
+                const SizedBox(height: GSSpacing.xl3),
+              ],
+            ),
           ),
         ),
       ],

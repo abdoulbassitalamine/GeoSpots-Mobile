@@ -45,7 +45,8 @@ class LoginForm extends HookConsumerWidget {
           focusNode: controllers.passwordFocusNode,
           error: controllers.passwordError.notEmptyOrNull(),
           obscureText: controllers.hiddenPassword.value,
-          onVisibilityChanged: (value) => controllers.hiddenPassword.value = value,
+          onVisibilityChanged: (value) =>
+              controllers.hiddenPassword.value = value,
           onChanged: (value) {
             SignInHandlers.onPasswordChanged(value, ref, notifier);
           },
@@ -67,7 +68,8 @@ class LoginForm extends HookConsumerWidget {
             return GSContainerButton.filled(
               padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
               isLoading: controllers.isLoading.value,
-              onPressed: () => SignInHandlers.onSubmit(ref, context, controllers),
+              onPressed: () =>
+                  SignInHandlers.onSubmit(ref, context, controllers),
               text: 'Se connecter',
               enabled: notifier.isFormValid,
               gradient: GSColorTokens.primaryGradientHorizontal,

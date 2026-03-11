@@ -15,26 +15,34 @@ class CollectionsTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      key: ValueKey(selectedTab),
-      length: 3,
-      initialIndex: _indexFromTab(selectedTab),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: TabBar(
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          labelColor: GSColors.primary600,
-          unselectedLabelColor: GSColors.neutral600,
-          indicatorColor: GSColors.primary600,
-          indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: GSTypography.bodyAccentMedium,
-          unselectedLabelStyle: GSTypography.bodyDefaultMedium,
-          onTap: (index) => onTabChanged(_tabFromIndex(index)),
-          tabs: const [
-            Tab(text: 'Mes collections'),
-            Tab(text: 'Partagées avec moi'),
-            Tab(text: 'Partagées par moi'),
+    return GSPremiumPanel(
+      padding: const EdgeInsets.all(GSSpacing.s),
+      backgroundColor: GSColors.neutral000,
+      borderColor: GSColors.neutral150,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            _CollectionsTabPill(
+              label: 'Mes collections',
+              icon: Icons.folder_copy_outlined,
+              selected: selectedTab == CollectionsTab.owned,
+              onTap: () => onTabChanged(CollectionsTab.owned),
+            ),
+            const SizedBox(width: GSSpacing.s),
+            _CollectionsTabPill(
+              label: 'Partagées avec moi',
+              icon: Icons.folder_shared_outlined,
+              selected: selectedTab == CollectionsTab.sharedWithMe,
+              onTap: () => onTabChanged(CollectionsTab.sharedWithMe),
+            ),
+            const SizedBox(width: GSSpacing.s),
+            _CollectionsTabPill(
+              label: 'Partagées par moi',
+              icon: Icons.key_outlined,
+              selected: selectedTab == CollectionsTab.sharedByMe,
+              onTap: () => onTabChanged(CollectionsTab.sharedByMe),
+            ),
           ],
         ),
       ),
@@ -42,26 +50,61 @@ class CollectionsTabs extends StatelessWidget {
   }
 }
 
-CollectionsTab _tabFromIndex(int index) {
-  switch (index) {
-    case 0:
-      return CollectionsTab.owned;
-    case 1:
-      return CollectionsTab.sharedWithMe;
-    case 2:
-      return CollectionsTab.sharedByMe;
-    default:
-      return CollectionsTab.owned;
-  }
-}
+class _CollectionsTabPill extends StatelessWidget {
+  const _CollectionsTabPill({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
 
-int _indexFromTab(CollectionsTab tab) {
-  switch (tab) {
-    case CollectionsTab.owned:
-      return 0;
-    case CollectionsTab.sharedWithMe:
-      return 1;
-    case CollectionsTab.sharedByMe:
-      return 2;
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = selected
+        ? GSColors.primary600
+        : GSColors.neutral050;
+    final foregroundColor = selected
+        ? GSColors.neutral000
+        : GSColors.neutral700;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(GSRadius.full),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(
+            horizontal: GSSpacing.xl,
+            vertical: GSSpacing.l,
+          ),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(GSRadius.full),
+            border: Border.all(
+              color: selected ? GSColors.primary600 : GSColors.neutral150,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 18, color: foregroundColor),
+              const SizedBox(width: GSSpacing.s),
+              Text(
+                label,
+                style: GSTypography.bodyAccentMedium.copyWith(
+                  color: foregroundColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -58,12 +58,17 @@ class PlacesListView extends ConsumerWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(GSSpacing.xl3),
-          child: Text(
-            state.errorMessage!,
-            style: GSTypography.bodyDefaultMedium.copyWith(
-              color: GSColors.danger600,
+          child: GSPremiumPanel(
+            padding: const EdgeInsets.all(GSSpacing.xl3),
+            borderColor: GSColors.danger200,
+            backgroundColor: GSColors.neutral000,
+            child: Text(
+              state.errorMessage!,
+              style: GSTypography.bodyDefaultMedium.copyWith(
+                color: GSColors.danger600,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       );
@@ -73,21 +78,33 @@ class PlacesListView extends ConsumerWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(GSSpacing.xl3),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.location_off, size: 64, color: GSColors.neutral400),
-              const SizedBox(height: GSSpacing.xl),
-              Text(
-                state.searchQuery.isNotEmpty
-                    ? 'Aucun lieu trouvé pour "${state.searchQuery}"'
-                    : 'Aucun lieu enregistré',
-                style: GSTypography.bodyDefaultLarge.copyWith(
-                  color: GSColors.neutral600,
+          child: GSPremiumPanel(
+            padding: const EdgeInsets.all(GSSpacing.xl3),
+            borderColor: GSColors.neutral150,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.location_off, size: 64, color: GSColors.neutral400),
+                const SizedBox(height: GSSpacing.xl),
+                Text(
+                  state.searchQuery.isNotEmpty
+                      ? 'Aucun lieu trouvé pour "${state.searchQuery}"'
+                      : 'Aucun lieu enregistré',
+                  style: GSTypography.bodyAccentLarge.copyWith(
+                    color: GSColors.neutral800,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: GSSpacing.s),
+                Text(
+                  'Ajoutez ou recherchez un lieu pour démarrer votre collection personnelle.',
+                  style: GSTypography.bodyDefaultMedium.copyWith(
+                    color: GSColors.neutral600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       );

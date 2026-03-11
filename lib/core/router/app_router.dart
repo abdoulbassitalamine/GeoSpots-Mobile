@@ -93,9 +93,7 @@ class SettingsShellBranchData extends StatefulShellBranchData {
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  final authenticationNotifier = ref.watch(
-    authGuardProvider.notifier,
-  );
+  final authenticationNotifier = ref.watch(authGuardProvider.notifier);
 
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,

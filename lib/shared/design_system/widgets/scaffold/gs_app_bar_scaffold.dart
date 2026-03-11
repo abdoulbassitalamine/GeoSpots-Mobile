@@ -42,7 +42,7 @@ class GSAppBarScaffold extends StatelessWidget {
             style: GSTypography.headingSmall.copyWith(
               color: GSColorTokens.textInverse,
               fontWeight: FontWeight.w600,
-              fontSize: GSFontScale.sf07
+              fontSize: GSFontScale.sf07,
             ),
           ),
           flexibleSpace: Container(
@@ -52,10 +52,7 @@ class GSAppBarScaffold extends StatelessWidget {
           ),
         ),
         SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.all(padding),
-            child: child,
-          ),
+          child: Padding(padding: EdgeInsets.all(padding), child: child),
         ),
       ],
     );

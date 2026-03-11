@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';

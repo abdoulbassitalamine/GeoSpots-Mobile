@@ -26,27 +26,31 @@ class PlacesSearchBar extends HookWidget {
         horizontal: GSSpacing.xl,
         vertical: GSSpacing.l,
       ),
-      child: GSSearchField(
-        controller: controller,
-        focusNode: focusNode,
-        isExpanded: isExpanded.value,
-        onExpandedChanged: (value) => isExpanded.value = value,
-        hintText: 'Rechercher un lieu...',
-        onChanged: (value) {
-          debouncer.run(() {
-            onSearchChanged(value);
-          });
-        },
-        onBack: () {
-          controller.clear();
-          isExpanded.value = false;
-          onClearSearch();
-        },
-        onClear: () {
-          controller.clear();
-          onClearSearch();
-        },
-        title: 'Rechercher un lieu',
+      child: GSPremiumPanel(
+        padding: const EdgeInsets.all(GSSpacing.s),
+        borderColor: GSColors.neutral150,
+        child: GSSearchField(
+          controller: controller,
+          focusNode: focusNode,
+          isExpanded: isExpanded.value,
+          onExpandedChanged: (value) => isExpanded.value = value,
+          hintText: 'Rechercher un lieu...',
+          onChanged: (value) {
+            debouncer.run(() {
+              onSearchChanged(value);
+            });
+          },
+          onBack: () {
+            controller.clear();
+            isExpanded.value = false;
+            onClearSearch();
+          },
+          onClear: () {
+            controller.clear();
+            onClearSearch();
+          },
+          title: 'Rechercher un lieu',
+        ),
       ),
     );
   }

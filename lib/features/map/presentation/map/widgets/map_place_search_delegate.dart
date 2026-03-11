@@ -3,10 +3,7 @@ import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapPlaceSearchSelection {
-  const MapPlaceSearchSelection({
-    required this.query,
-    this.placeId,
-  });
+  const MapPlaceSearchSelection({required this.query, this.placeId});
 
   final String query;
   final String? placeId;
@@ -77,11 +74,8 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
       tiles.add(_sectionHeader(context, 'Lieux proches'));
       tiles.addAll(
         sections.nearby.map(
-          (item) => _placeTile(
-            context,
-            item.place,
-            distanceKm: item.distanceKm,
-          ),
+          (item) =>
+              _placeTile(context, item.place, distanceKm: item.distanceKm),
         ),
       );
     }
@@ -89,7 +83,9 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     if (sections.byTag.isNotEmpty) {
       for (final entry in sections.byTag.entries) {
         tiles.add(_sectionHeader(context, 'Tag: ${entry.key}'));
-        tiles.addAll(entry.value.map((item) => _placeTile(context, item.place)));
+        tiles.addAll(
+          entry.value.map((item) => _placeTile(context, item.place)),
+        );
       }
     }
 
@@ -101,7 +97,9 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
   }
 
   List<PlaceEntity> _filteredPlaces() {
-    final withCoordinates = places.where((place) => place.hasCoordinates).toList();
+    final withCoordinates = places
+        .where((place) => place.hasCoordinates)
+        .toList();
     if (query.trim().isEmpty) {
       withCoordinates.sort((a, b) => a.title.compareTo(b.title));
       return withCoordinates;
@@ -120,7 +118,9 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
       return terms.every((term) {
         return _startsWithWord(title, term) ||
             title.contains(term) ||
-            tags.any((tag) => _startsWithWord(tag, term) || tag.contains(term)) ||
+            tags.any(
+              (tag) => _startsWithWord(tag, term) || tag.contains(term),
+            ) ||
             _startsWithWord(city, term) ||
             city.contains(term) ||
             _startsWithWord(country, term) ||
@@ -134,21 +134,25 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
   }
 
   _SearchSections _buildSections(List<PlaceEntity> results) {
-    final topResults = results.take(6).map((place) => _PlaceMatch(place: place)).toList();
+    final topResults = results
+        .take(6)
+        .map((place) => _PlaceMatch(place: place))
+        .toList();
 
-    final nearby = results
-        .map(
-          (place) => _PlaceMatch(
-            place: place,
-            distanceKm: Distance().as(
-              LengthUnit.Kilometer,
-              currentCenter,
-              LatLng(place.latitude!, place.longitude!),
-            ),
-          ),
-        )
-        .toList()
-      ..sort((a, b) => (a.distanceKm ?? 0).compareTo(b.distanceKm ?? 0));
+    final nearby =
+        results
+            .map(
+              (place) => _PlaceMatch(
+                place: place,
+                distanceKm: Distance().as(
+                  LengthUnit.Kilometer,
+                  currentCenter,
+                  LatLng(place.latitude!, place.longitude!),
+                ),
+              ),
+            )
+            .toList()
+          ..sort((a, b) => (a.distanceKm ?? 0).compareTo(b.distanceKm ?? 0));
 
     final byTag = <String, List<_PlaceMatch>>{};
     for (final place in results) {
@@ -209,12 +213,14 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
   Widget _sectionHeader(BuildContext context, String title) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: .25),
+      color: Theme.of(
+        context,
+      ).colorScheme.surfaceContainerHighest.withValues(alpha: .25),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -224,14 +230,15 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     PlaceEntity place, {
     double? distanceKm,
   }) {
-    final subtitle = [place.city, place.country]
-        .where((e) => e != null && e.isNotEmpty)
-        .join(', ');
+    final subtitle = [
+      place.city,
+      place.country,
+    ].where((e) => e != null && e.isNotEmpty).join(', ');
     final normalizedQuery = query.trim();
     final highlightStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: Theme.of(context).colorScheme.primary,
-        );
+      fontWeight: FontWeight.w800,
+      color: Theme.of(context).colorScheme.primary,
+    );
 
     return ListTile(
       leading: const Icon(Icons.location_on_outlined),
@@ -255,13 +262,13 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
               style: Theme.of(context).textTheme.bodySmall,
             )
           : (place.tags.isEmpty
-              ? null
-              : _highlightedText(
-                  place.tags.first,
-                  normalizedQuery,
-                  baseStyle: Theme.of(context).textTheme.bodySmall,
-                  highlightStyle: highlightStyle,
-                )),
+                ? null
+                : _highlightedText(
+                    place.tags.first,
+                    normalizedQuery,
+                    baseStyle: Theme.of(context).textTheme.bodySmall,
+                    highlightStyle: highlightStyle,
+                  )),
       onTap: () {
         close(
           context,
@@ -290,7 +297,10 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     }
 
     final escapedQuery = RegExp.escape(query);
-    final matches = RegExp(escapedQuery, caseSensitive: false).allMatches(source);
+    final matches = RegExp(
+      escapedQuery,
+      caseSensitive: false,
+    ).allMatches(source);
     if (matches.isEmpty) {
       return Text(
         source,
@@ -304,7 +314,12 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     final spans = <TextSpan>[];
     for (final match in matches) {
       if (match.start > start) {
-        spans.add(TextSpan(text: source.substring(start, match.start), style: baseStyle));
+        spans.add(
+          TextSpan(
+            text: source.substring(start, match.start),
+            style: baseStyle,
+          ),
+        );
       }
       spans.add(
         TextSpan(
@@ -327,7 +342,10 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
 
   String _normalize(String value) {
     return value
-        .replaceAll(RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'), '')
+        .replaceAll(
+          RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'),
+          '',
+        )
         .toLowerCase()
         .trim()
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -374,10 +392,7 @@ class _SearchSections {
 }
 
 class _PlaceMatch {
-  const _PlaceMatch({
-    required this.place,
-    this.distanceKm,
-  });
+  const _PlaceMatch({required this.place, this.distanceKm});
 
   final PlaceEntity place;
   final double? distanceKm;

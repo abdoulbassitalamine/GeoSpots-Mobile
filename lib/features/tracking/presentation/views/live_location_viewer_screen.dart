@@ -22,7 +22,9 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
     final hasCenteredOnLocation = useState(false);
 
     useEffect(() {
-      if (state.location != null && isMapReady.value && !hasCenteredOnLocation.value) {
+      if (state.location != null &&
+          isMapReady.value &&
+          !hasCenteredOnLocation.value) {
         hasCenteredOnLocation.value = true;
         final pos = LatLng(state.location!.latitude, state.location!.longitude);
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -210,10 +212,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: GSSpacing.xl),
-                      GSOutlinedButton(
-                        onPressed: closeViewer,
-                        text: 'Retour',
-                      ),
+                      GSOutlinedButton(onPressed: closeViewer, text: 'Retour'),
                     ],
                   ),
                 ),

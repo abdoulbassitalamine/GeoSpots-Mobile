@@ -48,7 +48,8 @@ class SignupForm extends HookConsumerWidget {
             );
             SignUpHandlers.onFirstNameChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => identityControllers.lastNameFocusNode.requestFocus(),
+          onSubmitted: (_) =>
+              identityControllers.lastNameFocusNode.requestFocus(),
         ),
         GSInlineTextField(
           label: 'Nom',
@@ -79,7 +80,8 @@ class SignupForm extends HookConsumerWidget {
             );
             SignUpHandlers.onEmailChanged(value, ref, notifier);
           },
-          onSubmitted: (_) => passwordControllers.passwordFocusNode.requestFocus(),
+          onSubmitted: (_) =>
+              passwordControllers.passwordFocusNode.requestFocus(),
         ),
         GSSpacing.$50.toInt().toHeight,
         GSInlinePasswordField(
@@ -128,7 +130,8 @@ class SignupForm extends HookConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
           isLoading: passwordControllers.isLoading.value,
           enabled: notifier.isFormValid,
-          onPressed: () => SignUpHandlers.onSubmit(ref, context, passwordControllers),
+          onPressed: () =>
+              SignUpHandlers.onSubmit(ref, context, passwordControllers),
           text: 'S’inscrire',
           gradient: GSColorTokens.primaryGradientHorizontal,
           radius: GSRadius.l,

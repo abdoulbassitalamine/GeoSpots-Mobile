@@ -8,28 +8,12 @@ class _MetaPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: GSSpacing.s,
-        vertical: GSSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: GSColors.neutral100,
-        borderRadius: BorderRadius.circular(GSRadius.full),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: GSColors.neutral600),
-          const SizedBox(width: GSSpacing.xs),
-          Text(
-            label,
-            style: GSTypography.captionDefault.copyWith(
-              color: GSColors.neutral700,
-            ),
-          ),
-        ],
-      ),
+    return GSInfoChip(
+      icon: icon,
+      label: label,
+      backgroundColor: GSColors.neutral100,
+      borderColor: GSColors.neutral150,
+      foregroundColor: GSColors.neutral700,
     );
   }
 }
@@ -43,22 +27,11 @@ class _RightsPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final isWrite = rightsLabel.toLowerCase().contains('écriture');
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: GSSpacing.s,
-        vertical: GSSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: isWrite ? GSColors.success100 : GSColors.warning100,
-        borderRadius: BorderRadius.circular(GSRadius.full),
-      ),
-      child: Text(
-        rightsLabel,
-        style: GSTypography.captionDefault.copyWith(
-          color: isWrite ? GSColors.success700 : GSColors.warning700,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    return GSInfoChip(
+      label: rightsLabel,
+      backgroundColor: isWrite ? GSColors.success100 : GSColors.warning100,
+      borderColor: isWrite ? GSColors.success200 : GSColors.warning200,
+      foregroundColor: isWrite ? GSColors.success700 : GSColors.warning700,
     );
   }
 }

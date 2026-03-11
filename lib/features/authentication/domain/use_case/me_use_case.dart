@@ -1,4 +1,3 @@
-
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/user/user_entity.dart';
 import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';

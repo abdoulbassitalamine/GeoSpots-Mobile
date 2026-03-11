@@ -84,7 +84,9 @@ class MapPlacePreviewCard extends StatelessWidget {
                             place.title,
                             style: GSTypography.bodyAccentMedium.copyWith(
                               color: GSColors.neutral1000,
-                              fontSize: compact ? GSFontScale.sf04 : GSFontScale.sf05,
+                              fontSize: compact
+                                  ? GSFontScale.sf04
+                                  : GSFontScale.sf05,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

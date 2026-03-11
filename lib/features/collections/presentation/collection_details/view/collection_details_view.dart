@@ -42,10 +42,14 @@ class CollectionDetailsView extends HookConsumerWidget {
     if (collection == null) {
       return Padding(
         padding: const EdgeInsets.only(top: GSSpacing.xl),
-        child: Text(
-          'Collection introuvable.',
-          style: GSTypography.bodyDefaultMedium.copyWith(
-            color: GSColors.neutral600,
+        child: GSPremiumPanel(
+          padding: const EdgeInsets.all(GSSpacing.xl3),
+          borderColor: GSColors.neutral150,
+          child: Text(
+            'Collection introuvable.',
+            style: GSTypography.bodyDefaultMedium.copyWith(
+              color: GSColors.neutral600,
+            ),
           ),
         ),
       );
@@ -75,10 +79,14 @@ class CollectionDetailsView extends HookConsumerWidget {
     if (placesResult == null) {
       return Padding(
         padding: const EdgeInsets.only(top: GSSpacing.xl),
-        child: Text(
-          'Impossible de charger les lieux de la collection.',
-          style: GSTypography.bodyDefaultMedium.copyWith(
-            color: GSColors.neutral600,
+        child: GSPremiumPanel(
+          padding: const EdgeInsets.all(GSSpacing.xl3),
+          borderColor: GSColors.neutral150,
+          child: Text(
+            'Impossible de charger les lieux de la collection.',
+            style: GSTypography.bodyDefaultMedium.copyWith(
+              color: GSColors.neutral600,
+            ),
           ),
         ),
       );
@@ -91,6 +99,7 @@ class CollectionDetailsView extends HookConsumerWidget {
     final filteredPlaces = _filterPlaces(places, query.value);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CollectionDetailsSummary(
           total: places.length,
@@ -109,13 +118,17 @@ class CollectionDetailsView extends HookConsumerWidget {
         if (filteredPlaces.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: GSSpacing.xl),
-            child: Center(
-              child: Text(
-                query.value.isEmpty
-                    ? 'Aucun lieu dans cette collection.'
-                    : 'Aucun résultat pour "${query.value}".',
-                style: GSTypography.bodyDefaultMedium.copyWith(
-                  color: GSColors.neutral600,
+            child: GSPremiumPanel(
+              padding: const EdgeInsets.all(GSSpacing.xl3),
+              borderColor: GSColors.neutral150,
+              child: Center(
+                child: Text(
+                  query.value.isEmpty
+                      ? 'Aucun lieu dans cette collection.'
+                      : 'Aucun résultat pour "${query.value}".',
+                  style: GSTypography.bodyDefaultMedium.copyWith(
+                    color: GSColors.neutral600,
+                  ),
                 ),
               ),
             ),

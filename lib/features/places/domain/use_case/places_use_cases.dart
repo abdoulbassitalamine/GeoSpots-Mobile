@@ -111,10 +111,7 @@ Future<Result<PlaceEntity>> Function(String id, String tag) addPlaceTagUseCase(
 }
 
 @riverpod
-Future<Result<PlaceEntity>> Function(
-  String id,
-  String tag,
-)
+Future<Result<PlaceEntity>> Function(String id, String tag)
 removePlaceTagUseCase(Ref ref) {
   final repository = ref.read(placesRepositoryProvider);
   return (id, tag) => _execute(() => repository.removeTag(id, tag));
@@ -151,10 +148,8 @@ Future<Result<PlaceEntity>> Function({
 })
 uploadPlaceImageUseCase(Ref ref) {
   final repository = ref.read(placesRepositoryProvider);
-  return ({
-    required String id,
-    required String imagePath,
-  }) => _execute(() => repository.uploadPlaceImage(id, imagePath));
+  return ({required String id, required String imagePath}) =>
+      _execute(() => repository.uploadPlaceImage(id, imagePath));
 }
 
 @riverpod

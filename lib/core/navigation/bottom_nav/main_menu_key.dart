@@ -1,5 +1,1 @@
-enum MainMenuKey {
-  map,
-  collections,
-  profile,
-}
+enum MainMenuKey { map, collections, profile }

@@ -62,7 +62,9 @@ class MapViewModel extends _$MapViewModel {
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
     final getAllPlaces = ref.read(getAllPlacesUseCaseProvider);
     final getSharedCollections = ref.read(getSharedCollectionsUseCaseProvider);
-    final getSharedAccessTokens = ref.read(getSharedAccessTokensUseCaseProvider);
+    final getSharedAccessTokens = ref.read(
+      getSharedAccessTokensUseCaseProvider,
+    );
     final getCollectionPlaces = ref.read(getCollectionPlacesUseCaseProvider);
 
     if (isAuthenticated) {
@@ -101,9 +103,9 @@ class MapViewModel extends _$MapViewModel {
       final placesResults = await Future.wait(
         sharedCollections.map(
           (collection) => getCollectionPlaces(
-                collectionId: collection.id,
-                token: sharedTokenByCollectionId[collection.id],
-              ),
+            collectionId: collection.id,
+            token: sharedTokenByCollectionId[collection.id],
+          ),
         ),
       );
 

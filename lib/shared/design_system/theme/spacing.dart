@@ -3,22 +3,22 @@ class GSSpacing {
   GSSpacing._();
 
   static const double none = 0;
-  static const double xs = 2;     // $25
-  static const double s = 4;      // $50
-  static const double m = 8;      // $100
-  static const double l = 12;     // $150
-  static const double xl = 16;    // $200
-  static const double xl2 = 20;   // $250
-  static const double xl3 = 24;   // $300
-  static const double xl4 = 32;   // $400
-  static const double xl5 = 40;   // $500
-  static const double xl6 = 48;   // $600
-  static const double xl7 = 56;   // $700
-  static const double xl8 = 64;   // $800
-  static const double xl9 = 72;   // $900
-  static const double xl10 = 80;  // $1000
-  static const double xl11 = 88;  // $1100
-  static const double xl12 = 96;  // $1200
+  static const double xs = 2; // $25
+  static const double s = 4; // $50
+  static const double m = 8; // $100
+  static const double l = 12; // $150
+  static const double xl = 16; // $200
+  static const double xl2 = 20; // $250
+  static const double xl3 = 24; // $300
+  static const double xl4 = 32; // $400
+  static const double xl5 = 40; // $500
+  static const double xl6 = 48; // $600
+  static const double xl7 = 56; // $700
+  static const double xl8 = 64; // $800
+  static const double xl9 = 72; // $900
+  static const double xl10 = 80; // $1000
+  static const double xl11 = 88; // $1100
+  static const double xl12 = 96; // $1200
 
   // Legacy naming for compatibility
   static const double $25 = xs;

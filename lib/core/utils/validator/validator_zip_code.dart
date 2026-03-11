@@ -1,6 +1,5 @@
 import 'validator.dart';
 
-
 class ValidatorZipCode extends Validator {
   ValidatorZipCode();
 

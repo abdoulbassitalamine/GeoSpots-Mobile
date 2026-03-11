@@ -23,9 +23,7 @@ class AuthGuardNotifier extends _$AuthGuardNotifier implements Listenable {
     return const AuthenticationStatus.unknown();
   }
 
-  Future<String?> redirect({
-    required GoRouterState goRouterState,
-  }) async {
+  Future<String?> redirect({required GoRouterState goRouterState}) async {
     final currentPath = goRouterState.uri.path;
     final isExcludedRoute = _excludedRoutes.any(currentPath.startsWith);
 
@@ -39,7 +37,9 @@ class AuthGuardNotifier extends _$AuthGuardNotifier implements Listenable {
     };
     final hasToken = token != null && token.isNotEmpty;
 
-    if (isExcludedRoute && hasToken && state is AuthenticationStatusAuthenticated) {
+    if (isExcludedRoute &&
+        hasToken &&
+        state is AuthenticationStatusAuthenticated) {
       return MapRouteData().location;
     }
 

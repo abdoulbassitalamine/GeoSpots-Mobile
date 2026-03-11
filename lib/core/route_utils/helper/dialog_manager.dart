@@ -17,7 +17,9 @@ class DialogManager {
       _nbOfModals--;
     }
 
-    await Future<void>.delayed(kDefaultTransitionDuration + _modalClosingDurationDelta);
+    await Future<void>.delayed(
+      kDefaultTransitionDuration + _modalClosingDurationDelta,
+    );
   }
 
   // TODO(team): Add customizable options
@@ -32,12 +34,7 @@ class DialogManager {
     await showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
-        return const SizedBox(
-          height: 200,
-          child: Center(
-            child: Text('TODO'),
-          ),
-        );
+        return const SizedBox(height: 200, child: Center(child: Text('TODO')));
       },
     ).then((result) {
       _nbOfModals--;

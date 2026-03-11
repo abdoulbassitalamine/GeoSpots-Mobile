@@ -9,7 +9,5 @@ class SettingsDomain {
   static Future<void> invalidate(WidgetRef ref) async {
     ref.invalidate(settingsRepositoryProvider);
     await AuthenticationDomain.invalidate(ref);
-  
-  
   }
 }
