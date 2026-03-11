@@ -1,3 +1,4 @@
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -57,6 +58,7 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
     switch (result) {
       case Ok():
         state = state.copyWith(place: null, shouldRefreshParent: true);
+        notifyAppDataChanged(ref);
         return true;
       case Err():
         state = state.copyWith(

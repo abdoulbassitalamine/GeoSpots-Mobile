@@ -1,5 +1,6 @@
 import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
@@ -322,6 +323,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
 
     state = state.copyWith(isSaving: false);
     ref.invalidate(authenticationRepositoryProvider);
+    notifyAppDataChanged(ref);
     return true;
   }
 

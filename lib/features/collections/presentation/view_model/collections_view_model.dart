@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/authentication.dart';
@@ -30,6 +31,12 @@ class CollectionsViewModel extends _$CollectionsViewModel {
   @override
   CollectionsState build() {
     ref.watch(getOwnedCollectionsUseCaseProvider);
+    ref.listen<int>(appDataSyncProvider, (previous, next) {
+      if (previous == next) {
+        return;
+      }
+      Future.microtask(_loadCollectionsData);
+    });
     Future.microtask(_loadCollectionsData);
     return const CollectionsState();
   }
@@ -223,6 +230,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       case Ok(value: final value):
         ref.invalidate(authenticationRepositoryProvider);
         await _loadCollectionsData();
+        notifyAppDataChanged(ref);
 
         if (value.errors.isNotEmpty) {
           state = state.copyWith(
@@ -357,6 +365,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         presentation: GSSnackbarPresentation.scaffold,
       ),
     );
+    notifyAppDataChanged(ref);
     return true;
   }
 
@@ -397,6 +406,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         presentation: GSSnackbarPresentation.scaffold,
       ),
     );
+    notifyAppDataChanged(ref);
     if (ref.read(activeSharedAccessTokenProvider) == token) {
       ref.read(activeSharedAccessTokenProvider.notifier).token = null;
     }

@@ -1,3 +1,4 @@
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
@@ -19,6 +20,12 @@ class MapViewModel extends _$MapViewModel {
   @override
   MapState build() {
     ref.watch(getAllPlacesUseCaseProvider);
+    ref.listen<int>(appDataSyncProvider, (previous, next) {
+      if (previous == next) {
+        return;
+      }
+      Future.microtask(loadPlaces);
+    });
     Future.microtask(loadPlaces);
     return const MapState(isLoading: true);
   }
