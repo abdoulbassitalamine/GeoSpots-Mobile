@@ -8,6 +8,7 @@ import 'package:geo_spots/features/collections/domain/use_cases/collections_use_
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/features/places/domain/use_case/places_use_cases.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'map_state.dart';
 
@@ -143,6 +144,37 @@ class MapViewModel extends _$MapViewModel {
   void clearError() {
     if (state.errorMessage != null) {
       state = state.copyWith(errorMessage: null);
+    }
+  }
+
+  Future<void> sharePlace(String placeId) async {
+    final place = state.allPlaces.firstWhere(
+      (p) => p.id == placeId,
+      orElse: () => throw StateError('Place not found'),
+    );
+
+    final sharePlace = ref.read(sharePlaceUseCaseProvider);
+    final result = await sharePlace(id: placeId, canWrite: false);
+
+    switch (result) {
+      case Ok(value: final value):
+        final shareText = StringBuffer()
+          ..writeln(place.title)
+          ..writeln(value.url);
+        if (value.expiresAt != null) {
+          final d = value.expiresAt!;
+          final formatted =
+              '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+          shareText.writeln('Expire le $formatted');
+        }
+        await SharePlus.instance.share(
+          ShareParams(
+            subject: 'Partage du lieu: ${place.title}',
+            text: shareText.toString(),
+          ),
+        );
+      case Err():
+        state = state.copyWith(errorMessage: 'Erreur lors du partage');
     }
   }
 

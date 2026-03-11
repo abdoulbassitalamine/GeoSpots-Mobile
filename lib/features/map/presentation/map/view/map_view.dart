@@ -246,7 +246,7 @@ class MapView extends HookConsumerWidget {
                               ),
                             );
                           },
-                          onShareTap: () {},
+                          onShareTap: () => notifier.sharePlace(selectedPlace.place.id),
                           onClose: () => isPreviewVisible.value = false,
                         ),
                       ),
