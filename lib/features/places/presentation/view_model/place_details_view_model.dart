@@ -56,7 +56,7 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
 
     switch (result) {
       case Ok():
-        state = state.copyWith(place: null);
+        state = state.copyWith(place: null, shouldRefreshParent: true);
         return true;
       case Err():
         state = state.copyWith(
@@ -67,6 +67,11 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
         );
         return false;
     }
+  }
+
+  Future<void> refreshAfterUpdate(String placeId) async {
+    state = state.copyWith(shouldRefreshParent: true);
+    await loadPlace(placeId);
   }
 
   Future<void> sharePlace() async {

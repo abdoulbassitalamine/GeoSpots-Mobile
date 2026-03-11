@@ -3,6 +3,8 @@ import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/shared_access_session.dart';
+import 'package:geo_spots/shared/design_system/widgets/common/gs_protected_network_image.dart';
 import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -92,6 +94,14 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   Future<UpsertPlaceState> updateState(UpsertPlaceState newState) async {
     state = newState;
     return state;
+  }
+
+  Future<void> reload() async {
+    final placeId = state.placeId;
+    if (!state.isEditMode || placeId == null) {
+      return;
+    }
+    await _loadPlace(placeId);
   }
 
   bool get isStep0Valid => titleValidators.execute(state.title).isEmpty;
@@ -269,7 +279,11 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         imagePath: imagePath!,
       );
       switch (imageResult) {
-        case Ok():
+        case Ok(value: final place):
+          await _evictPlaceImageCache(
+            persistedPlaceId,
+            imageUrl: place.imageUrl,
+          );
           break;
         case Err(error: final error):
           state = state.copyWith(
@@ -288,6 +302,10 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       final deleteImageResult = await deletePlaceImage(persistedPlaceId);
       switch (deleteImageResult) {
         case Ok():
+          await _evictPlaceImageCache(
+            persistedPlaceId,
+            imageUrl: _initialImageUrl,
+          );
           break;
         case Err(error: final error):
           state = state.copyWith(
@@ -342,6 +360,23 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   void consumeSnackbar() {
     if (state.snackbarMessage != null) {
       state = state.copyWith(snackbarMessage: null);
+    }
+  }
+
+  Future<void> _evictPlaceImageCache(String placeId, {String? imageUrl}) async {
+    final sharedToken = ref.read(activeSharedAccessTokenProvider);
+    final remoteImageUrl = imageUrl?.trim().isNotEmpty ?? false
+        ? imageUrl!.trim()
+        : '/api/images/$placeId';
+
+    await gsEvictProtectedImage(ref, remoteImageUrl);
+    if (sharedToken != null && sharedToken.isNotEmpty) {
+      await gsEvictProtectedImage(
+        ref,
+        remoteImageUrl,
+        useSharedTokenQueryParam: true,
+        sharedToken: sharedToken,
+      );
     }
   }
 }

@@ -9,6 +9,7 @@ sealed class PlaceDetailsState with _$PlaceDetailsState {
   const factory PlaceDetailsState({
     PlaceEntity? place,
     @Default(false) bool isLoading,
+    @Default(false) bool shouldRefreshParent,
     String? loadErrorMessage,
     GSSnackbarMessage? snackbarMessage,
   }) = _PlaceDetailsState;

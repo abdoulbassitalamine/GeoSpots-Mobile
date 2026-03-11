@@ -4,9 +4,16 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceDetailsHeader extends StatelessWidget {
-  const PlaceDetailsHeader({super.key, required this.place});
+  const PlaceDetailsHeader({
+    super.key,
+    required this.place,
+    required this.onBack,
+    this.useSharedImageToken = false,
+  });
 
   final PlaceEntity place;
+  final VoidCallback onBack;
+  final bool useSharedImageToken;
 
   @override
   Widget build(BuildContext context) {
@@ -17,18 +24,98 @@ class PlaceDetailsHeader extends StatelessWidget {
       automaticallyImplyLeading: false,
       backgroundColor: GSColors.primary700,
       leadingWidth: 72,
-      leading: const _HeaderLeading(),
+      leading: _HeaderLeading(onPressed: onBack),
       actions: const [_HeaderActions()],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
-        background: _HeaderBackground(place: place),
+        background: _HeaderBackground(
+          place: place,
+          useSharedImageToken: useSharedImageToken,
+        ),
+      ),
+    );
+  }
+}
+
+class PlaceDetailsFallbackHeader extends StatelessWidget {
+  const PlaceDetailsFallbackHeader({
+    super.key,
+    required this.onBack,
+    this.title = 'Détail du lieu',
+    this.subtitle = 'Le contenu du lieu est momentanément indisponible.',
+  });
+
+  final VoidCallback onBack;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return SliverAppBar(
+      expandedHeight: 220,
+      pinned: true,
+      stretch: true,
+      automaticallyImplyLeading: false,
+      backgroundColor: GSColors.primary700,
+      leadingWidth: 72,
+      leading: _HeaderLeading(onPressed: onBack),
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            const _HeaderPlaceholder(),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    GSColors.neutral1000.withValues(alpha: 0.10),
+                    GSColors.neutral1000.withValues(alpha: 0.26),
+                    GSColors.neutral1000.withValues(alpha: 0.82),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              left: GSSpacing.xl,
+              right: GSSpacing.xl,
+              bottom: GSSpacing.xl3,
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GSTypography.headingMedium.copyWith(
+                        color: GSColors.neutral000,
+                        fontSize: GSFontScale.sf08,
+                      ),
+                    ),
+                    const SizedBox(height: GSSpacing.s),
+                    Text(
+                      subtitle,
+                      style: GSTypography.bodyDefaultMedium.copyWith(
+                        color: GSColors.neutral000.withValues(alpha: 0.82),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _HeaderLeading extends StatelessWidget {
-  const _HeaderLeading();
+  const _HeaderLeading({required this.onPressed});
+
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -47,10 +134,7 @@ class _HeaderLeading extends StatelessWidget {
             color: GSColors.neutral000.withValues(alpha: 0.16),
           ),
         ),
-        child: GSBackButton(
-          color: GSColors.neutral000,
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        child: GSBackButton(color: GSColors.neutral000, onPressed: onPressed),
       ),
     );
   }
@@ -83,9 +167,13 @@ class _HeaderActions extends StatelessWidget {
 }
 
 class _HeaderBackground extends StatelessWidget {
-  const _HeaderBackground({required this.place});
+  const _HeaderBackground({
+    required this.place,
+    required this.useSharedImageToken,
+  });
 
   final PlaceEntity place;
+  final bool useSharedImageToken;
 
   @override
   Widget build(BuildContext context) {
@@ -95,9 +183,12 @@ class _HeaderBackground extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         if (place.imageUrl != null)
-          Image.network(
-            place.imageUrl!,
+          GSProtectedNetworkImage(
+            imageUrl: place.imageUrl!,
             fit: BoxFit.cover,
+            useSharedTokenQueryParam: useSharedImageToken || place.isShared,
+            sharedToken: place.sharedToken,
+            placeholder: const _HeaderPlaceholder(),
             errorBuilder: (_, _, _) => const _HeaderPlaceholder(),
           )
         else

@@ -173,10 +173,11 @@ class _ImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrl.startsWith('http')) {
-      return Image.network(
-        imageUrl,
+    if (gsIsRemoteImageSource(imageUrl)) {
+      return GSProtectedNetworkImage(
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
+        placeholder: const Center(child: Icon(Icons.image_outlined)),
         errorBuilder: (_, _, _) =>
             const Center(child: Icon(Icons.error_outline)),
       );

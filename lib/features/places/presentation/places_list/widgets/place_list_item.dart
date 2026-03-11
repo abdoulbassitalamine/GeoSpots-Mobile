@@ -6,10 +6,16 @@ import '../../../domain/entity/place_entity.dart';
 import '../../helpers/place_action_handler.dart';
 
 class PlaceListItem extends ConsumerWidget {
-  const PlaceListItem({super.key, required this.place, required this.onTap});
+  const PlaceListItem({
+    super.key,
+    required this.place,
+    required this.onTap,
+    this.useSharedImageToken = false,
+  });
 
   final PlaceEntity place;
   final VoidCallback onTap;
+  final bool useSharedImageToken;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +29,11 @@ class PlaceListItem extends ConsumerWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _PlaceThumbnail(imageUrl: place.imageUrl),
+              _PlaceThumbnail(
+                imageUrl: place.imageUrl,
+                useSharedTokenQueryParam: useSharedImageToken || place.isShared,
+                sharedToken: place.sharedToken,
+              ),
               const SizedBox(width: GSSpacing.l),
               Expanded(
                 child: Column(
@@ -146,9 +156,15 @@ class PlaceListItem extends ConsumerWidget {
 }
 
 class _PlaceThumbnail extends StatelessWidget {
-  const _PlaceThumbnail({this.imageUrl});
+  const _PlaceThumbnail({
+    this.imageUrl,
+    required this.useSharedTokenQueryParam,
+    this.sharedToken,
+  });
 
   final String? imageUrl;
+  final bool useSharedTokenQueryParam;
+  final String? sharedToken;
 
   @override
   Widget build(BuildContext context) {
@@ -160,9 +176,12 @@ class _PlaceThumbnail extends StatelessWidget {
         color: GSColors.neutral100,
         child: imageUrl == null
             ? const _ThumbnailPlaceholder()
-            : Image.network(
-                imageUrl!,
+            : GSProtectedNetworkImage(
+                imageUrl: imageUrl!,
                 fit: BoxFit.cover,
+                useSharedTokenQueryParam: useSharedTokenQueryParam,
+                sharedToken: sharedToken,
+                placeholder: const _ThumbnailPlaceholder(),
                 errorBuilder: (_, _, _) => const _ThumbnailPlaceholder(),
               ),
       ),

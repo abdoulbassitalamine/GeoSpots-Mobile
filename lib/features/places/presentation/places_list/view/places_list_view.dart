@@ -44,33 +44,40 @@ class PlacesListView extends ConsumerWidget {
           onSearchChanged: viewModel.searchPlaces,
           onClearSearch: viewModel.clearSearch,
         ),
-        Expanded(child: _buildContent(context, state)),
+        if (state.errorMessage != null && state.places.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              GSSpacing.xl,
+              0,
+              GSSpacing.xl,
+              GSSpacing.m,
+            ),
+            child: GSAlertBanner(
+              type: GSSnackbarType.error,
+              message: state.errorMessage!,
+              onDismiss: viewModel.clearError,
+            ),
+          ),
+        Expanded(child: _buildContent(context, state, viewModel)),
       ],
     );
   }
 
-  Widget _buildContent(BuildContext context, PlacesListState state) {
+  Widget _buildContent(
+    BuildContext context,
+    PlacesListState state,
+    PlacesListViewModel viewModel,
+  ) {
     if (state.isLoading) {
       return const Center(child: GSCircularLoader());
     }
 
     if (state.errorMessage != null && state.places.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(GSSpacing.xl3),
-          child: GSPremiumPanel(
-            padding: const EdgeInsets.all(GSSpacing.xl3),
-            borderColor: GSColors.danger200,
-            backgroundColor: GSColors.neutral000,
-            child: Text(
-              state.errorMessage!,
-              style: GSTypography.bodyDefaultMedium.copyWith(
-                color: GSColors.danger600,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
+      return GSErrorState(
+        title: 'Impossible de charger les lieux',
+        message: state.errorMessage!,
+        onRetry: viewModel.reload,
+        retryLabel: 'Réessayer',
       );
     }
 
@@ -122,8 +129,13 @@ class PlacesListView extends ConsumerWidget {
         GsLogger().d('place: $place');
         return PlaceListItem(
           place: place,
-          onTap: () {
-            PlaceDetailsRouteData(placeId: place.id).push<void>(context);
+          onTap: () async {
+            final changed = await PlaceDetailsRouteData(
+              placeId: place.id,
+            ).push<bool>(context);
+            if (changed ?? false) {
+              await viewModel.reload();
+            }
           },
         );
       },

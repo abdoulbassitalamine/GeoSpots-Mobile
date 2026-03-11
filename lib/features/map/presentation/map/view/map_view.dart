@@ -279,30 +279,10 @@ class MapView extends HookConsumerWidget {
               left: GSSpacing.xl,
               right: GSSpacing.xl,
               bottom: selectedPlace == null ? GSSpacing.xl : 172,
-              child: GSPremiumPanel(
-                padding: const EdgeInsets.all(GSSpacing.l),
-                backgroundColor: GSColors.neutral000.withValues(alpha: 0.96),
-                borderColor: GSColors.danger200,
-                child: Row(
-                  children: [
-                    const Icon(Icons.error_outline, color: GSColors.danger600),
-                    const SizedBox(width: GSSpacing.m),
-                    Expanded(
-                      child: Text(
-                        state.errorMessage!,
-                        style: GSTypography.bodyDefaultSmall.copyWith(
-                          color: GSColors.danger600,
-                        ),
-                      ),
-                    ),
-                    GSIconButton(
-                      icon: Icons.close,
-                      tooltip: 'Fermer',
-                      onPressed: notifier.clearError,
-                      color: GSColors.danger600,
-                    ),
-                  ],
-                ),
+              child: GSAlertBanner(
+                type: GSSnackbarType.error,
+                message: state.errorMessage!,
+                onDismiss: notifier.clearError,
               ),
             ),
         ],

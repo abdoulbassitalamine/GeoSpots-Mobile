@@ -42,106 +42,85 @@ class SettingsView extends ConsumerWidget {
     }
 
     final state = ref.watch(profileViewModelProvider);
-
-    if (state.isLoading) {
-      return const Center(child: GSCircularLoader());
-    }
-
-    if (state.user == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: GSColors.danger600,
-            ),
-            const SizedBox(height: GSSpacing.xl),
-            Text(
-              state.errorMessage ?? 'Erreur de chargement du profil',
-              style: GSTypography.bodyDefaultMedium.copyWith(
-                color: GSColors.danger600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final notifier = ref.read(profileViewModelProvider.notifier);
 
     return CustomScrollView(
       slivers: [
-        ProfileHeader(user: state.user!),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(GSSpacing.xl),
-            child: Column(
-              children: [
-                ProfileStats(
-                  user: state.user!,
-                  totalPlaces: state.totalPlaces,
-                  totalCollections: state.totalCollections,
-                  sharedPlaces: state.sharedPlaces,
-                ),
-                const SizedBox(height: GSSpacing.xl),
-                SettingsSection(
-                  title: 'Paramètres',
-                  children: [
-                    TrackingToggle(
-                      isEnabled: state.isTrackingEnabled,
-                      onChanged: (value) {
-                        ref
-                            .read(profileViewModelProvider.notifier)
-                            .toggleTracking(value);
-                      },
-                      isSharing: state.isSharing,
-                      isSharingLoading: state.isSharingLoading,
-                      activeShareSession: state.activeShareSession,
-                      onStartSharing: () async {
-                        final session = await ref
-                            .read(profileViewModelProvider.notifier)
-                            .startSharing();
-                        if (session != null && context.mounted) {
-                          await LocationSharingBottomSheet.show(
+        const ProfileHeader(),
+        if (state.isLoading)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: GSCircularLoader()),
+          )
+        else if (state.user == null)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: GSErrorState(
+              title: 'Impossible de charger le profil',
+              message: state.errorMessage ?? 'Le profil est indisponible.',
+              onRetry: notifier.refresh,
+              retryLabel: 'Réessayer',
+            ),
+          )
+        else
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(GSSpacing.xl),
+              child: Column(
+                children: [
+                  ProfileStats(
+                    user: state.user!,
+                    totalPlaces: state.totalPlaces,
+                    totalCollections: state.totalCollections,
+                    sharedPlaces: state.sharedPlaces,
+                  ),
+                  const SizedBox(height: GSSpacing.xl),
+                  SettingsSection(
+                    title: 'Paramètres',
+                    children: [
+                      TrackingToggle(
+                        isEnabled: state.isTrackingEnabled,
+                        onChanged: notifier.toggleTracking,
+                        isSharing: state.isSharing,
+                        isSharingLoading: state.isSharingLoading,
+                        activeShareSession: state.activeShareSession,
+                        onStartSharing: () async {
+                          final session = await notifier.startSharing();
+                          if (session != null && context.mounted) {
+                            await LocationSharingBottomSheet.show(
+                              context,
+                              session: session,
+                              onStop: notifier.stopSharing,
+                            );
+                          }
+                        },
+                        onStopSharing: notifier.stopSharing,
+                        onShowSession: () {
+                          final session = state.activeShareSession;
+                          if (session == null) return;
+                          LocationSharingBottomSheet.show(
                             context,
                             session: session,
-                            onStop: () => ref
-                                .read(profileViewModelProvider.notifier)
-                                .stopSharing(),
+                            onStop: notifier.stopSharing,
                           );
-                        }
-                      },
-                      onStopSharing: () => ref
-                          .read(profileViewModelProvider.notifier)
-                          .stopSharing(),
-                      onShowSession: () {
-                        final session = state.activeShareSession;
-                        if (session == null) return;
-                        LocationSharingBottomSheet.show(
-                          context,
-                          session: session,
-                          onStop: () => ref
-                              .read(profileViewModelProvider.notifier)
-                              .stopSharing(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: GSSpacing.m),
-                    GSOutlinedButton(
-                      onPressed: () => OpenLiveLocationDialog.show(context),
-                      text: 'Ouvrir un lien reçu',
-                      icon: Icons.travel_explore,
-                      fullWidth: true,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: GSSpacing.xl3),
-                const LogoutButton(),
-                const SizedBox(height: GSSpacing.xl3),
-              ],
+                        },
+                      ),
+                      const SizedBox(height: GSSpacing.m),
+                      GSOutlinedButton(
+                        onPressed: () => OpenLiveLocationDialog.show(context),
+                        text: 'Ouvrir un lien reçu',
+                        icon: Icons.travel_explore,
+                        fullWidth: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: GSSpacing.xl3),
+                  const LogoutButton(),
+                  const SizedBox(height: GSSpacing.xl3),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }

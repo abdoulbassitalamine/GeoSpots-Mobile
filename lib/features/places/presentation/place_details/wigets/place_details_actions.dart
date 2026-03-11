@@ -46,7 +46,7 @@ class PlaceDetailsActions extends StatelessWidget {
   }
 }
 
-class _PrimaryActionsRow extends StatelessWidget {
+class _PrimaryActionsRow extends ConsumerWidget {
   const _PrimaryActionsRow({
     required this.placeId,
     required this.place,
@@ -58,7 +58,7 @@ class _PrimaryActionsRow extends StatelessWidget {
   final bool readOnly;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         Expanded(
@@ -83,8 +83,15 @@ class _PrimaryActionsRow extends StatelessWidget {
                   text: 'Modifier',
                   icon: Icons.edit_outlined,
                   fullWidth: true,
-                  onPressed: () {
-                    UpsertPlaceRouteData(placeId: placeId).push<void>(context);
+                  onPressed: () async {
+                    final updated = await UpsertPlaceRouteData(
+                      placeId: placeId,
+                    ).push<bool>(context);
+                    if ((updated ?? false) && context.mounted) {
+                      await ref
+                          .read(placeDetailsViewModelProvider(placeId).notifier)
+                          .refreshAfterUpdate(placeId);
+                    }
                   },
                 ),
         ),
@@ -148,7 +155,7 @@ class _SecondaryActionsRow extends ConsumerWidget {
                       context,
                       message: 'Lieu supprimé',
                     );
-                    Navigator.of(context).pop();
+                    Navigator.of(context).pop(true);
                   }
                 }
               },

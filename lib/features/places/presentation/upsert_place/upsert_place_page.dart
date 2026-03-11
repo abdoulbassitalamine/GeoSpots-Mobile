@@ -37,35 +37,12 @@ class UpsertPlacePage extends HookConsumerWidget {
     final state = ref.watch(upsertPlaceViewModelProvider(placeId));
     final viewModel = ref.read(upsertPlaceViewModelProvider(placeId).notifier);
 
-    if (state.isLoading) {
-      return GSScaffold(
-        backgroundColor: GSColorTokens.backgroundPrimary,
-        body: Center(child: GSCircularLoader()),
-      );
-    }
-
-    if (state.loadErrorMessage != null) {
-      return GSScaffold(
-        backgroundColor: GSColorTokens.backgroundPrimary,
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(GSSpacing.xl3),
-            child: Text(
-              state.loadErrorMessage!,
-              textAlign: TextAlign.center,
-              style: GSTypography.bodyDefaultLarge.copyWith(
-                color: GSColors.danger600,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
     final steps = [
       UpsertPlaceBasicInfoStepView(state: state, notifier: viewModel),
       UpsertPlaceLocationStepView(state: state, notifier: viewModel),
     ];
+    final hasLoadError = state.loadErrorMessage != null;
+    final canRenderForm = !state.isLoading && !hasLoadError;
 
     return GSScaffold(
       backgroundColor: GSColorTokens.backgroundPrimary,
@@ -75,24 +52,35 @@ class UpsertPlacePage extends HookConsumerWidget {
             currentStep: currentStep.value,
             isEditMode: state.isEditMode,
           ),
-          Padding(
-            padding: const EdgeInsets.all(GSSpacing.xl),
-            child: UpsertPlaceProgressIndicator(
-              currentIndex: currentStep.value,
-              size: steps.length,
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
+          if (canRenderForm)
+            Padding(
               padding: const EdgeInsets.all(GSSpacing.xl),
-              child: steps[currentStep.value],
+              child: UpsertPlaceProgressIndicator(
+                currentIndex: currentStep.value,
+                size: steps.length,
+              ),
             ),
+          Expanded(
+            child: switch ((state.isLoading, hasLoadError)) {
+              (true, _) => const Center(child: GSCircularLoader()),
+              (false, true) => GSErrorState(
+                title: 'Impossible de charger le lieu',
+                message: state.loadErrorMessage!,
+                onRetry: state.isEditMode ? viewModel.reload : null,
+                retryLabel: state.isEditMode ? 'Réessayer' : null,
+              ),
+              _ => SingleChildScrollView(
+                padding: const EdgeInsets.all(GSSpacing.xl),
+                child: steps[currentStep.value],
+              ),
+            },
           ),
-          _UpsertPlaceBottomActions(
-            currentStep: currentStep,
-            totalSteps: steps.length,
-            placeId: placeId,
-          ),
+          if (canRenderForm)
+            _UpsertPlaceBottomActions(
+              currentStep: currentStep,
+              totalSteps: steps.length,
+              placeId: placeId,
+            ),
         ],
       ),
     );
@@ -207,7 +195,7 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
                                 ? 'Lieu mis à jour'
                                 : 'Lieu créé',
                           );
-                          Navigator.of(context).pop();
+                          Navigator.of(context).pop(true);
                         }
                       },
                       text: state.isSaving

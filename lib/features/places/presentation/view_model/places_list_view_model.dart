@@ -72,6 +72,14 @@ class PlacesListViewModel extends _$PlacesListViewModel {
     loadPlaces(tag: state.selectedTag);
   }
 
+  Future<void> reload() => loadPlaces(tag: state.selectedTag);
+
+  void clearError() {
+    if (state.errorMessage != null) {
+      state = state.copyWith(errorMessage: null);
+    }
+  }
+
   void consumeSnackbar() {
     if (state.snackbarMessage != null) {
       state = state.copyWith(snackbarMessage: null);

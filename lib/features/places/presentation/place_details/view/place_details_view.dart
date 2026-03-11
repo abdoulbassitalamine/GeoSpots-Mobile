@@ -40,64 +40,71 @@ class PlaceDetailsView extends ConsumerWidget {
     );
 
     final state = ref.watch(placeDetailsViewModelProvider(placeId));
+    final notifier = ref.read(placeDetailsViewModelProvider(placeId).notifier);
     final activeAccessRight = ref.watch(activeCollectionAccessRightProvider);
+    final activeSharedToken = ref.watch(activeSharedAccessTokenProvider);
     final effectiveReadOnly =
         readOnly || activeAccessRight == ShareAccessRight.read;
-
-    if (state.isLoading) {
-      return const Center(child: GSCircularLoader());
-    }
-
-    if (state.loadErrorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(GSSpacing.xl3),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.error_outline,
-                size: 64,
-                color: GSColors.danger600,
-              ),
-              const SizedBox(height: GSSpacing.xl),
-              Text(
-                state.loadErrorMessage!,
-                style: GSTypography.bodyDefaultLarge.copyWith(
-                  color: GSColors.danger600,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    if (state.place == null) {
-      return const Center(child: Text('Lieu introuvable'));
-    }
+    final useSharedImageToken =
+        activeAccessRight != null ||
+        (activeSharedToken != null && activeSharedToken.isNotEmpty);
+    final popResult = state.shouldRefreshParent ? true : null;
 
     return CustomScrollView(
       slivers: [
-        PlaceDetailsHeader(place: state.place!),
-        SliverToBoxAdapter(
-          child: Transform.translate(
-            offset: const Offset(0, -28),
-            child: Column(
-              children: [
-                PlaceDetailsContent(place: state.place!),
-                const SizedBox(height: GSSpacing.xl3),
-                PlaceDetailsActions(
-                  place: state.place!,
-                  placeId: placeId,
-                  readOnly: effectiveReadOnly,
-                ),
-                const SizedBox(height: GSSpacing.xl3),
-              ],
+        if (state.place != null)
+          PlaceDetailsHeader(
+            place: state.place!,
+            onBack: () => Navigator.of(context).pop(popResult),
+            useSharedImageToken: useSharedImageToken,
+          )
+        else
+          PlaceDetailsFallbackHeader(
+            onBack: () => Navigator.of(context).pop(popResult),
+          ),
+        if (state.isLoading)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: GSCircularLoader()),
+          )
+        else if (state.loadErrorMessage != null)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: GSErrorState(
+              title: 'Impossible de charger le lieu',
+              message: state.loadErrorMessage!,
+              onRetry: () => notifier.loadPlace(placeId),
+              retryLabel: 'Réessayer',
+            ),
+          )
+        else if (state.place == null)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: GSErrorState(
+              title: 'Lieu introuvable',
+              message: 'Ce lieu est introuvable ou n’est plus accessible.',
+              onRetry: () => notifier.loadPlace(placeId),
+              retryLabel: 'Réessayer',
+            ),
+          )
+        else
+          SliverToBoxAdapter(
+            child: Transform.translate(
+              offset: const Offset(0, -28),
+              child: Column(
+                children: [
+                  PlaceDetailsContent(place: state.place!),
+                  const SizedBox(height: GSSpacing.xl3),
+                  PlaceDetailsActions(
+                    place: state.place!,
+                    placeId: placeId,
+                    readOnly: effectiveReadOnly,
+                  ),
+                  const SizedBox(height: GSSpacing.xl3),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }

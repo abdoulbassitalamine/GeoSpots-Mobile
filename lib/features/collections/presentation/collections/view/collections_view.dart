@@ -44,10 +44,12 @@ class CollectionsView extends ConsumerWidget {
         authenticationStatus is AuthenticationStatusAuthenticated;
     final state = ref.watch(collectionsViewModelProvider);
     final notifier = ref.read(collectionsViewModelProvider.notifier);
-
-    if (state.isLoading) {
-      return const Center(child: GSCircularLoader());
-    }
+    final hasFatalLoadError =
+        state.error != null &&
+        state.ownedCollections.isEmpty &&
+        state.sharedCollections.isEmpty &&
+        state.sharedTokens.isEmpty &&
+        state.ownedShareTokens.isEmpty;
 
     final ownedSharesByCollection = <String, List<SharedAccessTokenEntity>>{};
     for (final token in state.ownedShareTokens) {
@@ -136,6 +138,20 @@ class CollectionsView extends ConsumerWidget {
           onImportPressed: isAuthenticated ? notifier.importCollection : null,
           onAddSharedAccessPressed: () => _showAddSharedAccessDialog(context),
         ),
+        if (state.error != null && !hasFatalLoadError)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              GSSpacing.xl,
+              GSSpacing.xl,
+              GSSpacing.xl,
+              0,
+            ),
+            child: GSAlertBanner(
+              type: GSSnackbarType.error,
+              message: state.error!,
+              onDismiss: notifier.clearError,
+            ),
+          ),
         if (isAuthenticated)
           Padding(
             padding: const EdgeInsets.fromLTRB(
@@ -150,17 +166,33 @@ class CollectionsView extends ConsumerWidget {
             ),
           ),
         Expanded(
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                GSSpacing.xl,
-                GSSpacing.xl,
-                GSSpacing.xl,
-                GSSpacing.xl4,
-              ),
-              child: tabView,
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      GSSpacing.xl,
+                      GSSpacing.xl,
+                      GSSpacing.xl,
+                      GSSpacing.xl4,
+                    ),
+                    child: switch ((state.isLoading, hasFatalLoadError)) {
+                      (true, _) => const Center(child: GSCircularLoader()),
+                      (false, true) => GSErrorState(
+                        title: 'Impossible de charger les collections',
+                        message: state.error!,
+                        onRetry: notifier.refresh,
+                        retryLabel: 'Réessayer',
+                      ),
+                      _ => tabView,
+                    },
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ],
