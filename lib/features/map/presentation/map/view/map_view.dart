@@ -31,9 +31,6 @@ class MapView extends HookConsumerWidget {
     final isPreviewVisible = useState(true);
     final isShareInfoVisible = useState(true);
     final isSearchMode = state.searchQuery.trim().isNotEmpty;
-    final hasSecondaryTopCard =
-        !isSearchMode && (isAuthenticated || isShareInfoVisible.value);
-
     ref.listen<AuthenticationStatus>(authGuardProvider, (
       AuthenticationStatus? previous,
       AuthenticationStatus next,
@@ -171,7 +168,7 @@ class MapView extends HookConsumerWidget {
                   fit: StackFit.expand,
                   children: [
                     Column(
-                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         MapTopPanel(
                           isAuthenticated: isAuthenticated,
@@ -207,40 +204,41 @@ class MapView extends HookConsumerWidget {
                           onClearSearch: () => notifier.updateSearchQuery(''),
                           onCategorySelected: notifier.selectCategory,
                         ),
+                        const SizedBox(height: GSSpacing.l),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: MapFloatingControls(
+                            onCenterTap: () {
+                              if (!isMapReady.value) return;
+                              mapController.move(
+                                selectedPlace?.point ?? initialCenter,
+                                14.8,
+                              );
+                            },
+                            onZoomInTap: () {
+                              if (!isMapReady.value) return;
+                              final nextZoom = (mapController.camera.zoom + 0.8)
+                                  .clamp(3.0, 19.0)
+                                  .toDouble();
+                              mapController.move(
+                                mapController.camera.center,
+                                nextZoom,
+                              );
+                            },
+                            onZoomOutTap: () {
+                              if (!isMapReady.value) return;
+                              final nextZoom = (mapController.camera.zoom - 0.8)
+                                  .clamp(3.0, 19.0)
+                                  .toDouble();
+                              mapController.move(
+                                mapController.camera.center,
+                                nextZoom,
+                              );
+                            },
+                          ),
+                        ),
+                        const Spacer(),
                       ],
-                    ),
-                    Positioned(
-                      top: hasSecondaryTopCard ? 228 : 132,
-                      right: 0,
-                      child: MapFloatingControls(
-                        onCenterTap: () {
-                          if (!isMapReady.value) return;
-                          mapController.move(
-                            selectedPlace?.point ?? initialCenter,
-                            14.8,
-                          );
-                        },
-                        onZoomInTap: () {
-                          if (!isMapReady.value) return;
-                          final nextZoom = (mapController.camera.zoom + 0.8)
-                              .clamp(3.0, 19.0)
-                              .toDouble();
-                          mapController.move(
-                            mapController.camera.center,
-                            nextZoom,
-                          );
-                        },
-                        onZoomOutTap: () {
-                          if (!isMapReady.value) return;
-                          final nextZoom = (mapController.camera.zoom - 0.8)
-                              .clamp(3.0, 19.0)
-                              .toDouble();
-                          mapController.move(
-                            mapController.camera.center,
-                            nextZoom,
-                          );
-                        },
-                      ),
                     ),
                     if (isPreviewVisible.value && selectedPlace != null)
                       Positioned(

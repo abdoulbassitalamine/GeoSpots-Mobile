@@ -113,56 +113,47 @@ class _SecondaryActionsRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      children: [
-        Expanded(
-          child: _ActionButton(
-            icon: Icons.share_outlined,
-            label: 'Partager',
-            onPressed: () =>
-                PlaceActionHandler.share(context, ref, place: place),
-          ),
+    final actions = <Widget>[
+      Expanded(
+        child: _ActionButton(
+          icon: Icons.share_outlined,
+          label: 'Partager',
+          onPressed: () => PlaceActionHandler.share(context, ref, place: place),
         ),
+      ),
+      if (!readOnly) ...[
         const SizedBox(width: GSSpacing.s),
         Expanded(
           child: _ActionButton(
-            icon: Icons.favorite_border_rounded,
-            label: 'Favoris',
-            onPressed: () {
-              // TODO(dev): Add to favorites.
+            icon: Icons.delete_outline,
+            label: 'Supprimer',
+            color: GSColors.danger600,
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => const _DeleteConfirmDialog(),
+              );
+
+              if (confirmed ?? false) {
+                final deleted = await ref
+                    .read(placeDetailsViewModelProvider(placeId).notifier)
+                    .deletePlace();
+                if (deleted && context.mounted) {
+                  GSScaffoldSnackbar.showSuccess(
+                    context,
+                    message: 'Lieu supprimé',
+                  );
+                  Navigator.of(context).pop(true);
+                }
+              }
             },
           ),
         ),
-        if (!readOnly) ...[
-          const SizedBox(width: GSSpacing.s),
-          Expanded(
-            child: _ActionButton(
-              icon: Icons.delete_outline,
-              label: 'Supprimer',
-              color: GSColors.danger600,
-              onPressed: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => const _DeleteConfirmDialog(),
-                );
-
-                if (confirmed ?? false) {
-                  final deleted = await ref
-                      .read(placeDetailsViewModelProvider(placeId).notifier)
-                      .deletePlace();
-                  if (deleted && context.mounted) {
-                    GSScaffoldSnackbar.showSuccess(
-                      context,
-                      message: 'Lieu supprimé',
-                    );
-                    Navigator.of(context).pop(true);
-                  }
-                }
-              },
-            ),
-          ),
-        ],
       ],
+    ];
+
+    return Row(
+      children: actions,
     );
   }
 }

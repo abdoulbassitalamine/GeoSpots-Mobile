@@ -38,107 +38,57 @@ class MapTopPanel extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _GlassPanel(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [GSColors.primary600, GSColors.primary700],
-                      ),
-                      borderRadius: BorderRadius.circular(GSRadius.l),
-                    ),
-                    child: const Icon(
-                      Icons.travel_explore_rounded,
-                      color: GSColors.neutral000,
-                    ),
-                  ),
-                  const SizedBox(width: GSSpacing.m),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Carte',
-                          style: GSTypography.labelAccent.copyWith(
-                            color: GSColors.primary700,
-                          ),
-                        ),
-                        const SizedBox(height: GSSpacing.xs),
-                        Text(
-                          isSearchMode
-                              ? 'Résultats filtrés sur la carte'
-                              : 'Explorez vos lieux avec précision',
-                          style: GSTypography.bodyAccentMedium.copyWith(
-                            color: GSColors.neutral900,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: GSSpacing.l),
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: onSearchTap,
+          padding: const EdgeInsets.all(GSSpacing.s),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onSearchTap,
+              borderRadius: BorderRadius.circular(GSRadius.l),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: GSSpacing.l,
+                  vertical: GSSpacing.l,
+                ),
+                decoration: BoxDecoration(
+                  color: GSColors.neutral000.withValues(alpha: 0.86),
                   borderRadius: BorderRadius.circular(GSRadius.l),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: GSSpacing.l,
-                      vertical: GSSpacing.l,
-                    ),
-                    decoration: BoxDecoration(
-                      color: GSColors.neutral000.withValues(alpha: 0.86),
-                      borderRadius: BorderRadius.circular(GSRadius.l),
-                      border: Border.all(color: GSColors.neutral150),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.search, color: GSColors.slate400),
-                        const SizedBox(width: GSSpacing.m),
-                        Expanded(
-                          child: Text(
-                            searchQuery.isEmpty
-                                ? 'Rechercher un lieu, une ville, un tag...'
-                                : searchQuery,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GSTypography.bodyDefaultMedium.copyWith(
-                              color: searchQuery.isEmpty
-                                  ? GSColors.slate400
-                                  : GSColors.neutral800,
-                            ),
-                          ),
+                  border: Border.all(color: GSColors.neutral150),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search, color: GSColors.slate400),
+                    const SizedBox(width: GSSpacing.m),
+                    Expanded(
+                      child: Text(
+                        searchQuery.isEmpty
+                            ? 'Rechercher un lieu, une ville, un tag...'
+                            : searchQuery,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GSTypography.bodyDefaultMedium.copyWith(
+                          color: searchQuery.isEmpty
+                              ? GSColors.slate400
+                              : GSColors.neutral800,
                         ),
-                        if (searchQuery.isNotEmpty)
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: GSColors.neutral100,
-                              borderRadius: BorderRadius.circular(
-                                GSRadius.full,
-                              ),
-                            ),
-                            child: GSIconButton(
-                              icon: Icons.close,
-                              tooltip: 'Effacer',
-                              onPressed: onClearSearch,
-                              size: 18,
-                            ),
-                          ),
-                      ],
+                      ),
                     ),
-                  ),
+                    if (searchQuery.isNotEmpty)
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: GSColors.neutral100,
+                          borderRadius: BorderRadius.circular(GSRadius.full),
+                        ),
+                        child: GSIconButton(
+                          icon: Icons.close,
+                          tooltip: 'Effacer',
+                          onPressed: onClearSearch,
+                          size: 18,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
         if (!isSearchMode) ...[
