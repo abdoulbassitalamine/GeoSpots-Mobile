@@ -4,14 +4,13 @@ import 'package:geo_spots/features/authentication/domain/navigator/authenticatio
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
-import 'package:geo_spots/features/collections/presentation/collections/widgets/add_shared_access_dialog.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_header.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/collections_tabs.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/owned_collections_tab_view.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/shared_by_me_collections_tab_view.dart';
 import 'package:geo_spots/features/collections/presentation/collections/widgets/tabs/shared_with_me_collections_tab_view.dart';
 import 'package:geo_spots/features/collections/presentation/route/route_data.dart'
-    show CollectionDetailsRouteData;
+    show CollectionDetailsRouteData, AddSharedAccessRouteData;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
@@ -201,8 +200,5 @@ class CollectionsView extends ConsumerWidget {
 }
 
 void _showAddSharedAccessDialog(BuildContext context) {
-  showDialog<void>(
-    context: context,
-    builder: (_) => const AddSharedAccessDialog(),
-  );
+  const AddSharedAccessRouteData().push<void>(context);
 }

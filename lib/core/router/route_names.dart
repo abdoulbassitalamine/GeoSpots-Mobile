@@ -8,6 +8,8 @@ abstract class RouteNames {
   static const String collectionTagParam = 'collectionTag';
   static const String collectionDetails = 'details/:$collectionTagParam';
   static const String collectionDetailsName = 'collection-details';
+  static const String addSharedAccess = 'add-shared-access';
+  static const String addSharedAccessName = 'add-shared-access';
 
   static const String settings = '/settings';
   static const String settingsName = 'settings';
