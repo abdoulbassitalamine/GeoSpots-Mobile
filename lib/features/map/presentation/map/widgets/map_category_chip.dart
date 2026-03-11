@@ -18,34 +18,48 @@ class MapCategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = isSelected
+        ? GSColors.primary600
+        : GSColors.neutral000.withValues(alpha: 0.82);
+    final foregroundColor = isSelected
+        ? GSColors.neutral000
+        : GSColors.neutral700;
+    final iconBackground = isSelected
+        ? GSColors.neutral000.withValues(alpha: 0.18)
+        : GSColors.primary50;
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(GSRadius.l),
+      borderRadius: BorderRadius.circular(GSRadius.full),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: GSSpacing.l,
-          vertical: GSSpacing.m,
+          horizontal: GSSpacing.m,
+          vertical: GSSpacing.s,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? GSColors.primary500 : GSColors.neutral050,
-          borderRadius: BorderRadius.circular(GSRadius.l),
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(GSRadius.full),
           border: Border.all(
-            color: isSelected ? GSColors.primary500 : GSColors.neutral300,
+            color: isSelected ? GSColors.primary700 : GSColors.neutral150,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isSelected ? GSColors.neutral000 : GSColors.neutral700,
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: iconBackground,
+                borderRadius: BorderRadius.circular(GSRadius.full),
+              ),
+              child: Icon(icon, size: 14, color: foregroundColor),
             ),
             const SizedBox(width: GSSpacing.s),
             Text(
               label,
               style: GSTypography.bodyAccentSmall.copyWith(
-                color: isSelected ? GSColors.neutral000 : GSColors.neutral700,
+                color: foregroundColor,
               ),
             ),
           ],

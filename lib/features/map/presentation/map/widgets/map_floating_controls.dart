@@ -21,19 +21,20 @@ class MapFloatingControls extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         MapControlButton(
-          icon: Icons.navigation,
+          icon: Icons.my_location_rounded,
           tooltip: 'Centrer',
           onPressed: onCenterTap,
+          isPrimary: true,
         ),
         const SizedBox(height: GSSpacing.m),
         MapControlButton(
-          icon: Icons.add,
+          icon: Icons.add_rounded,
           tooltip: 'Zoom +',
           onPressed: onZoomInTap,
         ),
         const SizedBox(height: GSSpacing.m),
         MapControlButton(
-          icon: Icons.remove,
+          icon: Icons.remove_rounded,
           tooltip: 'Zoom -',
           onPressed: onZoomOutTap,
         ),

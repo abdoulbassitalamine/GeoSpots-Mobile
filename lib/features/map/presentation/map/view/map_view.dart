@@ -86,49 +86,64 @@ class MapView extends HookConsumerWidget {
     }, [selectedPlace?.place.id]);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [GSColors.primary100, GSColors.primary200],
-        ),
-      ),
+      decoration: const BoxDecoration(color: GSColors.neutral050),
       child: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
-            child: FlutterMap(
-              mapController: mapController,
-              options: MapOptions(
-                initialCenter: initialCenter,
-                initialZoom: 6.8,
-                minZoom: 3,
-                maxZoom: 19,
-                onMapReady: () => isMapReady.value = true,
-              ),
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.geo_spots',
-                ),
-                MarkerLayer(
-                  markers: [
-                    for (int i = 0; i < visibleMappedPlaces.length; i++)
-                      Marker(
-                        point: visibleMappedPlaces[i].point,
-                        width: 24,
-                        height: 24,
-                        child: MapMarkerDot(
-                          isSelected: i == safeIndex,
-                          onTap: () {
-                            notifier.selectPlace(
-                              visibleMappedPlaces[i].place.id,
-                            );
-                            isPreviewVisible.value = true;
-                          },
-                        ),
-                      ),
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    initialCenter: initialCenter,
+                    initialZoom: 6.8,
+                    minZoom: 3,
+                    maxZoom: 19,
+                    onMapReady: () => isMapReady.value = true,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.geo_spots',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        for (int i = 0; i < visibleMappedPlaces.length; i++)
+                          Marker(
+                            point: visibleMappedPlaces[i].point,
+                            width: 32,
+                            height: 32,
+                            child: MapMarkerDot(
+                              isSelected: i == safeIndex,
+                              onTap: () {
+                                notifier.selectPlace(
+                                  visibleMappedPlaces[i].place.id,
+                                );
+                                isPreviewVisible.value = true;
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
+                ),
+                IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          GSColors.neutral000.withValues(alpha: 0.02),
+                          GSColors.primary100.withValues(alpha: 0.04),
+                          GSColors.neutral1000.withValues(alpha: 0.10),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -195,7 +210,7 @@ class MapView extends HookConsumerWidget {
                       ],
                     ),
                     Positioned(
-                      top: hasSecondaryTopCard ? 176 : 88,
+                      top: hasSecondaryTopCard ? 228 : 132,
                       right: 0,
                       child: MapFloatingControls(
                         onCenterTap: () {
@@ -232,23 +247,26 @@ class MapView extends HookConsumerWidget {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: MapPlacePreviewCard(
-                          place: selectedPlace,
-                          compact: state.searchQuery.trim().isNotEmpty,
-                          onDirectionsTap: () {
-                            if (!selectedPlace.place.hasCoordinates) {
-                              return;
-                            }
-                            showDialog<void>(
-                              context: context,
-                              builder: (_) => NavigationOptionsDialog(
-                                place: selectedPlace.place,
-                              ),
-                            );
-                          },
-                          onShareTap: () =>
-                              notifier.sharePlace(selectedPlace.place.id),
-                          onClose: () => isPreviewVisible.value = false,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: GSSpacing.xl4),
+                          child: MapPlacePreviewCard(
+                            place: selectedPlace,
+                            compact: state.searchQuery.trim().isNotEmpty,
+                            onDirectionsTap: () {
+                              if (!selectedPlace.place.hasCoordinates) {
+                                return;
+                              }
+                              showDialog<void>(
+                                context: context,
+                                builder: (_) => NavigationOptionsDialog(
+                                  place: selectedPlace.place,
+                                ),
+                              );
+                            },
+                            onShareTap: () =>
+                                notifier.sharePlace(selectedPlace.place.id),
+                            onClose: () => isPreviewVisible.value = false,
+                          ),
                         ),
                       ),
                   ],
@@ -256,6 +274,37 @@ class MapView extends HookConsumerWidget {
               ),
             ),
           ),
+          if (state.errorMessage != null)
+            Positioned(
+              left: GSSpacing.xl,
+              right: GSSpacing.xl,
+              bottom: selectedPlace == null ? GSSpacing.xl : 172,
+              child: GSPremiumPanel(
+                padding: const EdgeInsets.all(GSSpacing.l),
+                backgroundColor: GSColors.neutral000.withValues(alpha: 0.96),
+                borderColor: GSColors.danger200,
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: GSColors.danger600),
+                    const SizedBox(width: GSSpacing.m),
+                    Expanded(
+                      child: Text(
+                        state.errorMessage!,
+                        style: GSTypography.bodyDefaultSmall.copyWith(
+                          color: GSColors.danger600,
+                        ),
+                      ),
+                    ),
+                    GSIconButton(
+                      icon: Icons.close,
+                      tooltip: 'Fermer',
+                      onPressed: notifier.clearError,
+                      color: GSColors.danger600,
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
     );
