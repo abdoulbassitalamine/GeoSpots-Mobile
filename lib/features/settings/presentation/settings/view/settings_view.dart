@@ -3,6 +3,7 @@ import 'package:geo_spots/features/authentication/domain/entity/authentication_s
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
 import 'package:geo_spots/features/tracking/presentation/views/location_sharing_bottom_sheet.dart';
+import 'package:geo_spots/features/tracking/presentation/views/open_live_location_dialog.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
@@ -125,6 +126,13 @@ class SettingsView extends ConsumerWidget {
                         );
                       },
                     ),
+                    const SizedBox(height: GSSpacing.m),
+                    GSOutlinedButton(
+                      onPressed: () => OpenLiveLocationDialog.show(context),
+                      text: 'Ouvrir un lien reçu',
+                      icon: Icons.travel_explore,
+                      fullWidth: true,
+                    ),
                   ],
                 ),
                 const SizedBox(height: GSSpacing.xl3),
@@ -184,6 +192,13 @@ class _GuestProfilePrompt extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: GSSpacing.xl),
+              GSOutlinedButton(
+                onPressed: () => OpenLiveLocationDialog.show(context),
+                text: 'Ouvrir un lien de suivi',
+                icon: Icons.travel_explore,
+                fullWidth: true,
+              ),
+              const SizedBox(height: GSSpacing.m),
               GSFilledButton(
                 onPressed: () => const SignInRouteData().go(context),
                 text: 'Se connecter',

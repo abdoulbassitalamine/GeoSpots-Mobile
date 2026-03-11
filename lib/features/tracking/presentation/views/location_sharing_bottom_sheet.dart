@@ -24,10 +24,8 @@ class LocationSharingBottomSheet extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => LocationSharingBottomSheet(
-        session: session,
-        onStop: onStop,
-      ),
+      builder: (_) =>
+          LocationSharingBottomSheet(session: session, onStop: onStop),
     );
   }
 
@@ -167,11 +165,7 @@ class LocationSharingBottomSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: GSSpacing.m),
-                  const Icon(
-                    Icons.copy,
-                    size: 18,
-                    color: GSColors.primary600,
-                  ),
+                  const Icon(Icons.copy, size: 18, color: GSColors.primary600),
                 ],
               ),
             ),
@@ -217,11 +211,7 @@ class LocationSharingBottomSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: GSSpacing.m),
-                  const Icon(
-                    Icons.copy,
-                    size: 18,
-                    color: GSColors.primary600,
-                  ),
+                  const Icon(Icons.copy, size: 18, color: GSColors.primary600),
                 ],
               ),
             ),
@@ -269,7 +259,10 @@ class LocationSharingBottomSheet extends StatelessWidget {
   Future<void> _shareViaOS(BuildContext context) async {
     final shareText = StringBuffer()
       ..writeln('Suivez ma position en temps réel :')
-      ..writeln(session.url);
+      ..writeln(session.url)
+      ..writeln()
+      ..writeln('Dans GeoSpots: Réglages > Ouvrir un lien de suivi')
+      ..writeln('Token: ${session.token}');
     if (session.expiresAt != null) {
       shareText.writeln('Expire le ${_formatDate(session.expiresAt!)}');
     }

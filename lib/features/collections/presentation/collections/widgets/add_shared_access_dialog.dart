@@ -32,11 +32,6 @@ class AddSharedAccessDialog extends HookConsumerWidget {
       tokenError: tokenError,
     );
 
-    useEffect(() {
-      ref.read(collectionsViewModelProvider.notifier).clearError();
-      return null;
-    }, const []);
-
     final isFormValid =
         AddSharedAccessValidators.urlValidators
             .executeWithPriorityMessage(urlController.text)

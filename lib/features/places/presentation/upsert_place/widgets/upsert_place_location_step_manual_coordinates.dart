@@ -55,7 +55,7 @@ class _ManualCoordinatesInput extends HookWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Saisie manuelle des coordonnees',
+          'Saisie manuelle des coordonnées',
           style: GSTypography.labelDefault,
         ),
         const SizedBox(height: GSSpacing.s),

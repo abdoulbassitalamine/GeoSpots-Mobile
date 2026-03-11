@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geo_spots/features/settings/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -20,7 +21,6 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
     final isMapReady = useState(false);
     final hasCenteredOnLocation = useState(false);
 
-    // Auto-centre la carte quand la position arrive pour la première fois
     useEffect(() {
       if (state.location != null && isMapReady.value && !hasCenteredOnLocation.value) {
         hasCenteredOnLocation.value = true;
@@ -36,6 +36,15 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
     final markerPoint = location != null
         ? LatLng(location.latitude, location.longitude)
         : const LatLng(48.8566, 2.3522);
+
+    void closeViewer() {
+      final navigator = Navigator.of(context);
+      if (navigator.canPop()) {
+        navigator.pop();
+        return;
+      }
+      const SettingsRouteData().go(context);
+    }
 
     return Scaffold(
       backgroundColor: GSColors.neutral050,
@@ -84,7 +93,10 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
                     borderRadius: BorderRadius.circular(GSRadius.l),
                     child: Row(
                       children: [
-                        GSBackButton(onPressed: () => Navigator.of(context).pop()),
+                        GSBackButton(
+                          color: GSColors.neutral900,
+                          onPressed: closeViewer,
+                        ),
                         const SizedBox(width: GSSpacing.m),
                         const Icon(
                           Icons.share_location,
@@ -199,7 +211,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
                       ),
                       const SizedBox(height: GSSpacing.xl),
                       GSOutlinedButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: closeViewer,
                         text: 'Retour',
                       ),
                     ],
