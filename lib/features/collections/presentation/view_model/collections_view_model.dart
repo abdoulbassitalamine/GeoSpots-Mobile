@@ -3,8 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
-import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
-import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
+import 'package:geo_spots/features/authentication/authentication.dart';
 import 'package:geo_spots/features/authentication/domain/use_case/me_stats_use_case.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
@@ -204,6 +203,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
     switch (importResult) {
       case Ok(value: final value):
+        ref.invalidate(authenticationRepositoryProvider);
         await _loadCollectionsData();
 
         if (value.errors.isNotEmpty) {

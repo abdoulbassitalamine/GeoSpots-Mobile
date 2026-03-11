@@ -2,6 +2,7 @@ import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -280,6 +281,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     }
 
     state = state.copyWith(isSaving: false);
+    ref.invalidate(authenticationRepositoryProvider);
   }
 
   double? _parseCoordinate(String raw) {
