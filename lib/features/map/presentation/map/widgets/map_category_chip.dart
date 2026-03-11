@@ -24,16 +24,13 @@ class MapCategoryChip extends StatelessWidget {
     final foregroundColor = isSelected
         ? GSColors.neutral000
         : GSColors.neutral700;
-    final iconBackground = isSelected
-        ? GSColors.neutral000.withValues(alpha: 0.18)
-        : GSColors.primary50;
 
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(GSRadius.full),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: GSSpacing.m,
+          horizontal: GSSpacing.l,
           vertical: GSSpacing.s,
         ),
         decoration: BoxDecoration(
@@ -42,19 +39,14 @@ class MapCategoryChip extends StatelessWidget {
           border: Border.all(
             color: isSelected ? GSColors.primary700 : GSColors.neutral150,
           ),
+          boxShadow: [
+            GSShadows.s(color: GSColors.neutral1000.withValues(alpha: 0.08)),
+          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: iconBackground,
-                borderRadius: BorderRadius.circular(GSRadius.full),
-              ),
-              child: Icon(icon, size: 14, color: foregroundColor),
-            ),
+            Icon(icon, size: 16, color: foregroundColor),
             const SizedBox(width: GSSpacing.s),
             Text(
               label,

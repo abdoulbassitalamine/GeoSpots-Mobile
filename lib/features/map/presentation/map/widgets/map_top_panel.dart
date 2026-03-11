@@ -37,55 +37,65 @@ class MapTopPanel extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _GlassPanel(
-          padding: const EdgeInsets.all(GSSpacing.s),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onSearchTap,
+        ClipRRect(
+          borderRadius: BorderRadius.circular(GSRadius.l),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Material(
+              color: GSColors.neutral000.withValues(alpha: 0.80),
               borderRadius: BorderRadius.circular(GSRadius.l),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: GSSpacing.l,
-                  vertical: GSSpacing.l,
-                ),
-                decoration: BoxDecoration(
-                  color: GSColors.neutral000.withValues(alpha: 0.86),
-                  borderRadius: BorderRadius.circular(GSRadius.l),
-                  border: Border.all(color: GSColors.neutral150),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search, color: GSColors.slate400),
-                    const SizedBox(width: GSSpacing.m),
-                    Expanded(
-                      child: Text(
-                        searchQuery.isEmpty
-                            ? 'Rechercher un lieu, une ville, un tag...'
-                            : searchQuery,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GSTypography.bodyDefaultMedium.copyWith(
-                          color: searchQuery.isEmpty
-                              ? GSColors.slate400
-                              : GSColors.neutral800,
-                        ),
-                      ),
+              child: InkWell(
+                onTap: onSearchTap,
+                borderRadius: BorderRadius.circular(GSRadius.l),
+                child: Ink(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: GSSpacing.l,
+                    vertical: GSSpacing.l,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(GSRadius.l),
+                    border: Border.all(
+                      color: GSColors.neutral000.withValues(alpha: 0.72),
                     ),
-                    if (searchQuery.isNotEmpty)
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: GSColors.neutral100,
-                          borderRadius: BorderRadius.circular(GSRadius.full),
-                        ),
-                        child: GSIconButton(
-                          icon: Icons.close,
-                          tooltip: 'Effacer',
-                          onPressed: onClearSearch,
-                          size: 18,
+                    boxShadow: [
+                      GSShadows.m(
+                        color: GSColors.neutral1000.withValues(alpha: 0.10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.search, color: GSColors.slate400),
+                      const SizedBox(width: GSSpacing.m),
+                      Expanded(
+                        child: Text(
+                          searchQuery.isEmpty
+                              ? 'Rechercher un lieu, une ville, un tag...'
+                              : searchQuery,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GSTypography.bodyDefaultMedium.copyWith(
+                            color: searchQuery.isEmpty
+                                ? GSColors.slate400
+                                : GSColors.neutral800,
+                          ),
                         ),
                       ),
-                  ],
+                      if (searchQuery.isNotEmpty)
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: GSColors.neutral100,
+                            borderRadius: BorderRadius.circular(GSRadius.full),
+                          ),
+                          child: GSIconButton(
+                            icon: Icons.close,
+                            tooltip: 'Effacer',
+                            onPressed: onClearSearch,
+                            size: 18,
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -94,29 +104,22 @@ class MapTopPanel extends StatelessWidget {
         if (!isSearchMode) ...[
           const SizedBox(height: GSSpacing.l),
           if (isAuthenticated)
-            _GlassPanel(
-              padding: const EdgeInsets.symmetric(
-                horizontal: GSSpacing.l,
-                vertical: GSSpacing.m,
-              ),
-              child: SizedBox(
-                height: 44,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.only(right: 84),
-                  itemCount: categories.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(width: GSSpacing.s),
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return MapCategoryChip(
-                      label: category.$1,
-                      icon: category.$2,
-                      isSelected: selectedCategory == category.$1,
-                      onTap: () => onCategorySelected(category.$1),
-                    );
-                  },
-                ),
+            SizedBox(
+              height: 44,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(right: 84),
+                itemCount: categories.length,
+                separatorBuilder: (_, _) => const SizedBox(width: GSSpacing.s),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return MapCategoryChip(
+                    label: category.$1,
+                    icon: category.$2,
+                    isSelected: selectedCategory == category.$1,
+                    onTap: () => onCategorySelected(category.$1),
+                  );
+                },
               ),
             )
           else if (isShareInfoVisible)
