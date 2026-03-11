@@ -28,9 +28,10 @@ class SignUpView extends ConsumerWidget {
           ),
           GSSpacing.$200.toInt().toHeight,
           Text(
-            'Rejoignez la communauté GeoSpots',
+            'Rejoignez la communauté GeoSpots en 2 étapes simples.',
             style: context.bodyDefaultSmall.copyWith(
               fontSize: GSFontScale.sf04,
+              color: GSColorTokens.textSecondary,
             ),
           ),
           GSSpacing.$300.toInt().toHeight,

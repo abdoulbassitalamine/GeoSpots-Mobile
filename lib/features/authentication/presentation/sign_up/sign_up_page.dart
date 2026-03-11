@@ -11,18 +11,6 @@ class SignUpPage extends ConsumerWidget {
     return GestureDetector(
       onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            'Créer un compte',
-            style: context.headingMedium.copyWith(
-              fontSize: GSFontScale.sf06,
-              color: GSColors.neutral950,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: false,
-          backgroundColor: GSColorTokens.backgroundSecondary,
-        ),
         body: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: GSSpacing.$250,
