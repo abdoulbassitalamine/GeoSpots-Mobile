@@ -18,6 +18,7 @@ class CollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAllCollection = collection.tag == 'all';
+    final title = isAllCollection ? 'Tous les lieux' : collection.tag;
     final placesLabel =
         '${collection.placesCount} ${collection.placesCount > 1 ? 'lieux' : 'lieu'}';
 
@@ -32,8 +33,8 @@ class CollectionCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 60,
-                height: 60,
+                width: 56,
+                height: 56,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
@@ -59,9 +60,7 @@ class CollectionCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     GSInfoChip(
-                      label: isAllCollection
-                          ? 'Collection système'
-                          : 'Collection',
+                      label: isAllCollection ? 'Système' : 'Personnelle',
                       icon: isAllCollection
                           ? Icons.auto_awesome
                           : Icons.label_outline,
@@ -70,30 +69,36 @@ class CollectionCard extends ConsumerWidget {
                       foregroundColor: GSColors.neutral700,
                     ),
                     const SizedBox(height: GSSpacing.m),
-                    Text(
-                      isAllCollection ? 'Tous les lieux' : collection.tag,
-                      style: GSTypography.bodyAccentLarge.copyWith(
-                        color: GSColors.neutral1000,
-                      ),
-                    ),
-                    const SizedBox(height: GSSpacing.xs),
-                    Text(
-                      isAllCollection
-                          ? 'Votre répertoire complet pour explorer l\'ensemble des lieux.'
-                          : 'Une collection claire pour regrouper vos lieux les plus utiles.',
-                      style: GSTypography.bodyDefaultSmall.copyWith(
-                        color: GSColors.neutral650,
-                      ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: GSTypography.bodyAccentLarge.copyWith(
+                              color: GSColors.neutral1000,
+                              fontSize: GSFontScale.sf03,
+                            ),
+                          ),
+                        ),
+                        if (onTap != null)
+                          const Padding(
+                            padding: EdgeInsets.only(left: GSSpacing.s),
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              color: GSColors.neutral400,
+                            ),
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: GSSpacing.xl),
+          const SizedBox(height: GSSpacing.l),
           Wrap(
             spacing: GSSpacing.s,
-            runSpacing: GSSpacing.s,
             children: [
               GSInfoChip(
                 icon: Icons.place_outlined,
@@ -102,49 +107,26 @@ class CollectionCard extends ConsumerWidget {
                 borderColor: GSColors.primary100,
                 foregroundColor: GSColors.primary700,
               ),
-              GSInfoChip(
-                icon: Icons.visibility_outlined,
-                label: isAllCollection ? 'Vue globale' : 'Accès rapide',
-                backgroundColor: GSColors.neutral100,
-                borderColor: GSColors.neutral150,
-              ),
             ],
           ),
-          const SizedBox(height: GSSpacing.xl),
-          Row(
-            children: [
-              Text(
-                'Ouvrir la collection',
-                style: GSTypography.labelAccent.copyWith(
-                  color: GSColors.primary700,
-                ),
-              ),
-              const SizedBox(width: GSSpacing.s),
-              const Icon(
-                Icons.arrow_forward_rounded,
-                size: 18,
-                color: GSColors.primary700,
-              ),
-              const Spacer(),
-              if (!isAllCollection) ...[
-                _ActionIconButton(
+          const SizedBox(height: GSSpacing.l),
+          if (!isAllCollection)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                _ActionButton(
                   icon: Icons.download_outlined,
-                  tooltip: 'Exporter',
+                  label: 'Exporter',
                   onPressed: () => _showExportDialog(context, ref),
                 ),
                 const SizedBox(width: GSSpacing.s),
-                _ActionIconButton(
+                _ActionButton(
                   icon: Icons.share_outlined,
-                  tooltip: 'Partager',
+                  label: 'Partager',
                   onPressed: () => _showShareDialog(context, ref),
                 ),
-              ] else if (onTap != null)
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: GSColors.neutral400,
-                ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );
@@ -178,31 +160,49 @@ class CollectionCard extends ConsumerWidget {
   }
 }
 
-class _ActionIconButton extends StatelessWidget {
-  const _ActionIconButton({
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
     required this.icon,
-    required this.tooltip,
+    required this.label,
     required this.onPressed,
   });
 
   final IconData icon;
-  final String tooltip;
+  final String label;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: GSColors.neutral050,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
         borderRadius: BorderRadius.circular(GSRadius.full),
-        border: Border.all(color: GSColors.neutral150),
-      ),
-      child: GSIconButton(
-        icon: icon,
-        onPressed: onPressed,
-        size: 20,
-        color: GSColors.neutral700,
-        tooltip: tooltip,
+        child: Ink(
+          padding: const EdgeInsets.symmetric(
+            horizontal: GSSpacing.m,
+            vertical: GSSpacing.s,
+          ),
+          decoration: BoxDecoration(
+            color: GSColors.neutral050,
+            borderRadius: BorderRadius.circular(GSRadius.full),
+            border: Border.all(color: GSColors.neutral150),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: GSColors.neutral700),
+              const SizedBox(width: GSSpacing.xs),
+              Text(
+                label,
+                style: GSTypography.captionDefault.copyWith(
+                  color: GSColors.neutral700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
