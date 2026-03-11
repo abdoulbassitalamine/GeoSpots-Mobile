@@ -42,6 +42,8 @@ class MapView extends HookConsumerWidget {
 
     final allMappedPlaces = _mapPlacesToPreview(state.allPlaces);
     final visibleMappedPlaces = _mapPlacesToPreview(state.visiblePlaces);
+    final hasFatalLoadError =
+        state.errorMessage != null && state.allPlaces.isEmpty;
 
     final categories = state.categories
         .map<(String, IconData)>((category) => (category, Icons.label_outline))
@@ -240,6 +242,22 @@ class MapView extends HookConsumerWidget {
                         const Spacer(),
                       ],
                     ),
+                    if (!state.isLoading && hasFatalLoadError)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          ignoring: false,
+                          child: Container(
+                            color: GSColors.neutral000.withValues(alpha: 0.82),
+                            padding: const EdgeInsets.all(GSSpacing.xl),
+                            child: GSErrorState(
+                              title: 'Impossible de charger la carte',
+                              message: state.errorMessage!,
+                              onRetry: notifier.loadPlaces,
+                              retryLabel: 'Réessayer',
+                            ),
+                          ),
+                        ),
+                      ),
                     if (isPreviewVisible.value && selectedPlace != null)
                       Positioned(
                         left: 0,
@@ -272,7 +290,7 @@ class MapView extends HookConsumerWidget {
               ),
             ),
           ),
-          if (state.errorMessage != null)
+          if (state.errorMessage != null && !hasFatalLoadError)
             Positioned(
               left: GSSpacing.xl,
               right: GSSpacing.xl,

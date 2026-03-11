@@ -241,10 +241,6 @@ class ProfileViewModel extends _$ProfileViewModel {
     await ref.read(authenticationViewModelProvider.notifier).logOut();
   }
 
-  Future<void> refresh() async {
-    await _loadProfile();
-  }
-
   void consumeSnackbar() {
     if (state.snackbarMessage != null) {
       state = state.copyWith(snackbarMessage: null);

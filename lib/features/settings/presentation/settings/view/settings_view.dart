@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/features/settings/domain/domain.dart';
 import 'package:geo_spots/features/tracking/presentation/views/location_sharing_bottom_sheet.dart';
 import 'package:geo_spots/features/tracking/presentation/views/open_live_location_dialog.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -58,7 +59,7 @@ class SettingsView extends ConsumerWidget {
             child: GSErrorState(
               title: 'Impossible de charger le profil',
               message: state.errorMessage ?? 'Le profil est indisponible.',
-              onRetry: notifier.refresh,
+              onRetry: () async => SettingsDomain.invalidate(ref),
               retryLabel: 'Réessayer',
             ),
           )
