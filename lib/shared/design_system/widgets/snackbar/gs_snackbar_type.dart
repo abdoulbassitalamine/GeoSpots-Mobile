@@ -1,6 +1,1 @@
-enum GSSnackbarType {
-  error,
-  success,
-  warning,
-  info,
-}
+enum GSSnackbarType { error, success, warning, info }

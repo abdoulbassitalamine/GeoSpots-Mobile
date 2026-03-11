@@ -127,10 +127,7 @@ class GSTopSnackbar {
 }
 
 class _GSTopSnackbarCard extends StatelessWidget {
-  const _GSTopSnackbarCard({
-    required this.message,
-    required this.style,
-  });
+  const _GSTopSnackbarCard({required this.message, required this.style});
 
   final String message;
   final _GSSnackbarStyle style;
