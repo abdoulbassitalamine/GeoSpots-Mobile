@@ -9,6 +9,7 @@ part 'places_list_view_model.g.dart';
 class PlacesListViewModel extends _$PlacesListViewModel {
   @override
   PlacesListState build() {
+    ref.watch(getAllPlacesUseCaseProvider);
     Future.microtask(loadPlaces);
     return const PlacesListState();
   }

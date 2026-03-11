@@ -11,7 +11,7 @@ part 'places_use_cases.g.dart';
 
 @riverpod
 Future<Result<List<PlaceEntity>>> Function() getAllPlacesUseCase(Ref ref) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return () => _execute(repository.getAllPlaces);
 }
 
@@ -19,7 +19,7 @@ Future<Result<List<PlaceEntity>>> Function() getAllPlacesUseCase(Ref ref) {
 Future<Result<List<PlaceEntity>>> Function(String tag) getPlacesByTagUseCase(
   Ref ref,
 ) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return (tag) => _execute(() => repository.getPlacesByTag(tag));
 }
 
@@ -27,7 +27,7 @@ Future<Result<List<PlaceEntity>>> Function(String tag) getPlacesByTagUseCase(
 Future<Result<List<PlaceEntity>>> Function(String query) searchPlacesUseCase(
   Ref ref,
 ) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return (query) => _execute(
     () => repository.searchPlaces(
       PlaceSearchParams(query: query.trim().isEmpty ? null : query.trim()),
@@ -38,7 +38,7 @@ Future<Result<List<PlaceEntity>>> Function(String query) searchPlacesUseCase(
 @riverpod
 Future<Result<List<PlaceEntity>>> Function(PlaceSearchParams params)
 searchWithParamsUseCase(Ref ref) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return (params) => _execute(() => repository.searchPlaces(params));
 }
 
@@ -50,7 +50,7 @@ Future<Result<List<PlaceEntity>>> Function({
   String? tag,
 })
 getNearbyPlacesUseCase(Ref ref) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return ({
     required double latitude,
     required double longitude,
@@ -70,14 +70,14 @@ getNearbyPlacesUseCase(Ref ref) {
 
 @riverpod
 Future<Result<List<String>>> Function() getPlaceTagsUseCase(Ref ref) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return () => _execute(repository.getPlaceTags);
 }
 
 @riverpod
 Future<Result<PlaceEntity?>> Function(String id, {String? token})
 getPlaceByIdUseCase(Ref ref) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return (id, {String? token}) =>
       _execute(() => repository.getPlaceById(id, token: token));
 }
@@ -168,7 +168,7 @@ Future<Result<PlaceEntity>> Function(String id) deletePlaceImageUseCase(
 @riverpod
 Future<Result<List<int>>> Function(String id, {String? token})
 getPlaceImageBytesUseCase(Ref ref) {
-  final repository = ref.read(placesRepositoryProvider);
+  final repository = ref.watch(placesRepositoryProvider);
   return (id, {String? token}) =>
       _execute(() => repository.getImageBytes(id, token: token));
 }

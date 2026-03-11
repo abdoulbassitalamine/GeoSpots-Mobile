@@ -33,7 +33,7 @@ updatePositionUseCase(Ref ref) {
 Future<Result<CurrentLocationEntity?>> Function() getCurrentLocationUseCase(
   Ref ref,
 ) {
-  final repository = ref.read(trackingRepositoryProvider);
+  final repository = ref.watch(trackingRepositoryProvider);
   return () => _execute(repository.getCurrentLocation);
 }
 
@@ -59,7 +59,7 @@ Future<Result<void>> Function() stopLocationSharingUseCase(Ref ref) {
 @riverpod
 Future<Result<PublicLocationEntity?>> Function(String shareToken)
 getPublicLocationUseCase(Ref ref) {
-  final repository = ref.read(trackingRepositoryProvider);
+  final repository = ref.watch(trackingRepositoryProvider);
   return (shareToken) => _execute(() => repository.getPublicLocation(shareToken));
 }
 
@@ -77,7 +77,7 @@ Future<Result<void>> Function() disableTrackingUseCase(Ref ref) {
 
 @riverpod
 Future<Result<bool>> Function() isTrackingEnabledUseCase(Ref ref) {
-  final repository = ref.read(trackingRepositoryProvider);
+  final repository = ref.watch(trackingRepositoryProvider);
   return () => _execute(repository.isTrackingEnabled);
 }
 

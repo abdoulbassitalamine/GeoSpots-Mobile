@@ -18,7 +18,7 @@ part 'collections_use_cases.g.dart';
 Future<Result<List<CollectionEntity>>> Function() getOwnedCollectionsUseCase(
   Ref ref,
 ) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return () => _execute(repository.getOwnedCollections);
 }
 
@@ -26,7 +26,7 @@ Future<Result<List<CollectionEntity>>> Function() getOwnedCollectionsUseCase(
 Future<Result<List<CollectionEntity>>> Function() getSharedCollectionsUseCase(
   Ref ref,
 ) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return () => _execute(repository.getSharedCollections);
 }
 
@@ -36,7 +36,7 @@ Future<Result<List<PlaceEntity>>> Function({
   String? token,
 })
 getCollectionPlacesUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return ({required String collectionId, String? token}) => _execute(
     () => repository.getCollectionPlaces(
       collectionId: collectionId,
@@ -48,14 +48,14 @@ getCollectionPlacesUseCase(Ref ref) {
 @riverpod
 Future<Result<List<SharedAccessTokenEntity>>> Function()
 getSharedAccessTokensUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return () => _execute(repository.getSharedAccessTokens);
 }
 
 @riverpod
 Future<Result<List<SharedAccessTokenEntity>>> Function()
 getOwnedShareTokensUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return () => _execute(repository.getOwnedShareTokens);
 }
 
@@ -173,7 +173,7 @@ Future<Result<SharedAccessTokenEntity?>> Function({
   required String resourceId,
 })
 getTokenForResourceUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return ({
     required ShareResourceType resourceType,
     required String resourceId,
@@ -189,7 +189,7 @@ getTokenForResourceUseCase(Ref ref) {
 Future<Result<List<SharedAccessTokenEntity>>> Function() getTokensUseCase(
   Ref ref,
 ) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return () => _execute(repository.getTokens);
 }
 
@@ -223,7 +223,7 @@ createTokenUseCase(Ref ref) {
 @riverpod
 Future<Result<SharedAccessTokenEntity?>> Function(String id)
 getTokenByIdUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return (id) => _execute(() => repository.getTokenById(id));
 }
 
@@ -248,7 +248,7 @@ Future<Result<void>> Function(String id) revokeTokenByIdUseCase(Ref ref) {
 @riverpod
 Future<Result<TokenDiscoverResultEntity>> Function(String token)
 discoverTokenUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return (token) => _execute(() => repository.discoverToken(token));
 }
 
@@ -259,7 +259,7 @@ String Function({
   required ShareAccessRight rights,
 })
 buildSharedUrlUseCase(Ref ref) {
-  final repository = ref.read(collectionsRepositoryProvider);
+  final repository = ref.watch(collectionsRepositoryProvider);
   return repository.buildSharedUrl;
 }
 

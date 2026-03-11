@@ -18,9 +18,9 @@ part 'collections_repository.g.dart';
 @Riverpod(keepAlive: true)
 CollectionsRepository collectionsRepository(Ref ref) =>
     CollectionsRepositoryImpl(
-      remoteDatasource: ref.read(collectionsRemoteDatasourceProvider),
-      localDatasource: ref.read(collectionsLocalDatasourceProvider),
-      placesDatasource: ref.read(placesRemoteDatasourceProvider),
+      remoteDatasource: ref.watch(collectionsRemoteDatasourceProvider),
+      localDatasource: ref.watch(collectionsLocalDatasourceProvider),
+      placesDatasource: ref.watch(placesRemoteDatasourceProvider),
     );
 
 abstract interface class CollectionsRepository {

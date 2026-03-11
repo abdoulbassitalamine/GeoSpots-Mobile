@@ -17,6 +17,7 @@ part 'map_view_model.g.dart';
 class MapViewModel extends _$MapViewModel {
   @override
   MapState build() {
+    ref.watch(getAllPlacesUseCaseProvider);
     Future.microtask(loadPlaces);
     return const MapState(isLoading: true);
   }

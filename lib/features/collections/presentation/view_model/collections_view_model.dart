@@ -29,6 +29,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   @override
   CollectionsState build() {
+    ref.watch(getOwnedCollectionsUseCaseProvider);
     Future.microtask(_loadCollectionsData);
     return const CollectionsState();
   }

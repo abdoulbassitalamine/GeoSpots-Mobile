@@ -11,6 +11,7 @@ part 'place_details_view_model.g.dart';
 class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
   @override
   PlaceDetailsState build(String placeId) {
+    ref.watch(getPlaceByIdUseCaseProvider);
     Future.microtask(() => loadPlace(placeId));
     return const PlaceDetailsState(isLoading: true);
   }

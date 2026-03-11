@@ -30,6 +30,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
 
   @override
   UpsertPlaceState build(String placeId) {
+    ref.watch(getPlaceByIdUseCaseProvider);
     requiredValidator.withErrorMessage('Ce champ est obligatoire');
     latitudeValidator.withErrorMessage('Latitude invalide (-90 a 90)');
     longitudeValidator.withErrorMessage('Longitude invalide (-180 a 180)');

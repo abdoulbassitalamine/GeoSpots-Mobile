@@ -23,9 +23,9 @@ class ProfileViewModel extends _$ProfileViewModel {
   Future<void> _loadProfile() async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
-    final meFuture = ref.read(meInUseCaseProvider.future);
-    final meStatsFuture = ref.read(authenticationRepositoryProvider).meStats();
-    final isTrackingEnabledAction = ref.read(isTrackingEnabledUseCaseProvider);
+    final meFuture = ref.watch(meInUseCaseProvider.future);
+    final meStatsFuture = ref.watch(authenticationRepositoryProvider).meStats();
+    final isTrackingEnabledAction = ref.watch(isTrackingEnabledUseCaseProvider);
 
     final userResult = await meFuture;
     final user = switch (userResult) {
