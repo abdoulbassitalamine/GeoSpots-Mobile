@@ -1,6 +1,10 @@
 import 'dart:async';
+
 import 'package:geolocator/geolocator.dart';
+import 'package:geo_spots/core/utils/exception/http_exception.dart';
+import 'package:geo_spots/features/authentication/authentication.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+
 import '../../../../core/logger/gs_logger.dart';
 import '../../domain/repository/tracking_repository.dart';
 
@@ -48,6 +52,11 @@ class LocationTrackingService {
     Duration updateInterval = const Duration(minutes: 5),
   }) async {
     try {
+      if (!_isAuthenticated()) {
+        GsLogger().w('Cannot start tracking: user is not authenticated');
+        return;
+      }
+
       // Demander les permissions avant de démarrer
       final hasPermission = await requestPermissions();
       if (!hasPermission) {
@@ -66,7 +75,9 @@ class LocationTrackingService {
           Geolocator.getPositionStream(
             locationSettings: locationSettings,
           ).listen(
-            _handlePositionUpdate,
+            (position) {
+              unawaited(_handlePositionUpdate(position));
+            },
             onError: (Object error) {
               GsLogger().e('Position stream error: $error');
             },
@@ -76,7 +87,7 @@ class LocationTrackingService {
       _updateTimer = Timer.periodic(updateInterval, (_) async {
         try {
           final position = await Geolocator.getCurrentPosition();
-          _handlePositionUpdate(position);
+          await _handlePositionUpdate(position);
         } on Exception catch (e) {
           GsLogger().e('Timer position update error: $e');
         }
@@ -88,19 +99,28 @@ class LocationTrackingService {
     }
   }
 
-  void _handlePositionUpdate(Position position) {
+  Future<void> _handlePositionUpdate(Position position) async {
     try {
+      if (!_isAuthenticated()) {
+        GsLogger().w('Skipping position update: user is not authenticated');
+        await stopTracking();
+        return;
+      }
+
       GsLogger().d(
         'Position update: ${position.latitude}, ${position.longitude}',
       );
 
-      ref
+      await ref
           .read(trackingRepositoryProvider)
           .updatePosition(
             latitude: position.latitude,
             longitude: position.longitude,
             timestamp: position.timestamp,
           );
+    } on UnauthorizedException catch (e) {
+      GsLogger().e('Stopping tracking after unauthorized position update: $e');
+      await stopTracking();
     } on Exception catch (e) {
       GsLogger().e('Error handling position update: $e');
     }
@@ -125,6 +145,13 @@ class LocationTrackingService {
   /// Restaure le tracking uniquement si les permissions sont accordées
   Future<void> restoreTrackingIfEnabled() async {
     try {
+      if (!_isAuthenticated()) {
+        GsLogger().d(
+          'Tracking restore skipped: user is not authenticated',
+        );
+        return;
+      }
+
       final shouldTrack = await ref
           .read(trackingRepositoryProvider)
           .isTrackingEnabled();
@@ -161,5 +188,9 @@ class LocationTrackingService {
       GsLogger().e('Error restoring tracking: $e');
       GsLogger().e(stackTrace);
     }
+  }
+
+  bool _isAuthenticated() {
+    return ref.read(authGuardProvider) is AuthenticationStatusAuthenticated;
   }
 }
