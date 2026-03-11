@@ -60,10 +60,7 @@ class GSActionButton extends StatelessWidget {
           horizontal: GSSpacing.l,
           vertical: GSSpacing.s,
         ),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          border: border,
-        ),
+        decoration: BoxDecoration(color: backgroundColor, border: border),
         child: Text(
           text,
           style: GSTypography.bodyDefaultSmall.copyWith(

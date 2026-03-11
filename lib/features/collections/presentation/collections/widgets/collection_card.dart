@@ -18,70 +18,115 @@ class CollectionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAllCollection = collection.tag == 'all';
+    final title = isAllCollection ? 'Tous les lieux' : collection.tag;
+    final placesLabel =
+        '${collection.placesCount} ${collection.placesCount > 1 ? 'lieux' : 'lieu'}';
 
-    return GSCard(
+    return GSPremiumPanel(
       onTap: onTap,
       padding: const EdgeInsets.all(GSSpacing.xl),
-      child: Row(
+      borderColor: GSColors.neutral150,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: GSColors.primary600.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(GSRadius.m),
-            ),
-            child: Icon(
-              isAllCollection ? Icons.public : Icons.label,
-              color: GSColors.primary600,
-              size: 28,
-            ),
-          ),
-          const SizedBox(width: GSSpacing.xl),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  isAllCollection ? 'Tous les lieux' : collection.tag,
-                  style: GSTypography.bodyAccentMedium.copyWith(
-                    color: GSColors.neutral1000,
-                    fontSize: GSFontScale.sf05,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      GSColors.primary100,
+                      GSColors.primary600.withValues(alpha: 0.18),
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(GSRadius.l),
                 ),
-                const SizedBox(height: GSSpacing.xs),
-                Text(
+                child: Icon(
                   isAllCollection
-                      ? '${collection.placesCount} lieux enregistrés'
-                      : '${collection.placesCount} ${collection.placesCount > 1 ? 'lieux' : 'lieu'}',
-                  style: GSTypography.bodyDefaultSmall.copyWith(
-                    color: GSColors.neutral600,
-                  ),
+                      ? Icons.public_rounded
+                      : Icons.folder_open_rounded,
+                  color: GSColors.primary700,
+                  size: 28,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: GSSpacing.l),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GSInfoChip(
+                      label: isAllCollection ? 'Système' : 'Personnelle',
+                      icon: isAllCollection
+                          ? Icons.auto_awesome
+                          : Icons.label_outline,
+                      backgroundColor: GSColors.neutral100,
+                      borderColor: GSColors.neutral150,
+                      foregroundColor: GSColors.neutral700,
+                    ),
+                    const SizedBox(height: GSSpacing.m),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            title,
+                            style: GSTypography.bodyAccentLarge.copyWith(
+                              color: GSColors.neutral1000,
+                              fontSize: GSFontScale.sf03,
+                            ),
+                          ),
+                        ),
+                        if (onTap != null)
+                          const Padding(
+                            padding: EdgeInsets.only(left: GSSpacing.s),
+                            child: Icon(
+                              Icons.chevron_right_rounded,
+                              color: GSColors.neutral400,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
+          const SizedBox(height: GSSpacing.l),
+          Wrap(
+            spacing: GSSpacing.s,
+            children: [
+              GSInfoChip(
+                icon: Icons.place_outlined,
+                label: placesLabel,
+                backgroundColor: GSColors.primary50,
+                borderColor: GSColors.primary100,
+                foregroundColor: GSColors.primary700,
+              ),
+            ],
+          ),
+          const SizedBox(height: GSSpacing.l),
           if (!isAllCollection)
             Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                GSIconButton(
-                  icon: Icons.download,
+                _ActionButton(
+                  icon: Icons.download_outlined,
+                  label: 'Exporter',
                   onPressed: () => _showExportDialog(context, ref),
-                  size: 24,
-                  tooltip: 'Exporter',
                 ),
                 const SizedBox(width: GSSpacing.s),
-                GSIconButton(
-                  icon: Icons.share,
+                _ActionButton(
+                  icon: Icons.share_outlined,
+                  label: 'Partager',
                   onPressed: () => _showShareDialog(context, ref),
-                  size: 24,
-                  tooltip: 'Partager',
                 ),
               ],
-            )
-          else if (onTap != null)
-            const Icon(Icons.chevron_right, color: GSColors.neutral400),
+            ),
         ],
       ),
     );
@@ -110,6 +155,54 @@ class CollectionCard extends ConsumerWidget {
               .read(collectionsViewModelProvider.notifier)
               .shareCollection(collection, accessRight);
         },
+      ),
+    );
+  }
+}
+
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(GSRadius.full),
+        child: Ink(
+          padding: const EdgeInsets.symmetric(
+            horizontal: GSSpacing.m,
+            vertical: GSSpacing.s,
+          ),
+          decoration: BoxDecoration(
+            color: GSColors.neutral050,
+            borderRadius: BorderRadius.circular(GSRadius.full),
+            border: Border.all(color: GSColors.neutral150),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 16, color: GSColors.neutral700),
+              const SizedBox(width: GSSpacing.xs),
+              Text(
+                label,
+                style: GSTypography.captionDefault.copyWith(
+                  color: GSColors.neutral700,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

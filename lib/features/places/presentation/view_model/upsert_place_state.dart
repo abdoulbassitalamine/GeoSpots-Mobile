@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geo_spots/core/constants/app_constants.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:latlong2/latlong.dart';
 
 part 'upsert_place_state.freezed.dart';
@@ -19,7 +20,8 @@ sealed class UpsertPlaceState with _$UpsertPlaceState {
     @Default(0) int currentStep,
     @Default(false) bool isLoading,
     @Default(false) bool isSaving,
-    String? errorMessage,
+    String? loadErrorMessage,
+    GSSnackbarMessage? snackbarMessage,
   }) = _UpsertPlaceState;
 
   const UpsertPlaceState._();

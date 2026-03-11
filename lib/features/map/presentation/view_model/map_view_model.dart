@@ -1,3 +1,4 @@
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
@@ -8,6 +9,7 @@ import 'package:geo_spots/features/collections/domain/use_cases/collections_use_
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:geo_spots/features/places/domain/use_case/places_use_cases.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'map_state.dart';
 
@@ -17,6 +19,13 @@ part 'map_view_model.g.dart';
 class MapViewModel extends _$MapViewModel {
   @override
   MapState build() {
+    ref.watch(getAllPlacesUseCaseProvider);
+    ref.listen<int>(appDataSyncProvider, (previous, next) {
+      if (previous == next) {
+        return;
+      }
+      Future.microtask(loadPlaces);
+    });
     Future.microtask(loadPlaces);
     return const MapState(isLoading: true);
   }
@@ -60,7 +69,9 @@ class MapViewModel extends _$MapViewModel {
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
     final getAllPlaces = ref.read(getAllPlacesUseCaseProvider);
     final getSharedCollections = ref.read(getSharedCollectionsUseCaseProvider);
-    final getSharedAccessTokens = ref.read(getSharedAccessTokensUseCaseProvider);
+    final getSharedAccessTokens = ref.read(
+      getSharedAccessTokensUseCaseProvider,
+    );
     final getCollectionPlaces = ref.read(getCollectionPlacesUseCaseProvider);
 
     if (isAuthenticated) {
@@ -99,9 +110,9 @@ class MapViewModel extends _$MapViewModel {
       final placesResults = await Future.wait(
         sharedCollections.map(
           (collection) => getCollectionPlaces(
-                collectionId: collection.id,
-                token: sharedTokenByCollectionId[collection.id],
-              ),
+            collectionId: collection.id,
+            token: sharedTokenByCollectionId[collection.id],
+          ),
         ),
       );
 
@@ -142,6 +153,37 @@ class MapViewModel extends _$MapViewModel {
   void clearError() {
     if (state.errorMessage != null) {
       state = state.copyWith(errorMessage: null);
+    }
+  }
+
+  Future<void> sharePlace(String placeId) async {
+    final place = state.allPlaces.firstWhere(
+      (p) => p.id == placeId,
+      orElse: () => throw StateError('Place not found'),
+    );
+
+    final sharePlace = ref.read(sharePlaceUseCaseProvider);
+    final result = await sharePlace(id: placeId, canWrite: false);
+
+    switch (result) {
+      case Ok(value: final value):
+        final shareText = StringBuffer()
+          ..writeln(place.title)
+          ..writeln(value.url);
+        if (value.expiresAt != null) {
+          final d = value.expiresAt!;
+          final formatted =
+              '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+          shareText.writeln('Expire le $formatted');
+        }
+        await SharePlus.instance.share(
+          ShareParams(
+            subject: 'Partage du lieu: ${place.title}',
+            text: shareText.toString(),
+          ),
+        );
+      case Err():
+        state = state.copyWith(errorMessage: 'Erreur lors du partage');
     }
   }
 

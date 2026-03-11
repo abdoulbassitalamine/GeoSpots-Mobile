@@ -14,11 +14,32 @@ class CollectionSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GSTextField(
-      controller: controller,
-      placeholder: 'Rechercher un lieu dans la collection',
-      leadingIcon: const Icon(Icons.search),
-      onValueChange: onChanged,
+    return GSPremiumPanel(
+      padding: const EdgeInsets.all(GSSpacing.m),
+      backgroundColor: GSColors.neutral000,
+      borderColor: GSColors.neutral150,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Recherche',
+            style: GSTypography.labelDefault.copyWith(
+              color: GSColors.neutral700,
+            ),
+          ),
+          const SizedBox(height: GSSpacing.xs),
+          GSTextField(
+            controller: controller,
+            maxLines: 1,
+            placeholder: 'Rechercher dans la collection',
+            hintStyle: GSTypography.bodyDefaultMedium.copyWith(
+              color: GSColors.neutral500,
+            ),
+            leadingIcon: const Icon(Icons.search),
+            onValueChange: onChanged,
+          ),
+        ],
+      ),
     );
   }
 }

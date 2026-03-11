@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import '../../domain/entity/place_entity.dart';
 
 part 'places_list_state.freezed.dart';
@@ -11,5 +12,6 @@ sealed class PlacesListState with _$PlacesListState {
     @Default('') String searchQuery,
     String? selectedTag,
     String? errorMessage,
+    GSSnackbarMessage? snackbarMessage,
   }) = _PlacesListState;
 }

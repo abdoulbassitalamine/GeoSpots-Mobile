@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/features/settings/domain/domain.dart';
+import 'package:geo_spots/features/tracking/presentation/views/location_sharing_bottom_sheet.dart';
+import 'package:geo_spots/features/tracking/presentation/views/open_live_location_dialog.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
@@ -17,6 +20,22 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      profileViewModelProvider.select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref.read(profileViewModelProvider.notifier).consumeSnackbar();
+        });
+      },
+    );
+
     final authStatus = ref.watch(authGuardProvider);
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
     if (!isAuthenticated) {
@@ -24,68 +43,85 @@ class SettingsView extends ConsumerWidget {
     }
 
     final state = ref.watch(profileViewModelProvider);
-
-    if (state.isLoading) {
-      return const Center(child: GSCircularLoader());
-    }
-
-    if (state.user == null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: GSColors.danger600,
-            ),
-            const SizedBox(height: GSSpacing.xl),
-            Text(
-              state.errorMessage ?? 'Erreur de chargement du profil',
-              style: GSTypography.bodyDefaultMedium.copyWith(
-                color: GSColors.danger600,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
+    final notifier = ref.read(profileViewModelProvider.notifier);
 
     return CustomScrollView(
       slivers: [
-        ProfileHeader(user: state.user!),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(GSSpacing.xl),
-            child: Column(
-              children: [
-                ProfileStats(
-                  user: state.user!,
-                  totalPlaces: state.totalPlaces,
-                  totalCollections: state.totalCollections,
-                  sharedPlaces: state.sharedPlaces,
-                ),
-                const SizedBox(height: GSSpacing.xl),
-                SettingsSection(
-                  title: 'Paramètres',
-                  children: [
-                    TrackingToggle(
-                      isEnabled: state.isTrackingEnabled,
-                      onChanged: (value) {
-                        ref
-                            .read(profileViewModelProvider.notifier)
-                            .toggleTracking(value);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: GSSpacing.xl3),
-                const LogoutButton(),
-                const SizedBox(height: GSSpacing.xl3),
-              ],
+        const ProfileHeader(),
+        if (state.isLoading)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: GSCircularLoader()),
+          )
+        else if (state.user == null)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: GSErrorState(
+              title: 'Impossible de charger le profil',
+              message: state.errorMessage ?? 'Le profil est indisponible.',
+              onRetry: () async => SettingsDomain.invalidate(ref),
+              retryLabel: 'Réessayer',
+            ),
+          )
+        else
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(GSSpacing.xl),
+              child: Column(
+                children: [
+                  ProfileStats(
+                    user: state.user!,
+                    totalPlaces: state.totalPlaces,
+                    totalCollections: state.totalCollections,
+                    sharedPlaces: state.sharedPlaces,
+                  ),
+                  const SizedBox(height: GSSpacing.xl),
+                  SettingsSection(
+                    title: 'Paramètres',
+                    children: [
+                      TrackingToggle(
+                        isEnabled: state.isTrackingEnabled,
+                        onChanged: notifier.toggleTracking,
+                        isSharing: state.isSharing,
+                        isSharingLoading: state.isSharingLoading,
+                        activeShareSession: state.activeShareSession,
+                        onStartSharing: () async {
+                          final session = await notifier.startSharing();
+                          if (session != null && context.mounted) {
+                            await LocationSharingBottomSheet.show(
+                              context,
+                              session: session,
+                              onStop: notifier.stopSharing,
+                            );
+                          }
+                        },
+                        onStopSharing: notifier.stopSharing,
+                        onShowSession: () {
+                          final session = state.activeShareSession;
+                          if (session == null) return;
+                          LocationSharingBottomSheet.show(
+                            context,
+                            session: session,
+                            onStop: notifier.stopSharing,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: GSSpacing.m),
+                      GSOutlinedButton(
+                        onPressed: () => OpenLiveLocationDialog.show(context),
+                        text: 'Ouvrir un lien reçu',
+                        icon: Icons.travel_explore,
+                        fullWidth: true,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: GSSpacing.xl3),
+                  const LogoutButton(),
+                  const SizedBox(height: GSSpacing.xl3),
+                ],
+              ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -136,6 +172,13 @@ class _GuestProfilePrompt extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: GSSpacing.xl),
+              GSOutlinedButton(
+                onPressed: () => OpenLiveLocationDialog.show(context),
+                text: 'Ouvrir un lien de suivi',
+                icon: Icons.travel_explore,
+                fullWidth: true,
+              ),
+              const SizedBox(height: GSSpacing.m),
               GSFilledButton(
                 onPressed: () => const SignInRouteData().go(context),
                 text: 'Se connecter',

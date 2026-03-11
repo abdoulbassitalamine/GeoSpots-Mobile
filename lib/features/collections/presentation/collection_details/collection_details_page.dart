@@ -13,9 +13,7 @@ class CollectionDetailsPage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return GSAppBarScaffold(
-      title: collectionTag == 'all'
-          ? 'Tous les lieux'
-          : collectionTag,
+      title: collectionTag == 'all' ? 'Tous les lieux' : collectionTag,
       onRefresh: () async {
         await ref.read(collectionsViewModelProvider.notifier).refresh();
       },

@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../core/router/route_names.dart';
 import '../collection_details/collection_details_page.dart';
 import '../collections/collections_page.dart';
+import '../add_shared_access/add_shared_access_page.dart';
 
 part 'route_data.g.dart';
 
@@ -19,6 +20,10 @@ final collectionsMainNavigatorKey = GlobalKey<NavigatorState>(
     TypedGoRoute<CollectionDetailsRouteData>(
       path: RouteNames.collectionDetails,
       name: RouteNames.collectionDetailsName,
+    ),
+    TypedGoRoute<AddSharedAccessRouteData>(
+      path: RouteNames.addSharedAccess,
+      name: RouteNames.addSharedAccessName,
     ),
   ],
 )
@@ -43,4 +48,16 @@ class CollectionDetailsRouteData extends GoRouteData
   }
 }
 
-final collectionsRoutesProvider = Provider<RouteBase>((ref) => $appRoutes.first);
+class AddSharedAccessRouteData extends GoRouteData
+    with $AddSharedAccessRouteData {
+  const AddSharedAccessRouteData();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) {
+    return const AddSharedAccessPage();
+  }
+}
+
+final collectionsRoutesProvider = Provider<RouteBase>(
+  (ref) => $appRoutes.first,
+);

@@ -6,7 +6,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class NavigationOptionsDialog extends ConsumerWidget {
-
   const NavigationOptionsDialog({super.key, required this.place});
   final PlaceEntity place;
 
@@ -58,7 +57,6 @@ class NavigationOptionsDialog extends ConsumerWidget {
 }
 
 class _NavigationOption extends StatelessWidget {
-
   const _NavigationOption({
     required this.icon,
     required this.label,

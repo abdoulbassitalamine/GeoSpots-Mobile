@@ -2,6 +2,7 @@ import 'package:geo_spots/features/collections/data/datasource/collections_local
 import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
 import 'package:geo_spots/features/collections/data/repository/collections_repository_impl.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
+import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_import_result_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_share_result_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
@@ -17,8 +18,9 @@ part 'collections_repository.g.dart';
 @Riverpod(keepAlive: true)
 CollectionsRepository collectionsRepository(Ref ref) =>
     CollectionsRepositoryImpl(
-      remoteDatasource: ref.read(collectionsRemoteDatasourceProvider),
-      localDatasource: ref.read(collectionsLocalDatasourceProvider),
+      remoteDatasource: ref.watch(collectionsRemoteDatasourceProvider),
+      localDatasource: ref.watch(collectionsLocalDatasourceProvider),
+      placesDatasource: ref.watch(placesRemoteDatasourceProvider),
     );
 
 abstract interface class CollectionsRepository {

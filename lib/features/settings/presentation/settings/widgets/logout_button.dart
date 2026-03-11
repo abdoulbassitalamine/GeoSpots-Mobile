@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geo_spots/features/authentication/authentication.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../../view_model/profile_view_model.dart';
@@ -45,8 +44,8 @@ class LogoutButton extends ConsumerWidget {
             onPressed: () async {
               Navigator.of(context).pop();
               await ref.read(profileViewModelProvider.notifier).logout();
-              if(context.mounted) {
-               //const SignInRouteData().go(context);
+              if (context.mounted) {
+                //const SignInRouteData().go(context);
               }
             },
             style: TextButton.styleFrom(foregroundColor: GSColors.danger600),

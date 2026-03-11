@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geo_spots/core/utils/validator/validator.dart';
@@ -34,9 +33,7 @@ class SignInViewModel extends _$SignInViewModel {
 
   void setupValidatorMessages(BuildContext context) {
     // Required validator
-    _requiredValidator.withErrorMessage(
-      'Champ requis',
-    );
+    _requiredValidator.withErrorMessage('Champ requis');
 
     // Email validator
     _emailValidator.withErrorMessage('Email invalide');

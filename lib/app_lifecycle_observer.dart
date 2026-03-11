@@ -12,7 +12,9 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
-        await ref.read(locationTrackingServiceProvider).restoreTrackingIfEnabled();
+        await ref
+            .read(locationTrackingServiceProvider)
+            .restoreTrackingIfEnabled();
         break;
       case AppLifecycleState.paused:
         break;

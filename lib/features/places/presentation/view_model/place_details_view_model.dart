@@ -1,4 +1,6 @@
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -11,12 +13,13 @@ part 'place_details_view_model.g.dart';
 class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
   @override
   PlaceDetailsState build(String placeId) {
+    ref.watch(getPlaceByIdUseCaseProvider);
     Future.microtask(() => loadPlace(placeId));
     return const PlaceDetailsState(isLoading: true);
   }
 
   Future<void> loadPlace(String placeId) async {
-    state = state.copyWith(isLoading: true, errorMessage: null);
+    state = state.copyWith(isLoading: true, loadErrorMessage: null);
 
     final getPlaceById = ref.read(getPlaceByIdUseCaseProvider);
     final result = await getPlaceById(placeId);
@@ -26,32 +29,51 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
         if (remotePlace == null) {
           state = state.copyWith(
             isLoading: false,
-            errorMessage: 'Lieu non trouvé',
+            loadErrorMessage: 'Lieu non trouvé',
           );
           return;
         }
 
-        state = state.copyWith(place: remotePlace, isLoading: false);
+        state = state.copyWith(
+          place: remotePlace,
+          isLoading: false,
+          loadErrorMessage: null,
+        );
       case Err():
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'Erreur lors du chargement du lieu',
+          loadErrorMessage: 'Erreur lors du chargement du lieu',
         );
     }
   }
 
-  Future<void> deletePlace() async {
-    if (state.place == null) return;
+  Future<bool> deletePlace() async {
+    if (state.place == null) {
+      return false;
+    }
 
     final deletePlace = ref.read(deletePlaceUseCaseProvider);
     final result = await deletePlace(state.place!.id);
 
     switch (result) {
       case Ok():
-        state = state.copyWith(place: null);
+        state = state.copyWith(place: null, shouldRefreshParent: true);
+        notifyAppDataChanged(ref);
+        return true;
       case Err():
-        state = state.copyWith(errorMessage: 'Erreur lors de la suppression');
+        state = state.copyWith(
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Impossible de supprimer ce lieu',
+            type: GSSnackbarType.error,
+          ),
+        );
+        return false;
     }
+  }
+
+  Future<void> refreshAfterUpdate(String placeId) async {
+    state = state.copyWith(shouldRefreshParent: true);
+    await loadPlace(placeId);
   }
 
   Future<void> sharePlace() async {
@@ -79,7 +101,18 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
           ),
         );
       case Err():
-        state = state.copyWith(errorMessage: 'Erreur lors du partage');
+        state = state.copyWith(
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Impossible de partager ce lieu',
+            type: GSSnackbarType.error,
+          ),
+        );
+    }
+  }
+
+  void consumeSnackbar() {
+    if (state.snackbarMessage != null) {
+      state = state.copyWith(snackbarMessage: null);
     }
   }
 

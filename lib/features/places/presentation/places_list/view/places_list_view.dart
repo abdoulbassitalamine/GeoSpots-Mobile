@@ -14,6 +14,22 @@ class PlacesListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      placesListViewModelProvider.select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref.read(placesListViewModelProvider.notifier).consumeSnackbar();
+        });
+      },
+    );
+
     final state = ref.watch(placesListViewModelProvider);
     final viewModel = ref.read(placesListViewModelProvider.notifier);
 
@@ -28,28 +44,40 @@ class PlacesListView extends ConsumerWidget {
           onSearchChanged: viewModel.searchPlaces,
           onClearSearch: viewModel.clearSearch,
         ),
-        Expanded(child: _buildContent(context, state)),
+        if (state.errorMessage != null && state.places.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              GSSpacing.xl,
+              0,
+              GSSpacing.xl,
+              GSSpacing.m,
+            ),
+            child: GSAlertBanner(
+              type: GSSnackbarType.error,
+              message: state.errorMessage!,
+              onDismiss: viewModel.clearError,
+            ),
+          ),
+        Expanded(child: _buildContent(context, state, viewModel)),
       ],
     );
   }
 
-  Widget _buildContent(BuildContext context, PlacesListState state) {
+  Widget _buildContent(
+    BuildContext context,
+    PlacesListState state,
+    PlacesListViewModel viewModel,
+  ) {
     if (state.isLoading) {
       return const Center(child: GSCircularLoader());
     }
 
-    if (state.errorMessage != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(GSSpacing.xl3),
-          child: Text(
-            state.errorMessage!,
-            style: GSTypography.bodyDefaultMedium.copyWith(
-              color: GSColors.danger600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
+    if (state.errorMessage != null && state.places.isEmpty) {
+      return GSErrorState(
+        title: 'Impossible de charger les lieux',
+        message: state.errorMessage!,
+        onRetry: viewModel.reload,
+        retryLabel: 'Réessayer',
       );
     }
 
@@ -57,21 +85,33 @@ class PlacesListView extends ConsumerWidget {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(GSSpacing.xl3),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.location_off, size: 64, color: GSColors.neutral400),
-              const SizedBox(height: GSSpacing.xl),
-              Text(
-                state.searchQuery.isNotEmpty
-                    ? 'Aucun lieu trouvé pour "${state.searchQuery}"'
-                    : 'Aucun lieu enregistré',
-                style: GSTypography.bodyDefaultLarge.copyWith(
-                  color: GSColors.neutral600,
+          child: GSPremiumPanel(
+            padding: const EdgeInsets.all(GSSpacing.xl3),
+            borderColor: GSColors.neutral150,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.location_off, size: 64, color: GSColors.neutral400),
+                const SizedBox(height: GSSpacing.xl),
+                Text(
+                  state.searchQuery.isNotEmpty
+                      ? 'Aucun lieu trouvé pour "${state.searchQuery}"'
+                      : 'Aucun lieu enregistré',
+                  style: GSTypography.bodyAccentLarge.copyWith(
+                    color: GSColors.neutral800,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+                const SizedBox(height: GSSpacing.s),
+                Text(
+                  'Ajoutez ou recherchez un lieu pour démarrer votre collection personnelle.',
+                  style: GSTypography.bodyDefaultMedium.copyWith(
+                    color: GSColors.neutral600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -89,8 +129,13 @@ class PlacesListView extends ConsumerWidget {
         GsLogger().d('place: $place');
         return PlaceListItem(
           place: place,
-          onTap: () {
-            PlaceDetailsRouteData(placeId: place.id).push<void>(context);
+          onTap: () async {
+            final changed = await PlaceDetailsRouteData(
+              placeId: place.id,
+            ).push<bool>(context);
+            if (changed ?? false) {
+              await viewModel.reload();
+            }
           },
         );
       },

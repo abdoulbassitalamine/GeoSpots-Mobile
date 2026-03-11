@@ -3,6 +3,7 @@ import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/exception/exception.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_local_datasource.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
+import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/collections/data/dto/collections_api_dto.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_import_result_entity.dart';
@@ -20,11 +21,14 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   CollectionsRepositoryImpl({
     required ICollectionsRemoteDatasource remoteDatasource,
     required ICollectionsLocalDatasource localDatasource,
+    required IPlacesRemoteDatasource placesDatasource,
   }) : _remoteDatasource = remoteDatasource,
-       _localDatasource = localDatasource;
+       _localDatasource = localDatasource,
+       _placesDatasource = placesDatasource;
 
   final ICollectionsRemoteDatasource _remoteDatasource;
   final ICollectionsLocalDatasource _localDatasource;
+  final IPlacesRemoteDatasource _placesDatasource;
 
   @override
   Future<List<CollectionEntity>> getOwnedCollections() async {
@@ -101,6 +105,9 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     required String collectionId,
     String? token,
   }) {
+    if (collectionId == 'all') {
+      return _placesDatasource.fetchAllPlaces();
+    }
     return _remoteDatasource.fetchCollectionPlaces(collectionId, token: token);
   }
 

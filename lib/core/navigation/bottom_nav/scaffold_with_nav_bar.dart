@@ -48,7 +48,8 @@ class ScaffoldWithNavBar extends HookConsumerWidget {
                       items: MainMenuKey.values
                           .map((key) => key.toBottomNavItem(context))
                           .toList(),
-                      onTap: (index) => _goToLocation(MainMenuKey.values[index]),
+                      onTap: (index) =>
+                          _goToLocation(MainMenuKey.values[index]),
                     ),
                   ),
                 ),

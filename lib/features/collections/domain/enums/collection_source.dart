@@ -1,4 +1,1 @@
-enum CollectionSource {
-  owned,
-  shared,
-}
+enum CollectionSource { owned, shared }

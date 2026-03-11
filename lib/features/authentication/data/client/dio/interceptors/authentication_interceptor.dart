@@ -58,10 +58,13 @@ class AuthenticationInterceptor extends Interceptor {
   }
 
   @override
-  void onResponse(Response<dynamic> response, ResponseInterceptorHandler handler) {
-     
-
-      GsLogger().d('**** RESPONSE [${response.statusCode}] ${response.requestOptions.method} : ${response.requestOptions.path}');
+  void onResponse(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+  ) {
+    GsLogger().d(
+      '**** RESPONSE [${response.statusCode}] ${response.requestOptions.method} : ${response.requestOptions.path}',
+    );
     super.onResponse(response, handler);
   }
 

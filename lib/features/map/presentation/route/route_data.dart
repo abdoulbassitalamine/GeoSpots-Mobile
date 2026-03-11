@@ -7,14 +7,9 @@ import '../map/map_page.dart';
 
 part 'route_data.g.dart';
 
-final mapMainNavigatorKey = GlobalKey<NavigatorState>(
-  debugLabel: 'map',
-);
+final mapMainNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'map');
 
-@TypedGoRoute<MapRouteData>(
-  path: RouteNames.map,
-  name: RouteNames.mapName,
-)
+@TypedGoRoute<MapRouteData>(path: RouteNames.map, name: RouteNames.mapName)
 class MapRouteData extends GoRouteData with $MapRouteData {
   const MapRouteData();
 

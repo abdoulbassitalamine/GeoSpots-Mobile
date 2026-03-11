@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../../../shared/design_system/design_system.dart';
+
 class MapPlaceSearchSelection {
-  const MapPlaceSearchSelection({
-    required this.query,
-    this.placeId,
-  });
+  const MapPlaceSearchSelection({required this.query, this.placeId});
 
   final String query;
   final String? placeId;
@@ -26,6 +25,52 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
 
   @override
   String? get searchFieldLabel => 'Rechercher un lieu...';
+
+  @override
+  TextStyle? get searchFieldStyle => GSTypography.bodyDefaultLarge.copyWith(
+    color: GSColors.neutral900,
+    fontWeight: FontWeight.w600,
+  );
+
+  @override
+  InputDecorationTheme? get searchFieldDecorationTheme => InputDecorationTheme(
+    filled: true,
+    fillColor: GSColors.neutral000,
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: GSSpacing.l,
+      vertical: GSSpacing.l,
+    ),
+    hintStyle: GSTypography.bodyDefaultLarge.copyWith(
+      color: GSColors.neutral450,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(GSRadius.l),
+      borderSide: const BorderSide(color: GSColors.neutral200),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(GSRadius.l),
+      borderSide: const BorderSide(color: GSColors.neutral200),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(GSRadius.l),
+      borderSide: const BorderSide(color: GSColors.primary600, width: 2),
+    ),
+  );
+
+  @override
+  ThemeData appBarTheme(BuildContext context) {
+    final theme = Theme.of(context);
+    return theme.copyWith(
+      scaffoldBackgroundColor: GSColors.neutral050,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: GSColors.neutral050,
+        surfaceTintColor: GSColors.neutral050,
+        elevation: 0,
+        toolbarHeight: 72,
+      ),
+      inputDecorationTheme: searchFieldDecorationTheme,
+    );
+  }
 
   @override
   List<Widget>? buildActions(BuildContext context) {
@@ -64,44 +109,66 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
   Widget _buildList(BuildContext context) {
     final results = _filteredPlaces();
     if (results.isEmpty) {
-      return const Center(child: Text('Aucun lieu trouvé'));
+      return ColoredBox(
+        color: GSColors.neutral050,
+        child: Center(
+          child: GSPremiumPanel(
+            padding: const EdgeInsets.all(GSSpacing.xl3),
+            borderColor: GSColors.neutral150,
+            child: Text(
+              'Aucun lieu trouvé',
+              style: GSTypography.bodyAccentMedium.copyWith(
+                color: GSColors.neutral800,
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     final sections = _buildSections(results);
     final tiles = <Widget>[
-      _sectionHeader(context, 'Top résultats'),
+      _sectionHeader('Top résultats'),
       ...sections.topResults.map((item) => _placeTile(context, item.place)),
     ];
 
     if (sections.nearby.isNotEmpty) {
-      tiles.add(_sectionHeader(context, 'Lieux proches'));
+      tiles.add(_sectionHeader('Lieux proches'));
       tiles.addAll(
         sections.nearby.map(
-          (item) => _placeTile(
-            context,
-            item.place,
-            distanceKm: item.distanceKm,
-          ),
+          (item) =>
+              _placeTile(context, item.place, distanceKm: item.distanceKm),
         ),
       );
     }
 
     if (sections.byTag.isNotEmpty) {
       for (final entry in sections.byTag.entries) {
-        tiles.add(_sectionHeader(context, 'Tag: ${entry.key}'));
-        tiles.addAll(entry.value.map((item) => _placeTile(context, item.place)));
+        tiles.add(_sectionHeader('Tag: ${entry.key}'));
+        tiles.addAll(
+          entry.value.map((item) => _placeTile(context, item.place)),
+        );
       }
     }
 
-    return ListView.separated(
-      itemCount: tiles.length,
-      separatorBuilder: (_, _) => const Divider(height: 1),
-      itemBuilder: (context, index) => tiles[index],
+    return ColoredBox(
+      color: GSColors.neutral050,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(
+          horizontal: GSSpacing.xl,
+          vertical: GSSpacing.l,
+        ),
+        itemCount: tiles.length,
+        separatorBuilder: (_, _) => const SizedBox(height: GSSpacing.s),
+        itemBuilder: (context, index) => tiles[index],
+      ),
     );
   }
 
   List<PlaceEntity> _filteredPlaces() {
-    final withCoordinates = places.where((place) => place.hasCoordinates).toList();
+    final withCoordinates = places
+        .where((place) => place.hasCoordinates)
+        .toList();
     if (query.trim().isEmpty) {
       withCoordinates.sort((a, b) => a.title.compareTo(b.title));
       return withCoordinates;
@@ -120,7 +187,9 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
       return terms.every((term) {
         return _startsWithWord(title, term) ||
             title.contains(term) ||
-            tags.any((tag) => _startsWithWord(tag, term) || tag.contains(term)) ||
+            tags.any(
+              (tag) => _startsWithWord(tag, term) || tag.contains(term),
+            ) ||
             _startsWithWord(city, term) ||
             city.contains(term) ||
             _startsWithWord(country, term) ||
@@ -134,21 +203,25 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
   }
 
   _SearchSections _buildSections(List<PlaceEntity> results) {
-    final topResults = results.take(6).map((place) => _PlaceMatch(place: place)).toList();
+    final topResults = results
+        .take(6)
+        .map((place) => _PlaceMatch(place: place))
+        .toList();
 
-    final nearby = results
-        .map(
-          (place) => _PlaceMatch(
-            place: place,
-            distanceKm: Distance().as(
-              LengthUnit.Kilometer,
-              currentCenter,
-              LatLng(place.latitude!, place.longitude!),
-            ),
-          ),
-        )
-        .toList()
-      ..sort((a, b) => (a.distanceKm ?? 0).compareTo(b.distanceKm ?? 0));
+    final nearby =
+        results
+            .map(
+              (place) => _PlaceMatch(
+                place: place,
+                distanceKm: Distance().as(
+                  LengthUnit.Kilometer,
+                  currentCenter,
+                  LatLng(place.latitude!, place.longitude!),
+                ),
+              ),
+            )
+            .toList()
+          ..sort((a, b) => (a.distanceKm ?? 0).compareTo(b.distanceKm ?? 0));
 
     final byTag = <String, List<_PlaceMatch>>{};
     for (final place in results) {
@@ -206,15 +279,17 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     return false;
   }
 
-  Widget _sectionHeader(BuildContext context, String title) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: .25),
+  Widget _sectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        GSSpacing.s,
+        GSSpacing.l,
+        GSSpacing.s,
+        GSSpacing.xs,
+      ),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+        style: GSTypography.labelAccent.copyWith(color: GSColors.primary700),
       ),
     );
   }
@@ -224,44 +299,20 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     PlaceEntity place, {
     double? distanceKm,
   }) {
-    final subtitle = [place.city, place.country]
-        .where((e) => e != null && e.isNotEmpty)
-        .join(', ');
+    final subtitle = [
+      place.city,
+      place.country,
+    ].where((e) => e != null && e.isNotEmpty).join(', ');
     final normalizedQuery = query.trim();
-    final highlightStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: Theme.of(context).colorScheme.primary,
-        );
+    final highlightStyle = GSTypography.bodyDefaultMedium.copyWith(
+      fontWeight: FontWeight.w800,
+      color: GSColors.primary700,
+    );
 
-    return ListTile(
-      leading: const Icon(Icons.location_on_outlined),
-      title: _highlightedText(
-        place.title,
-        normalizedQuery,
-        baseStyle: Theme.of(context).textTheme.bodyLarge,
-        highlightStyle: highlightStyle,
-      ),
-      subtitle: subtitle.isEmpty
-          ? null
-          : _highlightedText(
-              subtitle,
-              normalizedQuery,
-              baseStyle: Theme.of(context).textTheme.bodySmall,
-              highlightStyle: highlightStyle,
-            ),
-      trailing: distanceKm != null
-          ? Text(
-              '${distanceKm.toStringAsFixed(1)} km',
-              style: Theme.of(context).textTheme.bodySmall,
-            )
-          : (place.tags.isEmpty
-              ? null
-              : _highlightedText(
-                  place.tags.first,
-                  normalizedQuery,
-                  baseStyle: Theme.of(context).textTheme.bodySmall,
-                  highlightStyle: highlightStyle,
-                )),
+    return GSPremiumPanel(
+      padding: const EdgeInsets.all(GSSpacing.l),
+      borderColor: GSColors.neutral150,
+      backgroundColor: GSColors.neutral000,
       onTap: () {
         close(
           context,
@@ -271,6 +322,68 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
           ),
         );
       },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: GSColors.primary50,
+              borderRadius: BorderRadius.circular(GSRadius.l),
+            ),
+            child: const Icon(
+              Icons.location_on_outlined,
+              color: GSColors.primary700,
+            ),
+          ),
+          const SizedBox(width: GSSpacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _highlightedText(
+                  place.title,
+                  normalizedQuery,
+                  baseStyle: GSTypography.bodyAccentMedium.copyWith(
+                    color: GSColors.neutral900,
+                  ),
+                  highlightStyle: highlightStyle,
+                ),
+                if (subtitle.isNotEmpty) ...[
+                  const SizedBox(height: GSSpacing.xs),
+                  _highlightedText(
+                    subtitle,
+                    normalizedQuery,
+                    baseStyle: GSTypography.bodyDefaultSmall.copyWith(
+                      color: GSColors.neutral650,
+                    ),
+                    highlightStyle: highlightStyle,
+                  ),
+                ],
+                if (place.tags.isNotEmpty && distanceKm == null) ...[
+                  const SizedBox(height: GSSpacing.s),
+                  GSInfoChip(
+                    label: place.tags.first,
+                    backgroundColor: GSColors.neutral100,
+                    borderColor: GSColors.neutral150,
+                  ),
+                ],
+              ],
+            ),
+          ),
+          if (distanceKm != null)
+            Padding(
+              padding: const EdgeInsets.only(left: GSSpacing.m),
+              child: GSInfoChip(
+                label: '${distanceKm.toStringAsFixed(1)} km',
+                backgroundColor: GSColors.primary50,
+                borderColor: GSColors.primary100,
+                foregroundColor: GSColors.primary700,
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -290,7 +403,10 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     }
 
     final escapedQuery = RegExp.escape(query);
-    final matches = RegExp(escapedQuery, caseSensitive: false).allMatches(source);
+    final matches = RegExp(
+      escapedQuery,
+      caseSensitive: false,
+    ).allMatches(source);
     if (matches.isEmpty) {
       return Text(
         source,
@@ -304,7 +420,12 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
     final spans = <TextSpan>[];
     for (final match in matches) {
       if (match.start > start) {
-        spans.add(TextSpan(text: source.substring(start, match.start), style: baseStyle));
+        spans.add(
+          TextSpan(
+            text: source.substring(start, match.start),
+            style: baseStyle,
+          ),
+        );
       }
       spans.add(
         TextSpan(
@@ -327,7 +448,10 @@ class MapPlaceSearchDelegate extends SearchDelegate<MapPlaceSearchSelection?> {
 
   String _normalize(String value) {
     return value
-        .replaceAll(RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'), '')
+        .replaceAll(
+          RegExp(r'[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]'),
+          '',
+        )
         .toLowerCase()
         .trim()
         .replaceAll(RegExp(r'\s+'), ' ')
@@ -374,10 +498,7 @@ class _SearchSections {
 }
 
 class _PlaceMatch {
-  const _PlaceMatch({
-    required this.place,
-    this.distanceKm,
-  });
+  const _PlaceMatch({required this.place, this.distanceKm});
 
   final PlaceEntity place;
   final double? distanceKm;

@@ -33,7 +33,11 @@ sealed class PlaceEntity with _$PlaceEntity {
   }
 
   String get fullLocation {
-    final parts = [address, city, country].where((e) => e != null && e.isNotEmpty);
+    final parts = [
+      address,
+      city,
+      country,
+    ].where((e) => e != null && e.isNotEmpty);
     return parts.join(', ');
   }
 

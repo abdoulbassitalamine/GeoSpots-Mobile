@@ -23,7 +23,9 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization> {
       if (!mounted) {
         return;
       }
-      await ref.read(locationTrackingServiceProvider).restoreTrackingIfEnabled();
+      await ref
+          .read(locationTrackingServiceProvider)
+          .restoreTrackingIfEnabled();
     });
   }
 

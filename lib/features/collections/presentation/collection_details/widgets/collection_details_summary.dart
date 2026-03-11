@@ -18,34 +18,65 @@ class CollectionDetailsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GSCard(
-      padding: const EdgeInsets.all(GSSpacing.l),
+    return GSPremiumPanel(
+      padding: const EdgeInsets.all(GSSpacing.xl),
+      gradient: const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [GSColors.primary700, GSColors.primary600, GSColors.primary500],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Aperçu de la collection',
+            style: GSTypography.labelAccent.copyWith(
+              color: GSColors.neutral000.withValues(alpha: 0.82),
+            ),
+          ),
+          const SizedBox(height: GSSpacing.m),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.folder_open, color: GSColors.primary600),
-              const SizedBox(width: GSSpacing.s),
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: GSColors.neutral000.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(GSRadius.l),
+                ),
+                child: const Icon(
+                  Icons.folder_open_rounded,
+                  color: GSColors.neutral000,
+                ),
+              ),
+              const SizedBox(width: GSSpacing.l),
               Expanded(
                 child: Text(
                   '$filtered / $total lieux affichés',
-                  style: GSTypography.bodyDefaultMedium.copyWith(
-                    color: GSColors.neutral800,
+                  style: GSTypography.headingSmall.copyWith(
+                    color: GSColors.neutral000,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: GSSpacing.s),
+          const SizedBox(height: GSSpacing.m),
+          Text(
+            'Naviguez plus vite dans les lieux de cette collection grâce à une vue claire, filtrée et lisible.',
+            style: GSTypography.bodyDefaultSmall.copyWith(
+              color: GSColors.neutral000.withValues(alpha: 0.78),
+            ),
+          ),
+          const SizedBox(height: GSSpacing.xl),
           Wrap(
             spacing: GSSpacing.s,
             runSpacing: GSSpacing.s,
             children: [
               _Badge(
                 label: sourceLabel,
-                background: GSColors.neutral100,
-                foreground: GSColors.neutral700,
+                background: GSColors.neutral000.withValues(alpha: 0.14),
+                foreground: GSColors.neutral000,
               ),
               if (rightsLabel != null)
                 _Badge(
@@ -57,6 +88,11 @@ class CollectionDetailsSummary extends StatelessWidget {
                       ? GSColors.success700
                       : GSColors.warning700,
                 ),
+              _Badge(
+                label: filtered == total ? 'Vue complète' : 'Résultats filtrés',
+                background: GSColors.neutral000.withValues(alpha: 0.14),
+                foreground: GSColors.neutral000,
+              ),
             ],
           ),
         ],
@@ -78,22 +114,11 @@ class _Badge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: GSSpacing.s,
-        vertical: GSSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(GSRadius.full),
-      ),
-      child: Text(
-        label,
-        style: GSTypography.captionDefault.copyWith(
-          color: foreground,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+    return GSInfoChip(
+      label: label,
+      backgroundColor: background,
+      foregroundColor: foreground,
+      borderColor: background.withValues(alpha: 0.7),
     );
   }
 }

@@ -31,9 +31,6 @@ class MapView extends HookConsumerWidget {
     final isPreviewVisible = useState(true);
     final isShareInfoVisible = useState(true);
     final isSearchMode = state.searchQuery.trim().isNotEmpty;
-    final hasSecondaryTopCard =
-        !isSearchMode && (isAuthenticated || isShareInfoVisible.value);
-
     ref.listen<AuthenticationStatus>(authGuardProvider, (
       AuthenticationStatus? previous,
       AuthenticationStatus next,
@@ -45,6 +42,8 @@ class MapView extends HookConsumerWidget {
 
     final allMappedPlaces = _mapPlacesToPreview(state.allPlaces);
     final visibleMappedPlaces = _mapPlacesToPreview(state.visiblePlaces);
+    final hasFatalLoadError =
+        state.errorMessage != null && state.allPlaces.isEmpty;
 
     final categories = state.categories
         .map<(String, IconData)>((category) => (category, Icons.label_outline))
@@ -86,49 +85,64 @@ class MapView extends HookConsumerWidget {
     }, [selectedPlace?.place.id]);
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [GSColors.primary100, GSColors.primary200],
-        ),
-      ),
+      decoration: const BoxDecoration(color: GSColors.neutral050),
       child: Stack(
         fit: StackFit.expand,
         children: [
           Positioned.fill(
-            child: FlutterMap(
-              mapController: mapController,
-              options: MapOptions(
-                initialCenter: initialCenter,
-                initialZoom: 6.8,
-                minZoom: 3,
-                maxZoom: 19,
-                onMapReady: () => isMapReady.value = true,
-              ),
+            child: Stack(
+              fit: StackFit.expand,
               children: [
-                TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.example.geo_spots',
-                ),
-                MarkerLayer(
-                  markers: [
-                    for (int i = 0; i < visibleMappedPlaces.length; i++)
-                      Marker(
-                        point: visibleMappedPlaces[i].point,
-                        width: 24,
-                        height: 24,
-                        child: MapMarkerDot(
-                          isSelected: i == safeIndex,
-                          onTap: () {
-                            notifier.selectPlace(
-                              visibleMappedPlaces[i].place.id,
-                            );
-                            isPreviewVisible.value = true;
-                          },
-                        ),
-                      ),
+                FlutterMap(
+                  mapController: mapController,
+                  options: MapOptions(
+                    initialCenter: initialCenter,
+                    initialZoom: 6.8,
+                    minZoom: 3,
+                    maxZoom: 19,
+                    onMapReady: () => isMapReady.value = true,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.geo_spots',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        for (int i = 0; i < visibleMappedPlaces.length; i++)
+                          Marker(
+                            point: visibleMappedPlaces[i].point,
+                            width: 32,
+                            height: 32,
+                            child: MapMarkerDot(
+                              isSelected: i == safeIndex,
+                              onTap: () {
+                                notifier.selectPlace(
+                                  visibleMappedPlaces[i].place.id,
+                                );
+                                isPreviewVisible.value = true;
+                              },
+                            ),
+                          ),
+                      ],
+                    ),
                   ],
+                ),
+                IgnorePointer(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          GSColors.neutral000.withValues(alpha: 0.02),
+                          GSColors.primary100.withValues(alpha: 0.04),
+                          GSColors.neutral1000.withValues(alpha: 0.10),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -156,7 +170,7 @@ class MapView extends HookConsumerWidget {
                   fit: StackFit.expand,
                   children: [
                     Column(
-                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         MapTopPanel(
                           isAuthenticated: isAuthenticated,
@@ -192,62 +206,83 @@ class MapView extends HookConsumerWidget {
                           onClearSearch: () => notifier.updateSearchQuery(''),
                           onCategorySelected: notifier.selectCategory,
                         ),
+                        const SizedBox(height: GSSpacing.l),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: MapFloatingControls(
+                            onCenterTap: () {
+                              if (!isMapReady.value) return;
+                              mapController.move(
+                                selectedPlace?.point ?? initialCenter,
+                                14.8,
+                              );
+                            },
+                            onZoomInTap: () {
+                              if (!isMapReady.value) return;
+                              final nextZoom = (mapController.camera.zoom + 0.8)
+                                  .clamp(3.0, 19.0)
+                                  .toDouble();
+                              mapController.move(
+                                mapController.camera.center,
+                                nextZoom,
+                              );
+                            },
+                            onZoomOutTap: () {
+                              if (!isMapReady.value) return;
+                              final nextZoom = (mapController.camera.zoom - 0.8)
+                                  .clamp(3.0, 19.0)
+                                  .toDouble();
+                              mapController.move(
+                                mapController.camera.center,
+                                nextZoom,
+                              );
+                            },
+                          ),
+                        ),
+                        const Spacer(),
                       ],
                     ),
-                    Positioned(
-                      top: hasSecondaryTopCard ? 176 : 88,
-                      right: 0,
-                      child: MapFloatingControls(
-                        onCenterTap: () {
-                          if (!isMapReady.value) return;
-                          mapController.move(
-                            selectedPlace?.point ?? initialCenter,
-                            14.8,
-                          );
-                        },
-                        onZoomInTap: () {
-                          if (!isMapReady.value) return;
-                          final nextZoom = (mapController.camera.zoom + 0.8)
-                              .clamp(3.0, 19.0)
-                              .toDouble();
-                          mapController.move(
-                            mapController.camera.center,
-                            nextZoom,
-                          );
-                        },
-                        onZoomOutTap: () {
-                          if (!isMapReady.value) return;
-                          final nextZoom = (mapController.camera.zoom - 0.8)
-                              .clamp(3.0, 19.0)
-                              .toDouble();
-                          mapController.move(
-                            mapController.camera.center,
-                            nextZoom,
-                          );
-                        },
+                    if (!state.isLoading && hasFatalLoadError)
+                      Positioned.fill(
+                        child: IgnorePointer(
+                          ignoring: false,
+                          child: Container(
+                            color: GSColors.neutral000.withValues(alpha: 0.82),
+                            padding: const EdgeInsets.all(GSSpacing.xl),
+                            child: GSErrorState(
+                              title: 'Impossible de charger la carte',
+                              message: state.errorMessage!,
+                              onRetry: notifier.loadPlaces,
+                              retryLabel: 'Réessayer',
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
                     if (isPreviewVisible.value && selectedPlace != null)
                       Positioned(
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        child: MapPlacePreviewCard(
-                          place: selectedPlace,
-                          compact: state.searchQuery.trim().isNotEmpty,
-                          onDirectionsTap: () {
-                            if (!selectedPlace.place.hasCoordinates) {
-                              return;
-                            }
-                            showDialog<void>(
-                              context: context,
-                              builder: (_) => NavigationOptionsDialog(
-                                place: selectedPlace.place,
-                              ),
-                            );
-                          },
-                          onShareTap: () {},
-                          onClose: () => isPreviewVisible.value = false,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: GSSpacing.xl4),
+                          child: MapPlacePreviewCard(
+                            place: selectedPlace,
+                            compact: state.searchQuery.trim().isNotEmpty,
+                            onDirectionsTap: () {
+                              if (!selectedPlace.place.hasCoordinates) {
+                                return;
+                              }
+                              showDialog<void>(
+                                context: context,
+                                builder: (_) => NavigationOptionsDialog(
+                                  place: selectedPlace.place,
+                                ),
+                              );
+                            },
+                            onShareTap: () =>
+                                notifier.sharePlace(selectedPlace.place.id),
+                            onClose: () => isPreviewVisible.value = false,
+                          ),
                         ),
                       ),
                   ],
@@ -255,6 +290,17 @@ class MapView extends HookConsumerWidget {
               ),
             ),
           ),
+          if (state.errorMessage != null && !hasFatalLoadError)
+            Positioned(
+              left: GSSpacing.xl,
+              right: GSSpacing.xl,
+              bottom: selectedPlace == null ? GSSpacing.xl : 172,
+              child: GSAlertBanner(
+                type: GSSnackbarType.error,
+                message: state.errorMessage!,
+                onDismiss: notifier.clearError,
+              ),
+            ),
         ],
       ),
     );

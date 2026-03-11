@@ -8,27 +8,41 @@ import 'widgets/upsert_place_location_step.dart';
 import 'widgets/upsert_place_progress_indicator.dart';
 
 class UpsertPlacePage extends HookConsumerWidget {
-
   const UpsertPlacePage({super.key, required this.placeId});
   final String placeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      upsertPlaceViewModelProvider(
+        placeId,
+      ).select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref
+              .read(upsertPlaceViewModelProvider(placeId).notifier)
+              .consumeSnackbar();
+        });
+      },
+    );
+
     final currentStep = useState(0);
     final state = ref.watch(upsertPlaceViewModelProvider(placeId));
     final viewModel = ref.read(upsertPlaceViewModelProvider(placeId).notifier);
-
-    if (state.isLoading) {
-      return GSScaffold(
-        backgroundColor: GSColorTokens.backgroundPrimary,
-        body: Center(child: GSCircularLoader()),
-      );
-    }
 
     final steps = [
       UpsertPlaceBasicInfoStepView(state: state, notifier: viewModel),
       UpsertPlaceLocationStepView(state: state, notifier: viewModel),
     ];
+    final hasLoadError = state.loadErrorMessage != null;
+    final canRenderForm = !state.isLoading && !hasLoadError;
 
     return GSScaffold(
       backgroundColor: GSColorTokens.backgroundPrimary,
@@ -38,24 +52,35 @@ class UpsertPlacePage extends HookConsumerWidget {
             currentStep: currentStep.value,
             isEditMode: state.isEditMode,
           ),
-          Padding(
-            padding: const EdgeInsets.all(GSSpacing.xl),
-            child: UpsertPlaceProgressIndicator(
-              currentIndex: currentStep.value,
-              size: steps.length,
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
+          if (canRenderForm)
+            Padding(
               padding: const EdgeInsets.all(GSSpacing.xl),
-              child: steps[currentStep.value],
+              child: UpsertPlaceProgressIndicator(
+                currentIndex: currentStep.value,
+                size: steps.length,
+              ),
             ),
+          Expanded(
+            child: switch ((state.isLoading, hasLoadError)) {
+              (true, _) => const Center(child: GSCircularLoader()),
+              (false, true) => GSErrorState(
+                title: 'Impossible de charger le lieu',
+                message: state.loadErrorMessage!,
+                onRetry: state.isEditMode ? viewModel.reload : null,
+                retryLabel: state.isEditMode ? 'Réessayer' : null,
+              ),
+              _ => SingleChildScrollView(
+                padding: const EdgeInsets.all(GSSpacing.xl),
+                child: steps[currentStep.value],
+              ),
+            },
           ),
-          _UpsertPlaceBottomActions(
-            currentStep: currentStep,
-            totalSteps: steps.length,
-            placeId: placeId,
-          ),
+          if (canRenderForm)
+            _UpsertPlaceBottomActions(
+              currentStep: currentStep,
+              totalSteps: steps.length,
+              placeId: placeId,
+            ),
         ],
       ),
     );
@@ -63,7 +88,6 @@ class UpsertPlacePage extends HookConsumerWidget {
 }
 
 class _UpsertPlaceHeader extends StatelessWidget {
-
   const _UpsertPlaceHeader({
     required this.currentStep,
     required this.isEditMode,
@@ -125,7 +149,6 @@ class _UpsertPlaceHeader extends StatelessWidget {
 }
 
 class _UpsertPlaceBottomActions extends ConsumerWidget {
-
   const _UpsertPlaceBottomActions({
     required this.currentStep,
     required this.totalSteps,
@@ -164,9 +187,15 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
                   ? GSFilledButton(
                       enabled: viewModel.isStep1Valid,
                       onPressed: () async {
-                        await viewModel.savePlace();
-                        if (context.mounted && state.errorMessage == null) {
-                          Navigator.of(context).pop();
+                        final isSaved = await viewModel.savePlace();
+                        if (isSaved && context.mounted) {
+                          GSScaffoldSnackbar.showSuccess(
+                            context,
+                            message: state.isEditMode
+                                ? 'Lieu mis à jour'
+                                : 'Lieu créé',
+                          );
+                          Navigator.of(context).pop(true);
                         }
                       },
                       text: state.isSaving

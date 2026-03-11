@@ -46,7 +46,8 @@ class SignUpRouteData extends GoRouteData with $SignUpRouteData {
   path: RouteNames.forgotPassword,
   name: RouteNames.forgotPasswordName,
 )
-class ForgotPasswordRouteData extends GoRouteData with $ForgotPasswordRouteData {
+class ForgotPasswordRouteData extends GoRouteData
+    with $ForgotPasswordRouteData {
   const ForgotPasswordRouteData();
 
   @override
@@ -55,5 +56,6 @@ class ForgotPasswordRouteData extends GoRouteData with $ForgotPasswordRouteData 
   }
 }
 
-final authenticationRoutesProvider =
-    Provider<List<RouteBase>>((ref) => $appRoutes);
+final authenticationRoutesProvider = Provider<List<RouteBase>>(
+  (ref) => $appRoutes,
+);

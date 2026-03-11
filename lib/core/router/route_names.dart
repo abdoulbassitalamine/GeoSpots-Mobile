@@ -6,9 +6,10 @@ abstract class RouteNames {
   static const String collections = '/collections';
   static const String collectionsName = 'collections';
   static const String collectionTagParam = 'collectionTag';
-  static const String collectionDetails =
-      'details/:$collectionTagParam';
+  static const String collectionDetails = 'details/:$collectionTagParam';
   static const String collectionDetailsName = 'collection-details';
+  static const String addSharedAccess = 'add-shared-access';
+  static const String addSharedAccessName = 'add-shared-access';
 
   static const String settings = '/settings';
   static const String settingsName = 'settings';
@@ -25,6 +26,11 @@ abstract class RouteNames {
 
   static const String forgotPassword = '/forgot-password';
   static const String forgotPasswordName = 'forgot-password';
+
+  // Tracking routes
+  static const String liveLocation = '/live-location/:$liveLocationTokenParam';
+  static const String liveLocationName = 'live-location';
+  static const String liveLocationTokenParam = 'token';
 
   // Places routes
   static const String places = '/places';

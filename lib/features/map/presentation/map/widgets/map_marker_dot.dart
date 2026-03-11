@@ -18,17 +18,28 @@ class MapMarkerDot extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        width: isSelected ? 38 : 32,
-        height: isSelected ? 38 : 32,
+        width: isSelected ? 42 : 34,
+        height: isSelected ? 42 : 34,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: isSelected ? GSColors.primary600 : GSColors.primary500,
-          boxShadow: [GSShadows.s()],
-          border: Border.all(color: GSColors.neutral000, width: 2),
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: isSelected
+                ? [GSColors.primary500, GSColors.primary700]
+                : [GSColors.primary400, GSColors.primary600],
+          ),
+          boxShadow: [
+            GSShadows.s(color: GSColors.primary900.withValues(alpha: 0.28)),
+          ],
+          border: Border.all(
+            color: GSColors.neutral000,
+            width: isSelected ? 3 : 2,
+          ),
         ),
         child: Icon(
           Icons.location_on,
-          size: isSelected ? 18 : 16,
+          size: isSelected ? 20 : 16,
           color: GSColors.neutral000,
         ),
       ),

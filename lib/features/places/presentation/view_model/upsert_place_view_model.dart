@@ -1,7 +1,12 @@
 import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/authentication/domain/repository/authentication_repository.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/shared_access_session.dart';
+import 'package:geo_spots/shared/design_system/widgets/common/gs_protected_network_image.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:latlong2/latlong.dart';
@@ -30,6 +35,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
 
   @override
   UpsertPlaceState build(String placeId) {
+    ref.watch(getPlaceByIdUseCaseProvider);
     requiredValidator.withErrorMessage('Ce champ est obligatoire');
     latitudeValidator.withErrorMessage('Latitude invalide (-90 a 90)');
     longitudeValidator.withErrorMessage('Longitude invalide (-180 a 180)');
@@ -54,7 +60,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         if (place == null) {
           state = state.copyWith(
             isLoading: false,
-            errorMessage: 'Lieu non trouvé',
+            loadErrorMessage: 'Lieu non trouvé',
           );
           return;
         }
@@ -72,6 +78,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
           manualLongitude: place.longitude?.toStringAsFixed(6) ?? '',
           address: place.address ?? '',
           isLoading: false,
+          loadErrorMessage: null,
         );
 
         GsLogger().d('Place loaded for editing: ${place.id}');
@@ -79,7 +86,7 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       case Err(error: final error):
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'Erreur lors du chargement',
+          loadErrorMessage: 'Erreur lors du chargement',
         );
         GsLogger().e(error);
     }
@@ -88,6 +95,14 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
   Future<UpsertPlaceState> updateState(UpsertPlaceState newState) async {
     state = newState;
     return state;
+  }
+
+  Future<void> reload() async {
+    final placeId = state.placeId;
+    if (!state.isEditMode || placeId == null) {
+      return;
+    }
+    await _loadPlace(placeId);
   }
 
   bool get isStep0Valid => titleValidators.execute(state.title).isEmpty;
@@ -148,7 +163,10 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     } on Exception catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Impossible d\'obtenir la position',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Impossible d\'obtenir la position actuelle',
+          type: GSSnackbarType.error,
+        ),
       );
       GsLogger().e(e);
     }
@@ -196,20 +214,28 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       }
       GsLogger().d('Image: ${image?.path}');
     } on Exception catch (e) {
-      state = state.copyWith(errorMessage: 'Erreur lors du choix de l\'image');
+      state = state.copyWith(
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Erreur lors du choix de l\'image',
+          type: GSSnackbarType.error,
+        ),
+      );
       GsLogger().e(e);
     }
   }
 
-  Future<void> savePlace() async {
+  Future<bool> savePlace() async {
     if (!isStep0Valid || !isStep1Valid) {
       state = state.copyWith(
-        errorMessage: 'Veuillez remplir tous les champs obligatoires',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Veuillez remplir tous les champs obligatoires',
+          type: GSSnackbarType.warning,
+        ),
       );
-      return;
+      return false;
     }
 
-    state = state.copyWith(isSaving: true, errorMessage: null);
+    state = state.copyWith(isSaving: true, snackbarMessage: null);
     final updatePlace = ref.read(updatePlaceUseCaseProvider);
     final createPlace = ref.read(createPlaceUseCaseProvider);
     final uploadPlaceImage = ref.read(uploadPlaceImageUseCaseProvider);
@@ -237,12 +263,15 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       case Err(error: final error):
         state = state.copyWith(
           isSaving: false,
-          errorMessage: state.isEditMode
-              ? 'Erreur lors de la mise à jour'
-              : 'Erreur lors de la création',
+          snackbarMessage: GSSnackbarMessage(
+            message: state.isEditMode
+                ? 'Erreur lors de la mise à jour du lieu'
+                : 'Erreur lors de la création du lieu',
+            type: GSSnackbarType.error,
+          ),
         );
         GsLogger().e(error);
-        return;
+        return false;
     }
 
     if (_isLocalImagePath(imagePath)) {
@@ -251,15 +280,22 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         imagePath: imagePath!,
       );
       switch (imageResult) {
-        case Ok():
+        case Ok(value: final place):
+          await _evictPlaceImageCache(
+            persistedPlaceId,
+            imageUrl: place.imageUrl,
+          );
           break;
         case Err(error: final error):
           state = state.copyWith(
             isSaving: false,
-            errorMessage: 'Erreur lors de l\'upload de l\'image',
+            snackbarMessage: const GSSnackbarMessage(
+              message: 'Erreur lors de l\'upload de l\'image',
+              type: GSSnackbarType.error,
+            ),
           );
           GsLogger().e(error);
-          return;
+          return false;
       }
     } else if (state.isEditMode &&
         _initialImageUrl != null &&
@@ -267,18 +303,28 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
       final deleteImageResult = await deletePlaceImage(persistedPlaceId);
       switch (deleteImageResult) {
         case Ok():
+          await _evictPlaceImageCache(
+            persistedPlaceId,
+            imageUrl: _initialImageUrl,
+          );
           break;
         case Err(error: final error):
           state = state.copyWith(
             isSaving: false,
-            errorMessage: 'Erreur lors de la suppression de l\'image',
+            snackbarMessage: const GSSnackbarMessage(
+              message: 'Erreur lors de la suppression de l\'image',
+              type: GSSnackbarType.error,
+            ),
           );
           GsLogger().e(error);
-          return;
+          return false;
       }
     }
 
     state = state.copyWith(isSaving: false);
+    ref.invalidate(authenticationRepositoryProvider);
+    notifyAppDataChanged(ref);
+    return true;
   }
 
   double? _parseCoordinate(String raw) {
@@ -311,5 +357,28 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
         (!normalized.startsWith('http://') &&
             !normalized.startsWith('https://') &&
             !normalized.startsWith('/api/images/'));
+  }
+
+  void consumeSnackbar() {
+    if (state.snackbarMessage != null) {
+      state = state.copyWith(snackbarMessage: null);
+    }
+  }
+
+  Future<void> _evictPlaceImageCache(String placeId, {String? imageUrl}) async {
+    final sharedToken = ref.read(activeSharedAccessTokenProvider);
+    final remoteImageUrl = imageUrl?.trim().isNotEmpty ?? false
+        ? imageUrl!.trim()
+        : '/api/images/$placeId';
+
+    await gsEvictProtectedImage(ref, remoteImageUrl);
+    if (sharedToken != null && sharedToken.isNotEmpty) {
+      await gsEvictProtectedImage(
+        ref,
+        remoteImageUrl,
+        useSharedTokenQueryParam: true,
+        sharedToken: sharedToken,
+      );
+    }
   }
 }

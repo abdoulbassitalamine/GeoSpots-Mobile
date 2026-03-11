@@ -28,6 +28,7 @@ class CollectionDetailsView extends HookConsumerWidget {
     final activeSharedToken = ref.watch(activeSharedAccessTokenProvider);
     final searchController = useTextEditingController();
     final query = useState('');
+    final retryKey = useState(0);
     final hasSharedContext = activeAccessRight != null;
     final collection = _findCollection(
       state,
@@ -40,14 +41,12 @@ class CollectionDetailsView extends HookConsumerWidget {
     }
 
     if (collection == null) {
-      return Padding(
-        padding: const EdgeInsets.only(top: GSSpacing.xl),
-        child: Text(
-          'Collection introuvable.',
-          style: GSTypography.bodyDefaultMedium.copyWith(
-            color: GSColors.neutral600,
-          ),
-        ),
+      return GSErrorState(
+        title: 'Collection introuvable',
+        message: 'Cette collection est introuvable ou n’est plus accessible.',
+        onRetry: () =>
+            ref.read(collectionsViewModelProvider.notifier).refresh(),
+        retryLabel: 'Réessayer',
       );
     }
 
@@ -63,7 +62,7 @@ class CollectionDetailsView extends HookConsumerWidget {
         collectionId: collection.id,
         token: isSharedCollection ? effectiveSharedToken : null,
       ),
-      [collection.id, isSharedCollection, effectiveSharedToken],
+      [collection.id, isSharedCollection, effectiveSharedToken, retryKey.value],
     );
     final placesSnapshot = useFuture(placesFuture);
 
@@ -72,25 +71,31 @@ class CollectionDetailsView extends HookConsumerWidget {
     }
 
     final placesResult = placesSnapshot.data;
-    if (placesResult == null) {
-      return Padding(
-        padding: const EdgeInsets.only(top: GSSpacing.xl),
-        child: Text(
-          'Impossible de charger les lieux de la collection.',
-          style: GSTypography.bodyDefaultMedium.copyWith(
-            color: GSColors.neutral600,
-          ),
-        ),
+    if (placesSnapshot.hasError || placesResult == null) {
+      return GSErrorState(
+        title: 'Impossible de charger la collection',
+        message: 'Les lieux de cette collection n’ont pas pu être chargés.',
+        onRetry: () => retryKey.value++,
+        retryLabel: 'Réessayer',
       );
     }
 
     final places = switch (placesResult) {
       Ok(value: final value) => value,
-      Err() => const <PlaceEntity>[],
+      Err() => null,
     };
+    if (places == null) {
+      return GSErrorState(
+        title: 'Impossible de charger la collection',
+        message: 'Les lieux de cette collection n’ont pas pu être chargés.',
+        onRetry: () => retryKey.value++,
+        retryLabel: 'Réessayer',
+      );
+    }
     final filteredPlaces = _filterPlaces(places, query.value);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CollectionDetailsSummary(
           total: places.length,
@@ -109,13 +114,17 @@ class CollectionDetailsView extends HookConsumerWidget {
         if (filteredPlaces.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: GSSpacing.xl),
-            child: Center(
-              child: Text(
-                query.value.isEmpty
-                    ? 'Aucun lieu dans cette collection.'
-                    : 'Aucun résultat pour "${query.value}".',
-                style: GSTypography.bodyDefaultMedium.copyWith(
-                  color: GSColors.neutral600,
+            child: GSPremiumPanel(
+              padding: const EdgeInsets.all(GSSpacing.xl3),
+              borderColor: GSColors.neutral150,
+              child: Center(
+                child: Text(
+                  query.value.isEmpty
+                      ? 'Aucun lieu dans cette collection.'
+                      : 'Aucun résultat pour "${query.value}".',
+                  style: GSTypography.bodyDefaultMedium.copyWith(
+                    color: GSColors.neutral600,
+                  ),
                 ),
               ),
             ),
@@ -133,7 +142,8 @@ class CollectionDetailsView extends HookConsumerWidget {
                 ),
                 child: PlaceListItem(
                   place: place,
-                  onTap: () {
+                  useSharedImageToken: isSharedCollection,
+                  onTap: () async {
                     if (isSharedCollection) {
                       ref
                               .read(
@@ -153,9 +163,12 @@ class CollectionDetailsView extends HookConsumerWidget {
                       ref.read(activeSharedAccessTokenProvider.notifier).token =
                           null;
                     }
-                    PlaceDetailsRouteData(
+                    final changed = await PlaceDetailsRouteData(
                       placeId: place.id,
-                    ).push<void>(context);
+                    ).push<bool>(context);
+                    if (changed ?? false) {
+                      retryKey.value++;
+                    }
                   },
                 ),
               );

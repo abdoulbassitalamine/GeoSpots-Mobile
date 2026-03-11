@@ -88,10 +88,7 @@ class _ExportFormatTile extends StatelessWidget {
               color: GSColors.primary600.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(GSRadius.s),
             ),
-            child: Icon(
-              icon,
-              color: GSColors.primary600,
-            ),
+            child: Icon(icon, color: GSColors.primary600),
           ),
           const SizedBox(width: GSSpacing.l),
           Expanded(

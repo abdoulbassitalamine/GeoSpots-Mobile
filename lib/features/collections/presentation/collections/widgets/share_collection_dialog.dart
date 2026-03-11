@@ -3,10 +3,7 @@ import 'package:geo_spots/features/collections/domain/enums/share_access_right.d
 import '../../../../../../shared/design_system/design_system.dart';
 
 class ShareCollectionDialog extends StatelessWidget {
-  const ShareCollectionDialog({
-    super.key,
-    required this.onShare,
-  });
+  const ShareCollectionDialog({super.key, required this.onShare});
 
   final void Function(ShareAccessRight accessRight) onShare;
 

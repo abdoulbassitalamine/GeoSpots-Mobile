@@ -10,6 +10,7 @@ class GSRefreshScaffold extends StatelessWidget {
     this.backgroundColor,
     this.padding,
     this.enableRefresh = true,
+    this.floatingActionButton,
   });
 
   final Widget child;
@@ -17,6 +18,7 @@ class GSRefreshScaffold extends StatelessWidget {
   final Color? backgroundColor;
   final EdgeInsets? padding;
   final bool enableRefresh;
+  final Widget? floatingActionButton;
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +26,16 @@ class GSRefreshScaffold extends StatelessWidget {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: backgroundColor ?? GSColorTokens.backgroundPrimary,
+        floatingActionButton: floatingActionButton,
         body: Padding(
           padding: padding ?? const EdgeInsets.all(GSSpacing.xl),
           child: enableRefresh && onRefresh != null
               ? RefreshIndicator(
-            color: GSColorTokens.textInverse,
-            backgroundColor: GSColorTokens.textAccent,
-            onRefresh: onRefresh!,
-            child: child,
-          )
+                  color: GSColorTokens.textInverse,
+                  backgroundColor: GSColorTokens.textAccent,
+                  onRefresh: onRefresh!,
+                  child: child,
+                )
               : child,
         ),
       ),

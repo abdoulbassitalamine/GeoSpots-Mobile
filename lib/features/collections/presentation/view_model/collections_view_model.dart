@@ -1,10 +1,11 @@
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/exception/http_exception.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
-import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
-import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
+import 'package:geo_spots/features/authentication/authentication.dart';
+import 'package:geo_spots/features/authentication/domain/use_case/me_stats_use_case.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
 import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
@@ -13,6 +14,7 @@ import 'package:geo_spots/features/collections/domain/enums/share_resource_type.
 import 'package:geo_spots/features/collections/domain/use_cases/collections_use_cases.dart';
 import 'package:geo_spots/features/collections/domain/use_cases/export_collection_use_case.dart';
 import 'package:geo_spots/features/collections/domain/use_cases/import_collection_use_case.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
@@ -28,6 +30,13 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   @override
   CollectionsState build() {
+    ref.watch(getOwnedCollectionsUseCaseProvider);
+    ref.listen<int>(appDataSyncProvider, (previous, next) {
+      if (previous == next) {
+        return;
+      }
+      Future.microtask(_loadCollectionsData);
+    });
     Future.microtask(_loadCollectionsData);
     return const CollectionsState();
   }
@@ -91,13 +100,23 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         ownedShareTokens = const <SharedAccessTokenEntity>[];
       }
 
-      final totalPlaces = ownedCollections.fold<int>(
-        0,
-        (sum, collection) => sum + collection.placesCount,
+      var totalPlaces = 0;
+      if (effectiveAuthenticated) {
+        final statsResult = await ref.read(meStatsUseCaseProvider.future);
+        if (statsResult case Ok(value: final stats)) {
+          totalPlaces = stats.ownedPlaceCount;
+        }
+      }
+
+      final allCollection = CollectionEntity(
+        id: 'all',
+        tag: 'all',
+        placesCount: totalPlaces,
       );
+      final collectionsWithAll = [allCollection, ...ownedCollections];
 
       state = state.copyWith(
-        ownedCollections: ownedCollections,
+        ownedCollections: collectionsWithAll,
         sharedCollections: sharedCollections,
         sharedTokens: sharedTokens,
         ownedShareTokens: ownedShareTokens,
@@ -107,11 +126,16 @@ class CollectionsViewModel extends _$CollectionsViewModel {
             : CollectionsTab.sharedWithMe,
         isLoading: false,
         error: null,
+        snackbarMessage: null,
       );
     } on Exception {
       state = state.copyWith(
         isLoading: false,
         error: 'Erreur lors du chargement des collections',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Erreur lors du chargement des collections',
+          type: GSSnackbarType.error,
+        ),
       );
     }
   }
@@ -148,6 +172,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         state = state.copyWith(
           isExporting: false,
           error: 'Erreur lors de l\'export',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors de l\'export de la collection',
+            type: GSSnackbarType.error,
+          ),
         );
     }
   }
@@ -173,6 +201,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       state = state.copyWith(
         isImporting: false,
         error: 'Impossible de lire le fichier',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Impossible de lire le fichier sélectionné',
+          type: GSSnackbarType.error,
+        ),
       );
       return;
     }
@@ -182,6 +214,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       state = state.copyWith(
         isImporting: false,
         error: 'Format non supporté. Utilisez uniquement: .gpx, .kml, .geojson',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Format non supporté. Utilisez .gpx, .kml ou .geojson',
+          type: GSSnackbarType.warning,
+        ),
       );
       return;
     }
@@ -192,22 +228,40 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
     switch (importResult) {
       case Ok(value: final value):
+        ref.invalidate(authenticationRepositoryProvider);
         await _loadCollectionsData();
+        notifyAppDataChanged(ref);
 
         if (value.errors.isNotEmpty) {
           state = state.copyWith(
             error:
                 'Import partiel: ${value.imported} importé(s), ${value.skipped} ignoré(s).',
             isImporting: false,
+            snackbarMessage: GSSnackbarMessage(
+              message:
+                  'Import partiel: ${value.imported} importé(s), ${value.skipped} ignoré(s).',
+              type: GSSnackbarType.warning,
+            ),
           );
           return;
         }
 
-        state = state.copyWith(isImporting: false);
+        state = state.copyWith(
+          isImporting: false,
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Collection importée avec succès',
+            type: GSSnackbarType.success,
+            presentation: GSSnackbarPresentation.scaffold,
+          ),
+        );
       case Err(error: final error):
         state = state.copyWith(
           isImporting: false,
           error: 'Erreur lors de l\'import: $error',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors de l\'import de la collection',
+            type: GSSnackbarType.error,
+          ),
         );
     }
   }
@@ -216,8 +270,6 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     CollectionEntity collection,
     ShareAccessRight accessRight,
   ) async {
-    final shareCollection = ref.read(shareCollectionUseCaseProvider);
-    final getOwnedShareTokens = ref.read(getOwnedShareTokensUseCaseProvider);
     final result = await ref.read(shareCollectionUseCaseProvider)(
       collection: collection,
       rights: accessRight,
@@ -248,10 +300,21 @@ class CollectionsViewModel extends _$CollectionsViewModel {
           case Err():
             state = state.copyWith(
               error: 'Erreur lors du rafraîchissement des tokens',
+              snackbarMessage: const GSSnackbarMessage(
+                message:
+                    'Collection partagée, mais la liste n\'a pas pu être rafraîchie',
+                type: GSSnackbarType.warning,
+              ),
             );
         }
       case Err(error: final error):
-        state = state.copyWith(error: 'Erreur lors du partage: $error');
+        state = state.copyWith(
+          error: 'Erreur lors du partage: $error',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors du partage de la collection',
+            type: GSSnackbarType.error,
+          ),
+        );
     }
   }
 
@@ -296,7 +359,13 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       sharedCollections:
           (sharedCollectionsResult as Ok<List<CollectionEntity>>).value,
       selectedTab: CollectionsTab.sharedWithMe,
+      snackbarMessage: const GSSnackbarMessage(
+        message: 'Accès partagé ajouté',
+        type: GSSnackbarType.success,
+        presentation: GSSnackbarPresentation.scaffold,
+      ),
     );
+    notifyAppDataChanged(ref);
     return true;
   }
 
@@ -332,7 +401,12 @@ class CollectionsViewModel extends _$CollectionsViewModel {
           (sharedTokensResult as Ok<List<SharedAccessTokenEntity>>).value,
       sharedCollections:
           (sharedCollectionsResult as Ok<List<CollectionEntity>>).value,
+      snackbarMessage: const GSSnackbarMessage(
+        message: 'Accès partagé retiré',
+        presentation: GSSnackbarPresentation.scaffold,
+      ),
     );
+    notifyAppDataChanged(ref);
     if (ref.read(activeSharedAccessTokenProvider) == token) {
       ref.read(activeSharedAccessTokenProvider.notifier).token = null;
     }
@@ -357,6 +431,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         state = state.copyWith(
           isRevokingSharedAccess: false,
           ownedShareTokens: ownedShareTokens,
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Lien de partage révoqué',
+            presentation: GSSnackbarPresentation.scaffold,
+          ),
         );
       case Err():
         state = state.copyWith(
@@ -369,6 +447,12 @@ class CollectionsViewModel extends _$CollectionsViewModel {
   void clearError() {
     if (state.error != null) {
       state = state.copyWith(error: null);
+    }
+  }
+
+  void consumeSnackbar() {
+    if (state.snackbarMessage != null) {
+      state = state.copyWith(snackbarMessage: null);
     }
   }
 

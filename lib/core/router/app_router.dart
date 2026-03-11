@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:geo_spots/core/route_utils/extension/go_router_state_navbar_extension.dart';
 import 'package:geo_spots/core/router/route_names.dart';
 import 'package:geo_spots/features/collections/presentation/route/route_data.dart';
 import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:geo_spots/features/settings/presentation/route/route_data.dart';
+import 'package:geo_spots/features/tracking/presentation/route/route_data.dart';
 import 'package:geo_spots/features/welcome/presentation/route/route_data.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -39,6 +41,10 @@ const _restorationScopeId = 'restorationScopeId';
               path: RouteNames.collectionDetails,
               name: RouteNames.collectionDetailsName,
             ),
+            TypedGoRoute<AddSharedAccessRouteData>(
+              path: RouteNames.addSharedAccess,
+              name: RouteNames.addSharedAccessName,
+            ),
           ],
         ),
       ],
@@ -64,9 +70,12 @@ class MainShellRouteData extends StatefulShellRouteData {
     GoRouterState state,
     StatefulNavigationShell navigationShell,
   ) {
-    return NoTransitionPage(
-      child: ScaffoldWithNavBar(navigationShell: navigationShell),
-    );
+    if (state.showNavBar) {
+      return NoTransitionPage(
+        child: ScaffoldWithNavBar(navigationShell: navigationShell),
+      );
+    }
+    return NoTransitionPage(child: Scaffold(body: navigationShell));
   }
 }
 
@@ -92,9 +101,7 @@ class SettingsShellBranchData extends StatefulShellBranchData {
 
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  final authenticationNotifier = ref.watch(
-    authGuardProvider.notifier,
-  );
+  final authenticationNotifier = ref.watch(authGuardProvider.notifier);
 
   final router = GoRouter(
     navigatorKey: rootNavigatorKey,
@@ -116,6 +123,9 @@ GoRouter appRouter(Ref ref) {
       ...ref.read(authenticationRoutesProvider),
 
       ...ref.read(placesRoutesProvider),
+
+      // Tracking routes (live location viewer)
+      ...ref.read(trackingRoutesProvider),
 
       ...$appRoutes,
     ],

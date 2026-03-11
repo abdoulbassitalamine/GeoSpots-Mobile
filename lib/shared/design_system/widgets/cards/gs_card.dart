@@ -33,18 +33,14 @@ class GSCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final card = Container(
       margin: margin,
-      padding: padding ??
+      padding:
+          padding ??
           const EdgeInsets.all(GSSpacingTokens.cardPaddingHorizontal),
       decoration: BoxDecoration(
         color: color ?? GSColorTokens.cardBackground,
         borderRadius: borderRadius ?? BorderRadius.circular(GSRadius.m),
         border: border,
-        boxShadow: shadows ??
-            (elevation > 0
-                ? [
-              GSShadows.s(),
-            ]
-                : null),
+        boxShadow: shadows ?? (elevation > 0 ? [GSShadows.s()] : null),
       ),
       child: child,
     );

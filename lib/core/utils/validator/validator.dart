@@ -12,6 +12,7 @@ export 'validator_regex.dart';
 export 'validator_required.dart';
 export 'validator_special_char.dart';
 export 'validator_uppercase.dart';
+export 'validator_url.dart';
 export 'validator_zip_code.dart';
 
 abstract class Validator {
