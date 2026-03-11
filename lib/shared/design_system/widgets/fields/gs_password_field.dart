@@ -42,9 +42,9 @@ class GSPasswordField extends StatelessWidget {
       autocorrect: false,
       maxLines: 1,
       cursorColor: GSColorTokens.textAccent,
-      style: TextStyle(color: GSColorTokens.textPrimary),
+      style: context.bodyDefaultMedium.copyWith(color: GSColorTokens.textPrimary),
       decoration: InputDecoration(
-        labelStyle: TextStyle(color: GSColorTokens.textPrimary),
+        labelStyle: context.captionDefault.copyWith(color: GSColorTokens.textPrimary),
         floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
           return context.bodyDefaultSmall.copyWith(
             color: states.contains(WidgetState.focused)
@@ -53,14 +53,16 @@ class GSPasswordField extends StatelessWidget {
           );
         }),
         focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: GSColorTokens.textAccent),
+          borderSide: BorderSide(color: GSColorTokens.borderAccent),
         ),
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: GSColorTokens.fieldBorder),
         ),
         labelText: label,
         errorText: errorMessage,
-        border: const OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: GSColorTokens.borderPrimary),
+        ),
         filled: false,
         error: error == null
             ? null

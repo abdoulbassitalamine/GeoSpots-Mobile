@@ -17,26 +17,9 @@ class SignUpView extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GSSpacing.$200.toInt().toHeight,
-          Text(
-            'Bienvenue',
-            style: context.headingMedium.copyWith(
-              fontSize: GSFontScale.sf08,
-              fontWeight: FontWeight.bold,
-              fontFamily: GSFontFamily.display,
-            ),
-          ),
-          GSSpacing.$200.toInt().toHeight,
-          Text(
-            'Rejoignez la communauté GeoSpots en 2 étapes simples.',
-            style: context.bodyDefaultSmall.copyWith(
-              fontSize: GSFontScale.sf04,
-              color: GSColorTokens.textSecondary,
-            ),
-          ),
-          GSSpacing.$300.toInt().toHeight,
+          GSSpacing.$500.toInt().toHeight,
           SignupForm(),
-          GSSpacing.$200.toInt().toHeight,
+          GSSpacing.$150.toInt().toHeight,
           Align(
             alignment: Alignment.center,
             child: RichText(
@@ -60,15 +43,18 @@ class SignUpView extends ConsumerWidget {
               ),
             ),
           ),
-          GSSpacing.$150.toInt().toHeight,
+          GSSpacing.$100.toInt().toHeight,
           Align(
             alignment: Alignment.center,
-            child: TextButton(
-              onPressed: () => const MapRouteData().go(context),
-              child: Text(
-                'Continuer en invité',
-                style: context.bodyAccentSmall.copyWith(
-                  color: GSColors.neutral900,
+            child: GestureDetector(
+              onTap: () => const MapRouteData().go(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: GSSpacing.$100),
+                child: Text(
+                  'Continuer en invité',
+                  style: context.captionDefault.copyWith(
+                    color: GSColors.neutral600,
+                  ),
                 ),
               ),
             ),

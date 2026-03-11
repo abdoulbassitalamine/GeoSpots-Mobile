@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:geo_spots/core/utils/extensions/sized_box_extension.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 import 'package:geo_spots/core/utils/extensions/value_notifier_ext.dart';
 import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_up_controllers.dart';
@@ -68,7 +67,7 @@ class SignupForm extends HookConsumerWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: GSSpacing.$250,
+      spacing: GSSpacing.$200,
       children: [
         _SignUpProgressHeader(currentStep: currentStep.value),
         AnimatedSwitcher(
@@ -120,11 +119,11 @@ class _IdentityStep extends StatelessWidget {
     return Column(
       key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: GSSpacing.$200,
+      spacing: GSSpacing.$150,
       children: [
         _StepIntro(
           title: 'Informations personnelles',
-          description: 'Commencez par votre nom, prénom et adresse email.',
+          description: 'Votre nom, prénom et adresse email.',
         ),
         GSTextField(
           maxLines: 1,
@@ -134,11 +133,6 @@ class _IdentityStep extends StatelessWidget {
           keyboardActions: TextInputAction.next,
           error: identityControllers.firstNameError.notEmptyOrNull(),
           onValueChange: (value) {
-            SignUpValidators.validateFirstName(
-              identityControllers.firstNameController,
-              notifier,
-              identityControllers.firstNameError,
-            );
             SignUpHandlers.onFirstNameChanged(value, ref, notifier);
           },
           onSubmitted: (_) => identityControllers.lastNameFocusNode.requestFocus(),
@@ -151,11 +145,6 @@ class _IdentityStep extends StatelessWidget {
           keyboardActions: TextInputAction.next,
           error: identityControllers.lastNameError.notEmptyOrNull(),
           onValueChange: (value) {
-            SignUpValidators.validateLastName(
-              identityControllers.lastNameController,
-              notifier,
-              identityControllers.lastNameError,
-            );
             SignUpHandlers.onLastNameChanged(value, ref, notifier);
           },
           onSubmitted: (_) => identityControllers.emailFocusNode.requestFocus(),
@@ -169,20 +158,14 @@ class _IdentityStep extends StatelessWidget {
           keyboardActions: TextInputAction.go,
           error: identityControllers.emailError.notEmptyOrNull(),
           onValueChange: (value) {
-            SignUpValidators.validateEmail(
-              identityControllers.emailController,
-              notifier,
-              identityControllers.emailError,
-            );
             SignUpHandlers.onEmailChanged(value, ref, notifier);
           },
           onSubmitted: (_) => onContinue(),
         ),
-        GSSpacing.$50.toInt().toHeight,
         SizedBox(
           width: double.infinity,
           child: GSContainerButton.filled(
-            padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
+            padding: const EdgeInsets.symmetric(vertical: GSSpacing.$200),
             enabled: notifier.isCoordinatesFormValid,
             onPressed: onContinue,
             text: 'Continuer',
@@ -216,11 +199,11 @@ class _PasswordStep extends StatelessWidget {
     return Column(
       key: key,
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: GSSpacing.$200,
+      spacing: GSSpacing.$150,
       children: [
         _StepIntro(
           title: 'Sécurité',
-          description: 'Choisissez un mot de passe solide pour finaliser le compte.',
+          description: 'Choisissez un mot de passe pour finaliser.',
         ),
         GSPasswordField(
           label: 'Mot de passe',
@@ -232,11 +215,6 @@ class _PasswordStep extends StatelessWidget {
           onVisibilityChanged: (value) =>
               passwordControllers.isPasswordVisible.value = !value,
           onChanged: (value) {
-            SignUpValidators.validatePassword(
-              passwordControllers.passwordController,
-              notifier,
-              passwordControllers.passwordError,
-            );
             SignUpHandlers.onPasswordChanged(value, ref, notifier);
           },
           onSubmitted: (_) =>
@@ -252,11 +230,6 @@ class _PasswordStep extends StatelessWidget {
           onVisibilityChanged: (value) =>
               passwordControllers.isConfirmPasswordVisible.value = !value,
           onChanged: (value) {
-            SignUpValidators.validateConfirmPassword(
-              passwordControllers.confirmPasswordController,
-              notifier,
-              passwordControllers.confirmPasswordError,
-            );
             SignUpHandlers.onConfirmPasswordChanged(value, ref, notifier);
           },
           onSubmitted: (_) {
@@ -265,27 +238,27 @@ class _PasswordStep extends StatelessWidget {
             }
           },
         ),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(GSSpacing.$150),
-          decoration: BoxDecoration(
-            color: GSColorTokens.backgroundPrimary,
-            borderRadius: BorderRadius.circular(GSRadius.m),
-            border: Border.all(color: GSColorTokens.borderPrimary),
-          ),
-          child: Text(
-            'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.',
-            style: context.bodyDefaultSmall.copyWith(
-              color: GSColorTokens.textSecondary,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.info_outline_rounded, size: 13, color: GSColorTokens.textSecondary),
+            const SizedBox(width: GSSpacing.$50),
+            Expanded(
+              child: Text(
+                'Min. 12 caractères, une majuscule, un chiffre et un caractère spécial.',
+                style: context.captionDefault.copyWith(
+                  color: GSColorTokens.textSecondary,
+                ),
+              ),
             ),
-          ),
+          ],
         ),
-        GSSpacing.$50.toInt().toHeight,
         Row(
           children: [
             Expanded(
+              flex: 2,
               child: GSContainerButton.outline(
-                padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
+                padding: const EdgeInsets.symmetric(vertical: GSSpacing.$200),
                 onPressed: onBack,
                 text: 'Retour',
                 radius: GSRadius.l,
@@ -293,12 +266,13 @@ class _PasswordStep extends StatelessWidget {
             ),
             const SizedBox(width: GSSpacing.$150),
             Expanded(
+              flex: 3,
               child: GSContainerButton.filled(
-                padding: const EdgeInsets.symmetric(vertical: GSSpacing.$250),
+                padding: const EdgeInsets.symmetric(vertical: GSSpacing.$200),
                 isLoading: passwordControllers.isLoading.value,
                 enabled: notifier.isFormValid,
                 onPressed: onSubmit,
-                text: 'S’inscrire',
+                text: "S'inscrire",
                 gradient: GSColorTokens.primaryGradientHorizontal,
                 radius: GSRadius.l,
               ),
@@ -317,34 +291,34 @@ class _SignUpProgressHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lineColor = currentStep > 0
+        ? GSColorTokens.borderAccent
+        : GSColorTokens.borderPrimary;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      spacing: GSSpacing.$150,
+      spacing: GSSpacing.$100,
       children: [
         Text(
           'Création du compte',
-          style: context.bodyAccentSmall.copyWith(
-            color: GSColorTokens.textAccent,
+          style: context.bodyDefaultLarge.copyWith(
+            color: GSColorTokens.textPrimary,
             fontWeight: FontWeight.w700,
+            fontSize: GSFontScale.sf07,
           ),
         ),
         Row(
           children: [
+            _StepDot(index: 0, currentStep: currentStep, label: 'Identité'),
             Expanded(
-              child: _StepIndicator(
-                label: 'Identité',
-                index: 0,
-                currentStep: currentStep,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: GSSpacing.$100),
+                height: 1.5,
+                color: lineColor,
               ),
             ),
-            const SizedBox(width: GSSpacing.$100),
-            Expanded(
-              child: _StepIndicator(
-                label: 'Sécurité',
-                index: 1,
-                currentStep: currentStep,
-              ),
-            ),
+            _StepDot(index: 1, currentStep: currentStep, label: 'Sécurité'),
           ],
         ),
       ],
@@ -352,78 +326,64 @@ class _SignUpProgressHeader extends StatelessWidget {
   }
 }
 
-class _StepIndicator extends StatelessWidget {
-  const _StepIndicator({
-    required this.label,
+class _StepDot extends StatelessWidget {
+  const _StepDot({
     required this.index,
     required this.currentStep,
+    required this.label,
   });
 
-  final String label;
   final int index;
   final int currentStep;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
     final isActive = currentStep == index;
     final isCompleted = currentStep > index;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.symmetric(
-        horizontal: GSSpacing.$150,
-        vertical: GSSpacing.$150,
-      ),
-      decoration: BoxDecoration(
-        color: isActive || isCompleted
-            ? GSColors.primary100.withValues(alpha: 0.8)
-            : GSColors.neutral050,
-        borderRadius: BorderRadius.circular(GSRadius.m),
-        border: Border.all(
-          color: isActive || isCompleted
-              ? GSColorTokens.borderAccent
-              : GSColorTokens.borderPrimary,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          height: 22,
+          width: 22,
+          decoration: BoxDecoration(
+            gradient: isActive || isCompleted
+                ? GSColorTokens.primaryGradientHorizontal
+                : null,
+            color: isActive || isCompleted
+                ? null
+                : GSColorTokens.backgroundDisabled,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: isCompleted
+                ? Icon(Icons.check_rounded, size: 12, color: GSColorTokens.textInverse)
+                : Text(
+                    '${index + 1}',
+                    style: context.captionAccent.copyWith(
+                      color: isActive
+                          ? GSColorTokens.textInverse
+                          : GSColorTokens.textSecondary,
+                      fontSize: GSFontScale.sf02,
+                    ),
+                  ),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            height: 28,
-            width: 28,
-            decoration: BoxDecoration(
-              gradient: isActive || isCompleted
-                  ? GSColorTokens.primaryGradientHorizontal
-                  : null,
-              color: isActive || isCompleted
-                  ? null
-                  : GSColorTokens.backgroundDisabled,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${index + 1}',
-                style: context.captionAccent.copyWith(
-                  color: isActive || isCompleted
-                      ? GSColorTokens.textInverse
-                      : GSColorTokens.textSecondary,
-                ),
-              ),
-            ),
+        const SizedBox(width: GSSpacing.$50),
+        Text(
+          label,
+          style: context.captionDefault.copyWith(
+            color: isActive || isCompleted
+                ? GSColorTokens.textAccent
+                : GSColorTokens.textSecondary,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+            fontSize: GSFontScale.sf02,
           ),
-          const SizedBox(width: GSSpacing.$100),
-          Expanded(
-            child: Text(
-              label,
-              style: context.bodyDefaultSmall.copyWith(
-                color: isActive
-                    ? GSColorTokens.textAccent
-                    : GSColorTokens.textSecondary,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -442,15 +402,15 @@ class _StepIntro extends StatelessWidget {
         Text(
           title,
           style: context.bodyDefaultMedium.copyWith(
-            fontSize: GSFontScale.sf06,
+            fontSize: GSFontScale.sf05,
             fontWeight: FontWeight.w700,
             color: GSColorTokens.textPrimary,
           ),
         ),
-        const SizedBox(height: GSSpacing.$50),
+        const SizedBox(height: GSSpacing.$25),
         Text(
           description,
-          style: context.bodyDefaultSmall.copyWith(
+          style: context.captionDefault.copyWith(
             color: GSColorTokens.textSecondary,
           ),
         ),

@@ -112,7 +112,7 @@ class GSTextField extends StatelessWidget {
               ),
           cursorColor: GSColorTokens.textAccent,
           decoration: InputDecoration(
-            labelStyle: TextStyle(color: GSColorTokens.textPrimary),
+            labelStyle: context.captionDefault.copyWith(color: GSColorTokens.textPrimary),
             floatingLabelStyle: WidgetStateTextStyle.resolveWith((states) {
               return context.bodyDefaultSmall.copyWith(
                 color: states.contains(WidgetState.focused)
