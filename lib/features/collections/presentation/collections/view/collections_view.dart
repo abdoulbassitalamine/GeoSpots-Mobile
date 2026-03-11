@@ -23,6 +23,22 @@ class CollectionsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      collectionsViewModelProvider.select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref.read(collectionsViewModelProvider.notifier).consumeSnackbar();
+        });
+      },
+    );
+
     final authenticationStatus = ref.watch(authGuardProvider);
     final isAuthenticated =
         authenticationStatus is AuthenticationStatusAuthenticated;

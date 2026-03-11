@@ -10,9 +10,7 @@ class AddSharedAccessValidators {
   static final urlValidators = Validators(
     validators: [_requiredValidator, _urlValidator],
   );
-  static final tokenValidators = Validators(
-    validators: [_requiredValidator],
-  );
+  static final tokenValidators = Validators(validators: [_requiredValidator]);
 
   static void setupMessages() {
     _requiredValidator.withErrorMessage('Champ requis');
@@ -63,6 +61,8 @@ class AddSharedAccessValidators {
       error.value = null;
       return;
     }
-    error.value = validators.executeWithPriorityMessage(controller.text).message;
+    error.value = validators
+        .executeWithPriorityMessage(controller.text)
+        .message;
   }
 }

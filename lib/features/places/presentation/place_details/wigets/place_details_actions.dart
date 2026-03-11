@@ -134,10 +134,14 @@ class _SecondaryActionsRow extends ConsumerWidget {
               );
 
               if (confirmed ?? false) {
-                await ref
+                final deleted = await ref
                     .read(placeDetailsViewModelProvider(placeId).notifier)
                     .deletePlace();
-                if (context.mounted) {
+                if (deleted && context.mounted) {
+                  GSScaffoldSnackbar.showSuccess(
+                    context,
+                    message: 'Lieu supprimé',
+                  );
                   Navigator.of(context).pop();
                 }
               }

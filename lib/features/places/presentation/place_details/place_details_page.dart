@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'view/place_details_view.dart';
 
 class PlaceDetailsPage extends ConsumerWidget {
-
   const PlaceDetailsPage({
     super.key,
     required this.placeId,

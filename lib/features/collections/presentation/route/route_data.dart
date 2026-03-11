@@ -43,4 +43,6 @@ class CollectionDetailsRouteData extends GoRouteData
   }
 }
 
-final collectionsRoutesProvider = Provider<RouteBase>((ref) => $appRoutes.first);
+final collectionsRoutesProvider = Provider<RouteBase>(
+  (ref) => $appRoutes.first,
+);

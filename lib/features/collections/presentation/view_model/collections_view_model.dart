@@ -13,6 +13,7 @@ import 'package:geo_spots/features/collections/domain/enums/share_resource_type.
 import 'package:geo_spots/features/collections/domain/use_cases/collections_use_cases.dart';
 import 'package:geo_spots/features/collections/domain/use_cases/export_collection_use_case.dart';
 import 'package:geo_spots/features/collections/domain/use_cases/import_collection_use_case.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
@@ -118,11 +119,16 @@ class CollectionsViewModel extends _$CollectionsViewModel {
             : CollectionsTab.sharedWithMe,
         isLoading: false,
         error: null,
+        snackbarMessage: null,
       );
     } on Exception {
       state = state.copyWith(
         isLoading: false,
         error: 'Erreur lors du chargement des collections',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Erreur lors du chargement des collections',
+          type: GSSnackbarType.error,
+        ),
       );
     }
   }
@@ -159,6 +165,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         state = state.copyWith(
           isExporting: false,
           error: 'Erreur lors de l\'export',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors de l\'export de la collection',
+            type: GSSnackbarType.error,
+          ),
         );
     }
   }
@@ -184,6 +194,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       state = state.copyWith(
         isImporting: false,
         error: 'Impossible de lire le fichier',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Impossible de lire le fichier sélectionné',
+          type: GSSnackbarType.error,
+        ),
       );
       return;
     }
@@ -193,6 +207,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       state = state.copyWith(
         isImporting: false,
         error: 'Format non supporté. Utilisez uniquement: .gpx, .kml, .geojson',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Format non supporté. Utilisez .gpx, .kml ou .geojson',
+          type: GSSnackbarType.warning,
+        ),
       );
       return;
     }
@@ -211,15 +229,31 @@ class CollectionsViewModel extends _$CollectionsViewModel {
             error:
                 'Import partiel: ${value.imported} importé(s), ${value.skipped} ignoré(s).',
             isImporting: false,
+            snackbarMessage: GSSnackbarMessage(
+              message:
+                  'Import partiel: ${value.imported} importé(s), ${value.skipped} ignoré(s).',
+              type: GSSnackbarType.warning,
+            ),
           );
           return;
         }
 
-        state = state.copyWith(isImporting: false);
+        state = state.copyWith(
+          isImporting: false,
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Collection importée avec succès',
+            type: GSSnackbarType.success,
+            presentation: GSSnackbarPresentation.scaffold,
+          ),
+        );
       case Err(error: final error):
         state = state.copyWith(
           isImporting: false,
           error: 'Erreur lors de l\'import: $error',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors de l\'import de la collection',
+            type: GSSnackbarType.error,
+          ),
         );
     }
   }
@@ -258,10 +292,21 @@ class CollectionsViewModel extends _$CollectionsViewModel {
           case Err():
             state = state.copyWith(
               error: 'Erreur lors du rafraîchissement des tokens',
+              snackbarMessage: const GSSnackbarMessage(
+                message:
+                    'Collection partagée, mais la liste n\'a pas pu être rafraîchie',
+                type: GSSnackbarType.warning,
+              ),
             );
         }
       case Err(error: final error):
-        state = state.copyWith(error: 'Erreur lors du partage: $error');
+        state = state.copyWith(
+          error: 'Erreur lors du partage: $error',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors du partage de la collection',
+            type: GSSnackbarType.error,
+          ),
+        );
     }
   }
 
@@ -306,6 +351,11 @@ class CollectionsViewModel extends _$CollectionsViewModel {
       sharedCollections:
           (sharedCollectionsResult as Ok<List<CollectionEntity>>).value,
       selectedTab: CollectionsTab.sharedWithMe,
+      snackbarMessage: const GSSnackbarMessage(
+        message: 'Accès partagé ajouté',
+        type: GSSnackbarType.success,
+        presentation: GSSnackbarPresentation.scaffold,
+      ),
     );
     return true;
   }
@@ -342,6 +392,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
           (sharedTokensResult as Ok<List<SharedAccessTokenEntity>>).value,
       sharedCollections:
           (sharedCollectionsResult as Ok<List<CollectionEntity>>).value,
+      snackbarMessage: const GSSnackbarMessage(
+        message: 'Accès partagé retiré',
+        presentation: GSSnackbarPresentation.scaffold,
+      ),
     );
     if (ref.read(activeSharedAccessTokenProvider) == token) {
       ref.read(activeSharedAccessTokenProvider.notifier).token = null;
@@ -367,6 +421,10 @@ class CollectionsViewModel extends _$CollectionsViewModel {
         state = state.copyWith(
           isRevokingSharedAccess: false,
           ownedShareTokens: ownedShareTokens,
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Lien de partage révoqué',
+            presentation: GSSnackbarPresentation.scaffold,
+          ),
         );
       case Err():
         state = state.copyWith(
@@ -379,6 +437,12 @@ class CollectionsViewModel extends _$CollectionsViewModel {
   void clearError() {
     if (state.error != null) {
       state = state.copyWith(error: null);
+    }
+  }
+
+  void consumeSnackbar() {
+    if (state.snackbarMessage != null) {
+      state = state.copyWith(snackbarMessage: null);
     }
   }
 

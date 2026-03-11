@@ -3,7 +3,6 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceListItem extends StatelessWidget {
-
   const PlaceListItem({super.key, required this.place, required this.onTap});
   final PlaceEntity place;
   final VoidCallback onTap;

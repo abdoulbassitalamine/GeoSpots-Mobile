@@ -26,6 +26,11 @@ abstract class RouteNames {
   static const String forgotPassword = '/forgot-password';
   static const String forgotPasswordName = 'forgot-password';
 
+  // Tracking routes
+  static const String liveLocation = '/live-location/:$liveLocationTokenParam';
+  static const String liveLocationName = 'live-location';
+  static const String liveLocationTokenParam = 'token';
+
   // Places routes
   static const String places = '/places';
   static const String placesName = 'places';

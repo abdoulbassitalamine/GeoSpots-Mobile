@@ -3,7 +3,6 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceDetailsHeader extends StatelessWidget {
-
   const PlaceDetailsHeader({super.key, required this.place});
   final PlaceEntity place;
 
@@ -14,9 +13,7 @@ class PlaceDetailsHeader extends StatelessWidget {
       pinned: true,
       backgroundColor: GSColors.primary600,
       leading: const _HeaderLeading(),
-      actions: const [
-        _HeaderActions(),
-      ],
+      actions: const [_HeaderActions()],
       flexibleSpace: FlexibleSpaceBar(
         background: _HeaderBackground(imageUrl: place.imageUrl),
       ),
@@ -63,7 +60,6 @@ class _HeaderActions extends StatelessWidget {
 }
 
 class _HeaderBackground extends StatelessWidget {
-
   const _HeaderBackground({this.imageUrl});
   final String? imageUrl;
 

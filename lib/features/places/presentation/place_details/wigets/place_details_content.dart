@@ -3,7 +3,6 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../domain/entity/place_entity.dart';
 
 class PlaceDetailsContent extends StatelessWidget {
-
   const PlaceDetailsContent({super.key, required this.place});
   final PlaceEntity place;
 
@@ -37,12 +36,7 @@ class PlaceDetailsContent extends StatelessWidget {
 }
 
 class _PlaceHeader extends StatelessWidget {
-
-  const _PlaceHeader({
-    required this.title,
-    this.city,
-    this.country,
-  });
+  const _PlaceHeader({required this.title, this.city, this.country});
   final String title;
   final String? city;
   final String? country;
@@ -87,7 +81,6 @@ class _PlaceHeader extends StatelessWidget {
 }
 
 class _PlaceTags extends StatelessWidget {
-
   const _PlaceTags({required this.tags});
   final List<String> tags;
 
@@ -102,7 +95,6 @@ class _PlaceTags extends StatelessWidget {
 }
 
 class _TagChip extends StatelessWidget {
-
   const _TagChip({required this.tag});
   final String tag;
 
@@ -133,7 +125,6 @@ class _TagChip extends StatelessWidget {
 }
 
 class _PlaceDescription extends StatelessWidget {
-
   const _PlaceDescription({required this.description});
   final String description;
 
@@ -162,7 +153,6 @@ class _PlaceDescription extends StatelessWidget {
 }
 
 class _PlaceMetaInfo extends StatelessWidget {
-
   const _PlaceMetaInfo({required this.date});
   final String date;
 
@@ -170,11 +160,7 @@ class _PlaceMetaInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(
-          Icons.calendar_today,
-          size: 16,
-          color: GSColors.neutral500,
-        ),
+        const Icon(Icons.calendar_today, size: 16, color: GSColors.neutral500),
         const SizedBox(width: GSSpacing.xs),
         Text(
           date,

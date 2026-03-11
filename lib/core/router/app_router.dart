@@ -5,6 +5,7 @@ import 'package:geo_spots/features/collections/presentation/route/route_data.dar
 import 'package:geo_spots/features/map/presentation/route/route_data.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:geo_spots/features/settings/presentation/route/route_data.dart';
+import 'package:geo_spots/features/tracking/presentation/route/route_data.dart';
 import 'package:geo_spots/features/welcome/presentation/route/route_data.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -116,6 +117,9 @@ GoRouter appRouter(Ref ref) {
       ...ref.read(authenticationRoutesProvider),
 
       ...ref.read(placesRoutesProvider),
+
+      // Tracking routes (live location viewer)
+      ...ref.read(trackingRoutesProvider),
 
       ...$appRoutes,
     ],

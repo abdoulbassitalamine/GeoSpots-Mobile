@@ -14,6 +14,22 @@ class PlacesListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      placesListViewModelProvider.select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref.read(placesListViewModelProvider.notifier).consumeSnackbar();
+        });
+      },
+    );
+
     final state = ref.watch(placesListViewModelProvider);
     final viewModel = ref.read(placesListViewModelProvider.notifier);
 
@@ -38,7 +54,7 @@ class PlacesListView extends ConsumerWidget {
       return const Center(child: GSCircularLoader());
     }
 
-    if (state.errorMessage != null) {
+    if (state.errorMessage != null && state.places.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(GSSpacing.xl3),

@@ -8,12 +8,31 @@ import 'widgets/upsert_place_location_step.dart';
 import 'widgets/upsert_place_progress_indicator.dart';
 
 class UpsertPlacePage extends HookConsumerWidget {
-
   const UpsertPlacePage({super.key, required this.placeId});
   final String placeId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      upsertPlaceViewModelProvider(
+        placeId,
+      ).select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref
+              .read(upsertPlaceViewModelProvider(placeId).notifier)
+              .consumeSnackbar();
+        });
+      },
+    );
+
     final currentStep = useState(0);
     final state = ref.watch(upsertPlaceViewModelProvider(placeId));
     final viewModel = ref.read(upsertPlaceViewModelProvider(placeId).notifier);
@@ -22,6 +41,24 @@ class UpsertPlacePage extends HookConsumerWidget {
       return GSScaffold(
         backgroundColor: GSColorTokens.backgroundPrimary,
         body: Center(child: GSCircularLoader()),
+      );
+    }
+
+    if (state.loadErrorMessage != null) {
+      return GSScaffold(
+        backgroundColor: GSColorTokens.backgroundPrimary,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(GSSpacing.xl3),
+            child: Text(
+              state.loadErrorMessage!,
+              textAlign: TextAlign.center,
+              style: GSTypography.bodyDefaultLarge.copyWith(
+                color: GSColors.danger600,
+              ),
+            ),
+          ),
+        ),
       );
     }
 
@@ -63,7 +100,6 @@ class UpsertPlacePage extends HookConsumerWidget {
 }
 
 class _UpsertPlaceHeader extends StatelessWidget {
-
   const _UpsertPlaceHeader({
     required this.currentStep,
     required this.isEditMode,
@@ -125,7 +161,6 @@ class _UpsertPlaceHeader extends StatelessWidget {
 }
 
 class _UpsertPlaceBottomActions extends ConsumerWidget {
-
   const _UpsertPlaceBottomActions({
     required this.currentStep,
     required this.totalSteps,
@@ -164,8 +199,14 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
                   ? GSFilledButton(
                       enabled: viewModel.isStep1Valid,
                       onPressed: () async {
-                        await viewModel.savePlace();
-                        if (context.mounted && state.errorMessage == null) {
+                        final isSaved = await viewModel.savePlace();
+                        if (isSaved && context.mounted) {
+                          GSScaffoldSnackbar.showSuccess(
+                            context,
+                            message: state.isEditMode
+                                ? 'Lieu mis à jour'
+                                : 'Lieu créé',
+                          );
                           Navigator.of(context).pop();
                         }
                       },

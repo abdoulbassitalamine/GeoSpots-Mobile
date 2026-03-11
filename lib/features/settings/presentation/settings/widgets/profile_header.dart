@@ -3,7 +3,6 @@ import '../../../../../shared/design_system/design_system.dart';
 import '../../../../authentication/domain/entity/user/user_entity.dart';
 
 class ProfileHeader extends StatelessWidget {
-
   const ProfileHeader({super.key, required this.user});
   final UserEntity user;
 

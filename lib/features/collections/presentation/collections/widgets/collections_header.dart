@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../../../shared/design_system/design_system.dart';
 
 class CollectionsHeader extends StatelessWidget {
-
   const CollectionsHeader({
     super.key,
     required this.title,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geo_spots/features/authentication/domain/entity/authentication_status/authentication_status.dart';
 import 'package:geo_spots/features/authentication/domain/navigator/authentication_notifier.dart';
 import 'package:geo_spots/features/authentication/presentation/route/route_data.dart';
+import 'package:geo_spots/features/tracking/presentation/views/location_sharing_bottom_sheet.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../../shared/design_system/design_system.dart';
@@ -17,6 +18,22 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      profileViewModelProvider.select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref.read(profileViewModelProvider.notifier).consumeSnackbar();
+        });
+      },
+    );
+
     final authStatus = ref.watch(authGuardProvider);
     final isAuthenticated = authStatus is AuthenticationStatusAuthenticated;
     if (!isAuthenticated) {
@@ -75,6 +92,37 @@ class SettingsView extends ConsumerWidget {
                         ref
                             .read(profileViewModelProvider.notifier)
                             .toggleTracking(value);
+                      },
+                      isSharing: state.isSharing,
+                      isSharingLoading: state.isSharingLoading,
+                      activeShareSession: state.activeShareSession,
+                      onStartSharing: () async {
+                        final session = await ref
+                            .read(profileViewModelProvider.notifier)
+                            .startSharing();
+                        if (session != null && context.mounted) {
+                          await LocationSharingBottomSheet.show(
+                            context,
+                            session: session,
+                            onStop: () => ref
+                                .read(profileViewModelProvider.notifier)
+                                .stopSharing(),
+                          );
+                        }
+                      },
+                      onStopSharing: () => ref
+                          .read(profileViewModelProvider.notifier)
+                          .stopSharing(),
+                      onShowSession: () {
+                        final session = state.activeShareSession;
+                        if (session == null) return;
+                        LocationSharingBottomSheet.show(
+                          context,
+                          session: session,
+                          onStop: () => ref
+                              .read(profileViewModelProvider.notifier)
+                              .stopSharing(),
+                        );
                       },
                     ),
                   ],

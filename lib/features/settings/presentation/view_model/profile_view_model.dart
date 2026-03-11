@@ -5,7 +5,9 @@ import 'package:geo_spots/features/authentication/domain/use_case/me_stats_use_c
 import 'package:geo_spots/features/authentication/domain/use_case/me_use_case.dart';
 import 'package:geo_spots/features/authentication/presentation/view_model/authentication_view_model.dart';
 import 'package:geo_spots/features/tracking/data/services/location_tracking_service.dart';
+import 'package:geo_spots/features/tracking/domain/entity/location_share_session_entity.dart';
 import 'package:geo_spots/features/tracking/domain/use_case/tracking_use_cases.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'profile_state.dart';
@@ -92,6 +94,7 @@ class ProfileViewModel extends _$ProfileViewModel {
       sharedPlaces: stats.sharedCollectionCount,
       isTrackingEnabled: trackingEnabled,
       isLoading: false,
+      snackbarMessage: null,
     );
   }
 
@@ -112,7 +115,10 @@ class ProfileViewModel extends _$ProfileViewModel {
         stackTrace,
       );
       state = state.copyWith(
-        errorMessage: 'Erreur lors de la mise à jour du tracking',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Erreur lors de la mise à jour du suivi',
+          type: GSSnackbarType.error,
+        ),
       );
       return;
     }
@@ -127,7 +133,15 @@ class ProfileViewModel extends _$ProfileViewModel {
       if (!ref.mounted) {
         return;
       }
-      state = state.copyWith(isTrackingEnabled: value);
+      state = state.copyWith(
+        isTrackingEnabled: value,
+        snackbarMessage: GSSnackbarMessage(
+          message: value
+              ? 'Suivi de position activé'
+              : 'Suivi de position désactivé',
+          presentation: GSSnackbarPresentation.scaffold,
+        ),
+      );
     } on Exception catch (error, stackTrace) {
       GsLogger().e(
         '[ProfileViewModel] toggleTracking -> tracking service failed',
@@ -138,9 +152,75 @@ class ProfileViewModel extends _$ProfileViewModel {
         return;
       }
       state = state.copyWith(
-        errorMessage: 'Erreur lors de la mise à jour du tracking',
+        snackbarMessage: const GSSnackbarMessage(
+          message: 'Erreur lors de la mise à jour du suivi',
+          type: GSSnackbarType.error,
+        ),
       );
     }
+  }
+
+  Future<LocationShareSessionEntity?> startSharing() async {
+    state = state.copyWith(isSharingLoading: true, errorMessage: null);
+    final startLocationSharing = ref.read(startLocationSharingUseCaseProvider);
+    final result = await startLocationSharing();
+
+    if (!ref.mounted) return null;
+
+    switch (result) {
+      case Ok(value: final session):
+        state = state.copyWith(
+          isSharing: true,
+          isSharingLoading: false,
+          activeShareSession: session,
+        );
+        return session;
+      case Err(error: final error, stackTrace: final stackTrace):
+        GsLogger().e(
+          '[ProfileViewModel] startSharing failed',
+          error,
+          stackTrace,
+        );
+        state = state.copyWith(
+          isSharingLoading: false,
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors du démarrage du partage en direct',
+            type: GSSnackbarType.error,
+          ),
+        );
+        return null;
+    }
+  }
+
+  Future<void> stopSharing() async {
+    final stopLocationSharing = ref.read(stopLocationSharingUseCaseProvider);
+    final result = await stopLocationSharing();
+
+    if (!ref.mounted) return;
+
+    if (result case Err(error: final error, stackTrace: final stackTrace)) {
+      GsLogger().e('[ProfileViewModel] stopSharing failed', error, stackTrace);
+      state = state.copyWith(
+        snackbarMessage: const GSSnackbarMessage(
+          message:
+              'Le partage a été arrêté localement, mais la session distante n\'a pas pu être fermée',
+          type: GSSnackbarType.warning,
+        ),
+      );
+    }
+
+    // Reset sharing state regardless of error (best-effort stop)
+    state = state.copyWith(
+      isSharing: false,
+      isSharingLoading: false,
+      activeShareSession: null,
+      snackbarMessage: result is Ok<void>
+          ? const GSSnackbarMessage(
+              message: 'Partage en direct arrêté',
+              presentation: GSSnackbarPresentation.scaffold,
+            )
+          : state.snackbarMessage,
+    );
   }
 
   Future<void> logout() async {
@@ -149,5 +229,11 @@ class ProfileViewModel extends _$ProfileViewModel {
 
   Future<void> refresh() async {
     await _loadProfile();
+  }
+
+  void consumeSnackbar() {
+    if (state.snackbarMessage != null) {
+      state = state.copyWith(snackbarMessage: null);
+    }
   }
 }

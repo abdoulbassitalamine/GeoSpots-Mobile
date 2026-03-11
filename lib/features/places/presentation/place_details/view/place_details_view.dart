@@ -9,7 +9,6 @@ import '../wigets/place_details_content.dart';
 import '../wigets/place_details_header.dart';
 
 class PlaceDetailsView extends ConsumerWidget {
-
   const PlaceDetailsView({
     super.key,
     required this.placeId,
@@ -20,6 +19,26 @@ class PlaceDetailsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(
+      placeDetailsViewModelProvider(
+        placeId,
+      ).select((state) => state.snackbarMessage),
+      (previous, next) {
+        if (next == null || previous == next) {
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!context.mounted) {
+            return;
+          }
+          next.show(context);
+          ref
+              .read(placeDetailsViewModelProvider(placeId).notifier)
+              .consumeSnackbar();
+        });
+      },
+    );
+
     final state = ref.watch(placeDetailsViewModelProvider(placeId));
     final activeAccessRight = ref.watch(activeCollectionAccessRightProvider);
     final effectiveReadOnly =
@@ -29,7 +48,7 @@ class PlaceDetailsView extends ConsumerWidget {
       return const Center(child: GSCircularLoader());
     }
 
-    if (state.errorMessage != null) {
+    if (state.loadErrorMessage != null) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(GSSpacing.xl3),
@@ -43,7 +62,7 @@ class PlaceDetailsView extends ConsumerWidget {
               ),
               const SizedBox(height: GSSpacing.xl),
               Text(
-                state.errorMessage!,
+                state.loadErrorMessage!,
                 style: GSTypography.bodyDefaultLarge.copyWith(
                   color: GSColors.danger600,
                 ),

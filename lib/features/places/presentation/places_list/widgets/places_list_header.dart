@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class PlacesListHeader extends StatelessWidget {
-
   const PlacesListHeader({
     super.key,
     required this.title,

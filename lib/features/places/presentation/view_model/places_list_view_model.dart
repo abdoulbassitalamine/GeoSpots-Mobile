@@ -1,4 +1,5 @@
 import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../domain/use_case/places_use_cases.dart';
 import 'places_list_state.dart';
@@ -34,6 +35,10 @@ class PlacesListViewModel extends _$PlacesListViewModel {
         state = state.copyWith(
           isLoading: false,
           errorMessage: 'Erreur lors du chargement des lieux',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors du chargement des lieux',
+            type: GSSnackbarType.error,
+          ),
         );
     }
   }
@@ -46,11 +51,18 @@ class PlacesListViewModel extends _$PlacesListViewModel {
 
     switch (result) {
       case Ok(value: final places):
-        state = state.copyWith(places: places, isLoading: false);
+        state = state.copyWith(
+          places: places,
+          isLoading: false,
+          errorMessage: null,
+        );
       case Err():
         state = state.copyWith(
           isLoading: false,
-          errorMessage: 'Erreur lors de la recherche',
+          snackbarMessage: const GSSnackbarMessage(
+            message: 'Erreur lors de la recherche',
+            type: GSSnackbarType.error,
+          ),
         );
     }
   }
@@ -58,5 +70,11 @@ class PlacesListViewModel extends _$PlacesListViewModel {
   void clearSearch() {
     state = state.copyWith(searchQuery: '');
     loadPlaces(tag: state.selectedTag);
+  }
+
+  void consumeSnackbar() {
+    if (state.snackbarMessage != null) {
+      state = state.copyWith(snackbarMessage: null);
+    }
   }
 }

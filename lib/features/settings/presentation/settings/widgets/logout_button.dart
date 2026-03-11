@@ -44,8 +44,8 @@ class LogoutButton extends ConsumerWidget {
             onPressed: () async {
               Navigator.of(context).pop();
               await ref.read(profileViewModelProvider.notifier).logout();
-              if(context.mounted) {
-               //const SignInRouteData().go(context);
+              if (context.mounted) {
+                //const SignInRouteData().go(context);
               }
             },
             style: TextButton.styleFrom(foregroundColor: GSColors.danger600),

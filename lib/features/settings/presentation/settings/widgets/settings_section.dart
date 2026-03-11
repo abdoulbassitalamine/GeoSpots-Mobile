@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../../shared/design_system/design_system.dart';
 
 class SettingsSection extends StatelessWidget {
-
   const SettingsSection({
     super.key,
     required this.title,
@@ -17,7 +16,10 @@ class SettingsSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: GSSpacing.s, bottom: GSSpacing.l),
+          padding: const EdgeInsets.only(
+            left: GSSpacing.s,
+            bottom: GSSpacing.l,
+          ),
           child: Text(
             title,
             style: GSTypography.bodyAccentMedium.copyWith(
