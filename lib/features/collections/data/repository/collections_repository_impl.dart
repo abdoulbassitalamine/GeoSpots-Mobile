@@ -420,7 +420,15 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     String resourceId,
   ) {
     return ShareResourceType.fromRaw(token.resourceType) == resourceType &&
-        token.resourceId == resourceId;
+        _extractResourceId(token.resourceId) == resourceId;
+  }
+
+  /// Extracts the last non-empty path segment from a resourceId that may be
+  /// stored as a URL path (e.g. "/api/collections/1" → "1") or a plain id.
+  String _extractResourceId(String resourceId) {
+    return resourceId
+            .split('/')
+            .lastWhere((s) => s.isNotEmpty, orElse: () => resourceId);
   }
 
   String _resolveCollectionId(CollectionEntity collection) {

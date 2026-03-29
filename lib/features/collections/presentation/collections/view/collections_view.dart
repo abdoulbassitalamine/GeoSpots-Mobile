@@ -68,7 +68,7 @@ class CollectionsView extends ConsumerWidget {
           token.resourceId.isEmpty) {
         continue;
       }
-      sharedTokensByCollection[token.resourceId] = token;
+      sharedTokensByCollection[_extractResourceId(token.resourceId)] = token;
     }
     final sharedByMeCollections = state.ownedCollections
         .where(
@@ -201,4 +201,10 @@ class CollectionsView extends ConsumerWidget {
 
 void _showAddSharedAccessDialog(BuildContext context) {
   const AddSharedAccessRouteData().push<void>(context);
+}
+
+String _extractResourceId(String resourceId) {
+  return resourceId
+      .split('/')
+      .lastWhere((segment) => segment.isNotEmpty, orElse: () => resourceId);
 }

@@ -45,6 +45,9 @@ class PlaceDetailsView extends ConsumerWidget {
     final activeSharedToken = ref.watch(activeSharedAccessTokenProvider);
     final effectiveReadOnly =
         readOnly || activeAccessRight == ShareAccessRight.read;
+    final isSharedContext =
+        activeAccessRight != null ||
+        (activeSharedToken != null && activeSharedToken.isNotEmpty);
     final useSharedImageToken =
         activeAccessRight != null ||
         (activeSharedToken != null && activeSharedToken.isNotEmpty);
@@ -57,6 +60,7 @@ class PlaceDetailsView extends ConsumerWidget {
             place: state.place!,
             onBack: () => Navigator.of(context).pop(popResult),
             useSharedImageToken: useSharedImageToken,
+            isReadOnly: effectiveReadOnly,
           )
         else
           PlaceDetailsFallbackHeader(
@@ -99,6 +103,7 @@ class PlaceDetailsView extends ConsumerWidget {
                     place: state.place!,
                     placeId: placeId,
                     readOnly: effectiveReadOnly,
+                    showShareAction: !isSharedContext,
                   ),
                   const SizedBox(height: GSSpacing.xl3),
                 ],

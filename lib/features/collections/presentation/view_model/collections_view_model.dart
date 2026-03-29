@@ -518,11 +518,19 @@ class CollectionsViewModel extends _$CollectionsViewModel {
     for (final token in state.sharedTokens) {
       if (ShareResourceType.fromRaw(token.resourceType) ==
               ShareResourceType.collection &&
-          token.resourceId == collectionId) {
+          _extractResourceId(token.resourceId) == collectionId) {
         return token;
       }
     }
     return null;
+  }
+
+  /// Extracts the last non-empty path segment from a resourceId that may be
+  /// stored as a URL path (e.g. "/api/collections/1" → "1") or a plain id.
+  String _extractResourceId(String resourceId) {
+    return resourceId
+        .split('/')
+        .lastWhere((s) => s.isNotEmpty, orElse: () => resourceId);
   }
 
   T _requireOk<T>(Result<T> result) {

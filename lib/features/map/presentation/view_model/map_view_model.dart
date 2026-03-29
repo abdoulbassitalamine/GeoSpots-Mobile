@@ -104,7 +104,8 @@ class MapViewModel extends _$MapViewModel {
             token.resourceId.isEmpty) {
           continue;
         }
-        sharedTokenByCollectionId[token.resourceId] = token.token;
+        sharedTokenByCollectionId[_extractResourceId(token.resourceId)] =
+            token.token;
       }
 
       final placesResults = await Future.wait(
@@ -217,6 +218,12 @@ class MapViewModel extends _$MapViewModel {
     }
     final sorted = tags.toList()..sort();
     return ['Tous', ...sorted];
+  }
+
+  String _extractResourceId(String resourceId) {
+    return resourceId
+        .split('/')
+        .lastWhere((segment) => segment.isNotEmpty, orElse: () => resourceId);
   }
 
   List<PlaceEntity> _filterPlaces({
