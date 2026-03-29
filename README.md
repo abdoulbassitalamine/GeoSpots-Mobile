@@ -112,38 +112,43 @@ ou
 API_BASE_URL=http://127.0.0.1:9090
 ```
 
-
-
 Si vous utilisez un appareil physique, le backend doit ecouter sur `0.0.0.0` et non seulement sur `127.0.0.1`.
 
-## Generation des fichiers
+## Generation des fichiers (etape obligatoire)
 
-Le projet utilise de la generation de code pour plusieurs couches :
+> **Important** : les fichiers generes (`*.g.dart`, `*.freezed.dart`) ne sont **pas inclus dans le code source**. Ils doivent etre generes avant le premier lancement. Sans cette etape, le projet ne compile pas.
 
-- Riverpod
-- Freezed
-- Json Serializable
-- Go Router Builder
-- FlutterGen
+Le projet utilise la generation de code pour 4 librairies :
 
-Commande recommandee :
+| Librairie | Fichiers generes | Role |
+| --- | --- | --- |
+| **Freezed** | `*.freezed.dart` | Entites immuables : `copyWith`, `==`, `hashCode`, pattern union |
+| **Riverpod Generator** | `*.g.dart` (providers) | Providers type-safe a partir des annotations `@riverpod` |
+| **Go Router Builder** | `app_router.g.dart` | Routes de navigation type-safe |
+| **JSON Serializable** | `*.g.dart` (DTOs) | Serialisation / deserialisation JSON des DTOs |
+
+### Generer une seule fois (build)
 
 ```bash
+flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-Si vous modifiez souvent les models, routes ou providers, vous pouvez aussi utiliser :
+### Mode watch (developpement actif)
+
+Si vous modifiez des models, providers ou routes, utilisez le mode watch pour regenerer automatiquement a chaque sauvegarde :
 
 ```bash
 dart run build_runner watch --delete-conflicting-outputs
 ```
 
-Cas typiques ou il faut regenerer :
+### Quand regenerer ?
 
-- ajout ou modification d'un model `@freezed`
-- ajout ou modification d'un provider `@riverpod`
-- ajout ou modification d'une route generee
-- ajout de DTO JSON ou changement de serialisation
+- apres un `git clone` ou `git pull` (toujours)
+- apres ajout ou modification d'un model `@freezed`
+- apres ajout ou modification d'un provider `@riverpod`
+- apres ajout ou modification d'une route
+- apres modification d'un DTO avec `@JsonSerializable`
 
 ## Lancer l'application
 
