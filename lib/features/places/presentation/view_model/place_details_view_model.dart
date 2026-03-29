@@ -1,5 +1,6 @@
 import 'package:geo_spots/core/state/app_data_sync.dart';
 import 'package:geo_spots/core/utils/result/result.dart';
+import 'package:geo_spots/features/collections/presentation/view_model/shared_access_session.dart';
 import 'package:geo_spots/shared/design_system/widgets/snackbar/snackbar.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
@@ -22,7 +23,11 @@ class PlaceDetailsViewModel extends _$PlaceDetailsViewModel {
     state = state.copyWith(isLoading: true, loadErrorMessage: null);
 
     final getPlaceById = ref.read(getPlaceByIdUseCaseProvider);
-    final result = await getPlaceById(placeId);
+    final sharedToken = ref.read(activeSharedAccessTokenProvider);
+    final result = await getPlaceById(
+      placeId,
+      token: sharedToken?.trim().isEmpty ?? true ? null : sharedToken?.trim(),
+    );
 
     switch (result) {
       case Ok(value: final remotePlace):

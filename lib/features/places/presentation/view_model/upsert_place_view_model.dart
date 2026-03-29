@@ -97,6 +97,35 @@ class UpsertPlaceViewModel extends _$UpsertPlaceViewModel {
     return state;
   }
 
+  void applyInitialDeepLinkData({
+    double? latitude,
+    double? longitude,
+    String? title,
+  }) {
+    if (state.isEditMode) {
+      return;
+    }
+
+    final normalizedTitle = title?.trim();
+    final hasTitle = normalizedTitle != null && normalizedTitle.isNotEmpty;
+    final hasCoordinates = latitude != null && longitude != null;
+
+    if (!hasTitle && !hasCoordinates) {
+      return;
+    }
+
+    state = state.copyWith(
+      title: hasTitle ? normalizedTitle : state.title,
+      position: hasCoordinates ? LatLng(latitude, longitude) : state.position,
+      manualLatitude: hasCoordinates
+          ? latitude.toStringAsFixed(6)
+          : state.manualLatitude,
+      manualLongitude: hasCoordinates
+          ? longitude.toStringAsFixed(6)
+          : state.manualLongitude,
+    );
+  }
+
   Future<void> reload() async {
     final placeId = state.placeId;
     if (!state.isEditMode || placeId == null) {

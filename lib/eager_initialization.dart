@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:geo_spots/core/services/deep_link_service.dart';
 import 'package:geo_spots/features/authentication/presentation/view_model/authentication_view_model.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
@@ -18,6 +19,7 @@ class _EagerInitializationState extends ConsumerState<EagerInitialization> {
   @override
   void initState() {
     super.initState();
+    ref.read(deepLinkServiceProvider);
     Future<void>.microtask(() async {
       await ref.read(authenticationViewModelProvider.notifier).autoSignIn();
       if (!mounted) {

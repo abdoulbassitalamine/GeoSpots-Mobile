@@ -11,11 +11,13 @@ class PlaceListItem extends ConsumerWidget {
     required this.place,
     required this.onTap,
     this.useSharedImageToken = false,
+    this.showShareAction = true,
   });
 
   final PlaceEntity place;
   final VoidCallback onTap;
   final bool useSharedImageToken;
+  final bool showShareAction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -132,12 +134,14 @@ class PlaceListItem extends ConsumerWidget {
                 onPressed: () =>
                     PlaceActionHandler.openDirections(context, place: place),
               ),
-              const SizedBox(width: GSSpacing.s),
-              _QuickActionButton(
-                icon: Icons.ios_share_outlined,
-                onPressed: () =>
-                    PlaceActionHandler.share(context, ref, place: place),
-              ),
+              if (showShareAction) ...[
+                const SizedBox(width: GSSpacing.s),
+                _QuickActionButton(
+                  icon: Icons.ios_share_outlined,
+                  onPressed: () =>
+                      PlaceActionHandler.share(context, ref, place: place),
+                ),
+              ],
             ],
           ),
         ],

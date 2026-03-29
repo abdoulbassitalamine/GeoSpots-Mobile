@@ -143,6 +143,7 @@ class CollectionDetailsView extends HookConsumerWidget {
                 child: PlaceListItem(
                   place: place,
                   useSharedImageToken: isSharedCollection,
+                  showShareAction: !isSharedCollection,
                   onTap: () async {
                     if (isSharedCollection) {
                       ref
@@ -183,11 +184,17 @@ class CollectionDetailsView extends HookConsumerWidget {
     String collectionId,
   ) {
     for (final token in state.sharedTokens) {
-      if (token.resourceId == collectionId) {
+      if (_extractResourceId(token.resourceId) == collectionId) {
         return token;
       }
     }
     return null;
+  }
+
+  String _extractResourceId(String resourceId) {
+    return resourceId
+        .split('/')
+        .lastWhere((s) => s.isNotEmpty, orElse: () => resourceId);
   }
 
   CollectionEntity? _findCollection(

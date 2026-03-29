@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
 
 import '../../../../../../shared/design_system/design_system.dart';
+import '../../form_helpers/add_shared_access_controllers.dart';
 import '../../form_helpers/add_shared_access_handlers.dart';
 import '../../form_helpers/add_shared_access_validators.dart';
+import '../../view_model/add_shared_access/add_shared_access_view_model.dart';
 import 'widgets/add_shared_access_header.dart';
 
 class AddSharedAccessView extends HookConsumerWidget {
@@ -13,32 +13,11 @@ class AddSharedAccessView extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final urlController = useTextEditingController();
-    final tokenController = useTextEditingController();
-    final urlFocusNode = useFocusNode();
-    final tokenFocusNode = useFocusNode();
-    final urlError = useState<String?>(null);
-    final tokenError = useState<String?>(null);
-    final isImporting = useState(false);
-    final submitError = useState<String?>(null);
+    final notifier = ref.watch(addSharedAccessViewModelProvider.notifier);
+    final controllers = AddSharedAccessControllers.initialize();
 
-    AddSharedAccessValidators.setupMessages();
-    AddSharedAccessValidators.setupFocusListeners(
-      urlController: urlController,
-      tokenController: tokenController,
-      urlFocusNode: urlFocusNode,
-      tokenFocusNode: tokenFocusNode,
-      urlError: urlError,
-      tokenError: tokenError,
-    );
-
-    final isFormValid =
-        AddSharedAccessValidators.urlValidators
-            .executeWithPriorityMessage(urlController.text)
-            .isValid &&
-        AddSharedAccessValidators.tokenValidators
-            .executeWithPriorityMessage(tokenController.text)
-            .isValid;
+    AddSharedAccessValidators.setupValidatorMessages(notifier);
+    AddSharedAccessValidators.setupAllFocusListeners(controllers, notifier);
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -56,26 +35,36 @@ class AddSharedAccessView extends HookConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   GSTextField(
-                    controller: urlController,
-                    focusNode: urlFocusNode,
-                    label: 'URL du service',
-                    placeholder: 'https://api.exemple.com',
-                    errorMessage: urlError.value,
-                    onValueChange: (_) => submitError.value = null,
+                    controller: controllers.urlController,
+                    focusNode: controllers.urlFocusNode,
+                    label: 'URL de la ressource',
+                    placeholder: 'http://serveur/api/collections/1',
+                    errorMessage: controllers.urlError.value,
+                    onValueChange: (value) {
+                      controllers.submitError.value = null;
+                      AddSharedAccessHandlers.onUrlChanged(value, ref, notifier);
+                    },
                   ),
                   const SizedBox(height: GSSpacing.xl),
                   GSTextField(
-                    controller: tokenController,
-                    focusNode: tokenFocusNode,
+                    controller: controllers.tokenController,
+                    focusNode: controllers.tokenFocusNode,
                     label: 'Token',
                     placeholder: 'Collez le token partagé',
-                    errorMessage: tokenError.value,
-                    onValueChange: (_) => submitError.value = null,
+                    errorMessage: controllers.tokenError.value,
+                    onValueChange: (value) {
+                      controllers.submitError.value = null;
+                      AddSharedAccessHandlers.onTokenChanged(
+                        value,
+                        ref,
+                        notifier,
+                      );
+                    },
                   ),
-                  if (submitError.value != null) ...[
+                  if (controllers.submitError.value != null) ...[
                     const SizedBox(height: GSSpacing.m),
                     Text(
-                      submitError.value!,
+                      controllers.submitError.value!,
                       style: GSTypography.bodyDefaultSmall.copyWith(
                         color: GSColors.danger600,
                       ),
@@ -92,21 +81,21 @@ class AddSharedAccessView extends HookConsumerWidget {
                 horizontal: GSSpacing.xl,
                 vertical: GSSpacing.l,
               ),
-              child: GSFilledButton(
-                text: 'Valider',
-                fullWidth: true,
-                enabled: (!isImporting.value && isFormValid),
-                onPressed:
-                    () => AddSharedAccessHandlers.onSubmit(
+              child: Consumer(
+                builder: (context, ref, _) {
+                  ref.watch(addSharedAccessViewModelProvider);
+                  return GSFilledButton(
+                    text: 'Valider',
+                    fullWidth: true,
+                    enabled: !controllers.isImporting.value && notifier.isFormValid,
+                    onPressed: () => AddSharedAccessHandlers.onSubmit(
                       ref: ref,
                       context: context,
-                      urlController: urlController,
-                      tokenController: tokenController,
-                      isImporting: isImporting,
-                      submitError: submitError,
-                      isFormValid: isFormValid,
+                      controllers: controllers,
                     ),
-                isLoading: isImporting.value,
+                    isLoading: controllers.isImporting.value,
+                  );
+                },
               ),
             ),
           ),

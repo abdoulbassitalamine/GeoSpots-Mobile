@@ -1,13 +1,19 @@
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
-import 'package:geo_spots/core/route_utils/route/router.dart';
+import 'package:geo_spots/core/router/app_router.dart';
 import 'package:geo_spots/features/places/presentation/route/route_data.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-final deepLinkServiceProvider = Provider<DeepLinkService>(DeepLinkService.new);
+final deepLinkServiceProvider = Provider<DeepLinkService>((ref) {
+  final service = DeepLinkService(ref);
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 class DeepLinkService {
   DeepLinkService(this.ref) {
@@ -38,30 +44,26 @@ class DeepLinkService {
 
     if (uri.scheme == kSchemeGeoSpots && uri.host == kHostPlace) {
       _handlePlaceLink(uri);
-    } else if (uri.scheme == kSchemeGeo) {
+    } else if (_supportsGeoScheme && uri.scheme == kSchemeGeo) {
       _handleGeoLink(uri);
     }
   }
 
   void _handlePlaceLink(Uri uri) {
-    final placeId = uri.queryParameters[kQueryId];
-    final context = rootNavigatorKey.currentContext;
-    if (context == null) return;
+    final placeId = uri.queryParameters[kQueryId]?.trim();
 
-    if (placeId != null) {
-      PlaceDetailsRouteData(placeId: placeId).push<void>(context);
+    if (placeId != null && placeId.isNotEmpty) {
+      _goTo(PlaceDetailsRouteData(placeId: placeId).location);
     } else {
-      final lat = uri.queryParameters[kQueryLat];
-      final lon = uri.queryParameters[kQueryLon];
+      final lat = double.tryParse(uri.queryParameters[kQueryLat] ?? '');
+      final lon = double.tryParse(uri.queryParameters[kQueryLon] ?? '');
 
       if (lat != null && lon != null) {
-        UpsertPlaceRouteData(
+        final route = UpsertPlaceRouteData(
           placeId: kPlaceCreationId,
-          $extra: {
-            kExtraLatitude: double.tryParse(lat),
-            kExtraLongitude: double.tryParse(lon),
-          },
-        ).push<void>(context);
+          $extra: {kExtraLatitude: lat, kExtraLongitude: lon},
+        );
+        _goTo(route.location, extra: route.$extra);
       }
     }
   }
@@ -69,24 +71,32 @@ class DeepLinkService {
   void _handleGeoLink(Uri uri) {
     final path = uri.path;
     final coords = path.split(',');
-    final context = rootNavigatorKey.currentContext;
-    if (context == null) return;
 
     if (coords.length >= 2) {
       final lat = double.tryParse(coords[0]);
       final lon = double.tryParse(coords[1]);
 
       if (lat != null && lon != null) {
-        UpsertPlaceRouteData(
+        final route = UpsertPlaceRouteData(
           placeId: kPlaceCreationId,
           $extra: {
             kExtraLatitude: lat,
             kExtraLongitude: lon,
-            kExtraTitle: uri.queryParameters['q'],
+            kExtraTitle: uri.queryParameters[kQueryQuery]?.trim(),
           },
-        ).push<void>(context);
+        );
+        _goTo(route.location, extra: route.$extra);
       }
     }
+  }
+
+  bool get _supportsGeoScheme =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+
+  void _goTo(String location, {Object? extra}) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(appRouterProvider).go(location, extra: extra);
+    });
   }
 
   void dispose() {

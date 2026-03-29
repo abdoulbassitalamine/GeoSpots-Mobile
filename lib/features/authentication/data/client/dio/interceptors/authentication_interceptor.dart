@@ -38,9 +38,10 @@ class AuthenticationInterceptor extends Interceptor {
     };
     final hasValidToken =
         authUserToken != null && authUserToken.isNotEmpty && tokenValidity;
+    final shouldSkipAuthorization = _shouldSkipAuthorization(options);
 
     GsLogger().d('**** METHOD ${options.method} : ${options.path}');
-    if (hasValidToken) {
+    if (hasValidToken && !shouldSkipAuthorization) {
       options.headers[_kAuthorizationHeader] = 'Bearer $authUserToken';
 
       if (options.data is! FormData) {
@@ -107,5 +108,11 @@ class AuthenticationInterceptor extends Interceptor {
       return false;
     }
     return value.toString().trim().isNotEmpty;
+  }
+
+  bool _shouldSkipAuthorization(RequestOptions options) {
+    final sharedQueryToken =
+        options.queryParameters[kAccessTokenQueryParam]?.toString().trim();
+    return sharedQueryToken != null && sharedQueryToken.isNotEmpty;
   }
 }

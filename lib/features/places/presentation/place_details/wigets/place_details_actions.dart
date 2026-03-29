@@ -13,14 +13,18 @@ class PlaceDetailsActions extends StatelessWidget {
     required this.place,
     required this.placeId,
     this.readOnly = false,
+    this.showShareAction = true,
   });
 
   final PlaceEntity place;
   final String placeId;
   final bool readOnly;
+  final bool showShareAction;
 
   @override
   Widget build(BuildContext context) {
+    final showSecondaryActions = showShareAction || !readOnly;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: GSSpacing.xl),
       child: GSPremiumPanel(
@@ -33,12 +37,15 @@ class PlaceDetailsActions extends StatelessWidget {
               place: place,
               readOnly: readOnly,
             ),
-            const SizedBox(height: GSSpacing.xl),
-            _SecondaryActionsRow(
-              placeId: placeId,
-              place: place,
-              readOnly: readOnly,
-            ),
+            if (showSecondaryActions) ...[
+              const SizedBox(height: GSSpacing.xl),
+              _SecondaryActionsRow(
+                placeId: placeId,
+                place: place,
+                readOnly: readOnly,
+                showShareAction: showShareAction,
+              ),
+            ],
           ],
         ),
       ),
@@ -59,43 +66,53 @@ class _PrimaryActionsRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      children: [
-        Expanded(
-          child: GSFilledButton(
-            text: 'Itinéraire',
-            icon: Icons.directions_outlined,
-            fullWidth: true,
-            onPressed: () =>
-                PlaceActionHandler.openDirections(context, place: place),
-          ),
-        ),
-        const SizedBox(width: GSSpacing.l),
-        Expanded(
-          child: readOnly
-              ? GSOutlinedButton(
-                  text: 'Lecture seule',
-                  icon: Icons.lock_outline,
-                  fullWidth: true,
-                  onPressed: () {},
-                )
-              : GSOutlinedButton(
-                  text: 'Modifier',
-                  icon: Icons.edit_outlined,
-                  fullWidth: true,
-                  onPressed: () async {
-                    final updated = await UpsertPlaceRouteData(
-                      placeId: placeId,
-                    ).push<bool>(context);
-                    if ((updated ?? false) && context.mounted) {
-                      await ref
-                          .read(placeDetailsViewModelProvider(placeId).notifier)
-                          .refreshAfterUpdate(placeId);
-                    }
-                  },
-                ),
-        ),
-      ],
+    final routeButton = GSFilledButton(
+      text: 'Itinéraire',
+      icon: Icons.directions_outlined,
+      fullWidth: true,
+      onPressed: () => PlaceActionHandler.openDirections(context, place: place),
+    );
+    if (readOnly) {
+      return routeButton;
+    }
+
+    final editionButton = GSOutlinedButton(
+      text: 'Modifier',
+      icon: Icons.edit_outlined,
+      fullWidth: true,
+      onPressed: () async {
+        final updated = await UpsertPlaceRouteData(
+          placeId: placeId,
+        ).push<bool>(context);
+        if ((updated ?? false) && context.mounted) {
+          await ref
+              .read(placeDetailsViewModelProvider(placeId).notifier)
+              .refreshAfterUpdate(placeId);
+        }
+      },
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final useVerticalLayout = constraints.maxWidth < 280;
+        if (useVerticalLayout) {
+          return Column(
+            children: [
+              routeButton,
+              const SizedBox(height: GSSpacing.l),
+              editionButton,
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: routeButton),
+            const SizedBox(width: GSSpacing.l),
+            Expanded(child: editionButton),
+          ],
+        );
+      },
     );
   }
 }
@@ -105,24 +122,28 @@ class _SecondaryActionsRow extends ConsumerWidget {
     required this.placeId,
     required this.place,
     required this.readOnly,
+    required this.showShareAction,
   });
 
   final String placeId;
   final bool readOnly;
   final PlaceEntity place;
+  final bool showShareAction;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final actions = <Widget>[
-      Expanded(
-        child: _ActionButton(
-          icon: Icons.share_outlined,
-          label: 'Partager',
-          onPressed: () => PlaceActionHandler.share(context, ref, place: place),
+      if (showShareAction)
+        Expanded(
+          child: _ActionButton(
+            icon: Icons.share_outlined,
+            label: 'Partager',
+            onPressed: () =>
+                PlaceActionHandler.share(context, ref, place: place),
+          ),
         ),
-      ),
-      if (!readOnly) ...[
-        const SizedBox(width: GSSpacing.s),
+      if (showShareAction && !readOnly) const SizedBox(width: GSSpacing.s),
+      if (!readOnly)
         Expanded(
           child: _ActionButton(
             icon: Icons.delete_outline,
@@ -149,7 +170,6 @@ class _SecondaryActionsRow extends ConsumerWidget {
             },
           ),
         ),
-      ],
     ];
 
     return Row(

@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:geo_spots/core/utils/extensions/sized_box_extension.dart';
 import 'package:geo_spots/core/utils/extensions/value_notifier_ext.dart';
 import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_in_controllers.dart';
 import 'package:geo_spots/features/authentication/presentation/form_helpers/sign_in_handlers.dart';
@@ -57,11 +56,11 @@ class LoginForm extends HookConsumerWidget {
             }
           },
         ),
-        GSSpacing.$150.toInt().toHeight,
+        const SizedBox(height: 4),
         _ForgotPasswordLink(
           onClick: () => const ForgotPasswordRouteData().go(context),
         ),
-        const SizedBox(height: GSSpacing.$600),
+        const SizedBox(height: 20),
         Consumer(
           builder: (context, ref, _) {
             ref.watch(signInViewModelProvider);
@@ -77,7 +76,7 @@ class LoginForm extends HookConsumerWidget {
             );
           },
         ),
-        GSSpacing.$300.toInt().toHeight,
+        const SizedBox(height: 12),
         _SignupLink(onClick: () => const SignUpRouteData().go(context)),
       ],
     );

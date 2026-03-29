@@ -9,11 +9,13 @@ class PlaceDetailsHeader extends StatelessWidget {
     required this.place,
     required this.onBack,
     this.useSharedImageToken = false,
+    this.isReadOnly = false,
   });
 
   final PlaceEntity place;
   final VoidCallback onBack;
   final bool useSharedImageToken;
+  final bool isReadOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +33,7 @@ class PlaceDetailsHeader extends StatelessWidget {
         background: _HeaderBackground(
           place: place,
           useSharedImageToken: useSharedImageToken,
+          isReadOnly: isReadOnly,
         ),
       ),
     );
@@ -170,10 +173,12 @@ class _HeaderBackground extends StatelessWidget {
   const _HeaderBackground({
     required this.place,
     required this.useSharedImageToken,
+    required this.isReadOnly,
   });
 
   final PlaceEntity place;
   final bool useSharedImageToken;
+  final bool isReadOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -228,6 +233,18 @@ class _HeaderBackground extends StatelessWidget {
                         ),
                         borderColor: GSColors.warning200,
                         foregroundColor: GSColors.warning700,
+                      ),
+                    if (isReadOnly)
+                      GSInfoChip(
+                        icon: Icons.lock_outline,
+                        label: 'Lecture seule',
+                        backgroundColor: GSColors.neutral000.withValues(
+                          alpha: 0.14,
+                        ),
+                        borderColor: GSColors.neutral000.withValues(
+                          alpha: 0.18,
+                        ),
+                        foregroundColor: GSColors.neutral000,
                       ),
                     if (place.date.isNotEmpty)
                       GSInfoChip(

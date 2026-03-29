@@ -75,7 +75,7 @@ Le projet contient deja un modele : [env/template.env](env/template.env)
 Creer ou mettre a jour [env/.env](env/.env) :
 
 ```env
-API_BASE_URL=https://mint-silkworm-optimum.ngrok-free.app
+API_BASE_URL=https://gestion-des-lieux.onrender.com
 ```
 
 Important :
@@ -91,7 +91,7 @@ Exemples utiles pour `API_BASE_URL` :
 - iOS Simulator : `http://127.0.0.1:8080`
 - Android Emulator : `http://10.0.2.2:8080`
 - Appareil physique sur le meme Wi-Fi : `http://192.168.1.42:8080`
-- Backend distant : `https://mint-silkworm-optimum.ngrok-free.app`
+- Backend distant (Render) : `https://gestion-des-lieux.onrender.com`
 
 Par defaut, Spring Boot demarre souvent sur le port `8080`, mais vous devez mettre le port reel de votre service.
 
@@ -112,40 +112,50 @@ ou
 API_BASE_URL=http://127.0.0.1:9090
 ```
 
-
-
 Si vous utilisez un appareil physique, le backend doit ecouter sur `0.0.0.0` et non seulement sur `127.0.0.1`.
 
-## Generation des fichiers
+## Generation des fichiers (etape obligatoire)
 
-Le projet utilise de la generation de code pour plusieurs couches :
+> **Important** : les fichiers generes (`*.g.dart`, `*.freezed.dart`) sont versionnes dans le depot actuel, mais ils doivent etre regeneres apres modification des models, DTOs, providers ou routes. Sans regeneration, certaines evolutions ne compileront pas correctement.
 
-- Riverpod
-- Freezed
-- Json Serializable
-- Go Router Builder
-- FlutterGen
+Le projet utilise la generation de code pour 4 librairies :
 
-Commande recommandee :
+| Librairie | Fichiers generes | Role |
+| --- | --- | --- |
+| **Freezed** | `*.freezed.dart` | Entites immuables : `copyWith`, `==`, `hashCode`, pattern union |
+| **Riverpod Generator** | `*.g.dart` (providers) | Providers type-safe a partir des annotations `@riverpod` |
+| **Go Router Builder** | `app_router.g.dart` | Routes de navigation type-safe |
+| **JSON Serializable** | `*.g.dart` (DTOs) | Serialisation / deserialisation JSON des DTOs |
+
+### Generer une seule fois (build)
 
 ```bash
+flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-Si vous modifiez souvent les models, routes ou providers, vous pouvez aussi utiliser :
+### Mode watch (developpement actif)
+
+Si vous modifiez des models, providers ou routes, utilisez le mode watch pour regenerer automatiquement a chaque sauvegarde :
 
 ```bash
 dart run build_runner watch --delete-conflicting-outputs
 ```
 
-Cas typiques ou il faut regenerer :
+### Quand regenerer ?
 
-- ajout ou modification d'un model `@freezed`
-- ajout ou modification d'un provider `@riverpod`
-- ajout ou modification d'une route generee
-- ajout de DTO JSON ou changement de serialisation
+- apres un `git clone` ou `git pull` (toujours)
+- apres ajout ou modification d'un model `@freezed`
+- apres ajout ou modification d'un provider `@riverpod`
+- apres ajout ou modification d'une route
+- apres modification d'un DTO avec `@JsonSerializable`
 
 ## Lancer l'application
+
+Backend de demonstration disponible :
+
+- API : [https://gestion-des-lieux.onrender.com/](https://gestion-des-lieux.onrender.com/)
+- Swagger UI : [https://gestion-des-lieux.onrender.com/swagger-ui/index.html](https://gestion-des-lieux.onrender.com/swagger-ui/index.html)
 
 ### Voir les appareils disponibles
 

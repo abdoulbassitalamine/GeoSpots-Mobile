@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:geo_spots/core/constants/app_constants.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../../../shared/design_system/design_system.dart';
 import '../view_model/upsert_place_view_model.dart';
@@ -7,15 +7,41 @@ import 'widgets/upsert_place_basic_info_step.dart';
 import 'widgets/upsert_place_location_step.dart';
 import 'widgets/upsert_place_progress_indicator.dart';
 
-class UpsertPlacePage extends HookConsumerWidget {
-  const UpsertPlacePage({super.key, required this.placeId});
+class UpsertPlacePage extends ConsumerStatefulWidget {
+  const UpsertPlacePage({super.key, required this.placeId, this.initialExtra});
+
   final String placeId;
+  final Map<String, Object?>? initialExtra;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<UpsertPlacePage> createState() => _UpsertPlacePageState();
+}
+
+class _UpsertPlacePageState extends ConsumerState<UpsertPlacePage> {
+  int _currentStep = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialData = _UpsertPlaceInitialData.fromExtra(widget.initialExtra);
+    if (initialData == null) {
+      return;
+    }
+
+    ref
+        .read(upsertPlaceViewModelProvider(widget.placeId).notifier)
+        .applyInitialDeepLinkData(
+          latitude: initialData.latitude,
+          longitude: initialData.longitude,
+          title: initialData.title,
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen(
       upsertPlaceViewModelProvider(
-        placeId,
+        widget.placeId,
       ).select((state) => state.snackbarMessage),
       (previous, next) {
         if (next == null || previous == next) {
@@ -27,15 +53,16 @@ class UpsertPlacePage extends HookConsumerWidget {
           }
           next.show(context);
           ref
-              .read(upsertPlaceViewModelProvider(placeId).notifier)
+              .read(upsertPlaceViewModelProvider(widget.placeId).notifier)
               .consumeSnackbar();
         });
       },
     );
 
-    final currentStep = useState(0);
-    final state = ref.watch(upsertPlaceViewModelProvider(placeId));
-    final viewModel = ref.read(upsertPlaceViewModelProvider(placeId).notifier);
+    final state = ref.watch(upsertPlaceViewModelProvider(widget.placeId));
+    final viewModel = ref.read(
+      upsertPlaceViewModelProvider(widget.placeId).notifier,
+    );
 
     final steps = [
       UpsertPlaceBasicInfoStepView(state: state, notifier: viewModel),
@@ -49,14 +76,14 @@ class UpsertPlacePage extends HookConsumerWidget {
       body: Column(
         children: [
           _UpsertPlaceHeader(
-            currentStep: currentStep.value,
+            currentStep: _currentStep,
             isEditMode: state.isEditMode,
           ),
           if (canRenderForm)
             Padding(
               padding: const EdgeInsets.all(GSSpacing.xl),
               child: UpsertPlaceProgressIndicator(
-                currentIndex: currentStep.value,
+                currentIndex: _currentStep,
                 size: steps.length,
               ),
             ),
@@ -71,15 +98,17 @@ class UpsertPlacePage extends HookConsumerWidget {
               ),
               _ => SingleChildScrollView(
                 padding: const EdgeInsets.all(GSSpacing.xl),
-                child: steps[currentStep.value],
+                child: steps[_currentStep],
               ),
             },
           ),
           if (canRenderForm)
             _UpsertPlaceBottomActions(
-              currentStep: currentStep,
+              currentStep: _currentStep,
               totalSteps: steps.length,
-              placeId: placeId,
+              placeId: widget.placeId,
+              onBack: () => setState(() => _currentStep--),
+              onNext: () => setState(() => _currentStep++),
             ),
         ],
       ),
@@ -153,10 +182,14 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
     required this.currentStep,
     required this.totalSteps,
     required this.placeId,
+    required this.onBack,
+    required this.onNext,
   });
-  final ValueNotifier<int> currentStep;
+  final int currentStep;
   final int totalSteps;
   final String placeId;
+  final VoidCallback onBack;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -173,17 +206,14 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
         top: false,
         child: Row(
           children: [
-            if (currentStep.value > 0) ...[
+            if (currentStep > 0) ...[
               Expanded(
-                child: GSOutlinedButton(
-                  onPressed: () => currentStep.value--,
-                  text: 'Retour',
-                ),
+                child: GSOutlinedButton(onPressed: onBack, text: 'Retour'),
               ),
               const SizedBox(width: GSSpacing.l),
             ],
             Expanded(
-              child: currentStep.value == totalSteps - 1
+              child: currentStep == totalSteps - 1
                   ? GSFilledButton(
                       enabled: viewModel.isStep1Valid,
                       onPressed: () async {
@@ -207,8 +237,8 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
                     )
                   : GSFilledButton(
                       enabled: viewModel.isStep0Valid,
-                      onPressed: viewModel.isStepValid(currentStep.value)
-                          ? () => currentStep.value++
+                      onPressed: viewModel.isStepValid(currentStep)
+                          ? onNext
                           : () {},
                       text: 'Suivant',
                     ),
@@ -217,5 +247,50 @@ class _UpsertPlaceBottomActions extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _UpsertPlaceInitialData {
+  const _UpsertPlaceInitialData({this.latitude, this.longitude, this.title});
+
+  final double? latitude;
+  final double? longitude;
+  final String? title;
+
+  static _UpsertPlaceInitialData? fromExtra(Map<String, Object?>? extra) {
+    if (extra == null || extra.isEmpty) {
+      return null;
+    }
+
+    final latitude = _asDouble(extra[kExtraLatitude]);
+    final longitude = _asDouble(extra[kExtraLongitude]);
+    final title = _asNonEmptyString(extra[kExtraTitle]);
+
+    if (latitude == null && longitude == null && title == null) {
+      return null;
+    }
+
+    return _UpsertPlaceInitialData(
+      latitude: latitude,
+      longitude: longitude,
+      title: title,
+    );
+  }
+
+  static double? _asDouble(Object? value) {
+    return switch (value) {
+      final double v => v,
+      final int v => v.toDouble(),
+      final String v => double.tryParse(v),
+      _ => null,
+    };
+  }
+
+  static String? _asNonEmptyString(Object? value) {
+    if (value is! String) {
+      return null;
+    }
+    final normalized = value.trim();
+    return normalized.isEmpty ? null : normalized;
   }
 }

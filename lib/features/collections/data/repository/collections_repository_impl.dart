@@ -1,9 +1,9 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/exception/exception.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_local_datasource.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
-import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/collections/data/dto/collections_api_dto.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_import_result_entity.dart';
@@ -14,6 +14,7 @@ import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
 import 'package:geo_spots/features/collections/domain/repository/collections_repository.dart';
+import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/places/data/dto/places_response_dto.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 
@@ -70,27 +71,17 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
       }
 
       try {
-        final resourceId = token.resourceId.trim();
-        if (resourceId.isNotEmpty) {
-          final byId = await _remoteDatasource.fetchCollectionById(
-            resourceId,
-            token: token.token,
+        final dio = _dioForUrl(token.baseUrl);
+        final response = await dio.get<Object>(
+          token.resourceId,
+          queryParameters: {'token': token.token},
+        );
+        final data = (response.data as Map<String, dynamic>?)?['data']
+            as Map<String, dynamic>?;
+        if (data != null && data['id'] != null) {
+          sharedCollections.add(
+            _toCollectionEntity(CollectionDto.fromJson(data)),
           );
-          if (byId != null &&
-              (byId.id?.toString().trim().isNotEmpty ?? false)) {
-            sharedCollections.add(_toCollectionEntity(byId));
-            continue;
-          }
-        }
-
-        final discovered = await _remoteDatasource.discoverToken(token.token);
-        final discoveredCollections =
-            discovered.collections ?? const <CollectionDto>[];
-        for (final discoveredCollection in discoveredCollections) {
-          if (discoveredCollection.id?.toString().trim().isEmpty ?? true) {
-            continue;
-          }
-          sharedCollections.add(_toCollectionEntity(discoveredCollection));
         }
       } on Exception {
         continue;
@@ -200,45 +191,42 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
   @override
   Future<SharedAccessTokenEntity> importSharedAccess({
     required String baseUrl,
+    required String resourcePath,
     required String token,
   }) async {
-    final normalizedUrl = baseUrl.trim().replaceAll(RegExp(r'/$'), '');
-    final normalizedToken = token.trim();
-
-    if (normalizedUrl.isEmpty || normalizedToken.isEmpty) {
-      throw const ServerException('URL et token sont obligatoires');
-    }
-
-    final rights = _inferRightsFromToken(normalizedToken);
-    final resourceType = ShareResourceType.collection.normalizedValue;
-    var resourceId = '';
-
-    try {
-      final discovered = await _remoteDatasource.discoverToken(normalizedToken);
-      final firstCollection = discovered.collections?.firstWhere(
-        (collection) => collection.id != null,
-        orElse: () => const CollectionDto(),
-      );
-      final discoveredId = firstCollection?.id?.toString().trim() ?? '';
-      if (discoveredId.isNotEmpty) {
-        resourceId = discoveredId;
-      }
-    } on Exception {
-      // Keep fallback values when discovery fails.
+    final dio = _dioForUrl(baseUrl);
+    final response = await dio.get<Object>(
+      resourcePath,
+      queryParameters: {'token': token},
+    );
+    final data = (response.data as Map<String, dynamic>?)?['data']
+        as Map<String, dynamic>?;
+    if (data == null || data['id'] == null) {
+      throw const ServerException('Ressource introuvable ou réponse invalide');
     }
 
     final entity = SharedAccessTokenEntity(
-      token: normalizedToken,
-      baseUrl: normalizedUrl,
+      token: token,
+      baseUrl: baseUrl,
       isValid: true,
-      rights: rights,
-      resourceType: resourceType,
-      resourceId: resourceId,
+      rights: ShareAccessRight.read,
+      resourceType: ShareResourceType.collection.normalizedValue,
+      resourceId: resourcePath,
       expiresAt: null,
     );
-
     await _localDatasource.upsertSharedAccessToken(entity);
     return entity;
+  }
+
+  Dio _dioForUrl(String baseUrl) {
+    return Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+      ),
+    );
   }
 
   @override
@@ -413,13 +401,6 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
         : ShareAccessRight.read;
   }
 
-  ShareAccessRight _inferRightsFromToken(String token) {
-    if (token.startsWith('w_') || token.startsWith('W_')) {
-      return ShareAccessRight.write;
-    }
-    return ShareAccessRight.read;
-  }
-
   bool _resolveTokenValidity(AccessTokenDto token) {
     if (token.isValid != null) {
       return token.isValid!;
@@ -439,7 +420,15 @@ class CollectionsRepositoryImpl implements CollectionsRepository {
     String resourceId,
   ) {
     return ShareResourceType.fromRaw(token.resourceType) == resourceType &&
-        token.resourceId == resourceId;
+        _extractResourceId(token.resourceId) == resourceId;
+  }
+
+  /// Extracts the last non-empty path segment from a resourceId that may be
+  /// stored as a URL path (e.g. "/api/collections/1" → "1") or a plain id.
+  String _extractResourceId(String resourceId) {
+    return resourceId
+            .split('/')
+            .lastWhere((s) => s.isNotEmpty, orElse: () => resourceId);
   }
 
   String _resolveCollectionId(CollectionEntity collection) {

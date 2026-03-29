@@ -44,7 +44,10 @@ class UpsertPlaceRouteData extends GoRouteData with $UpsertPlaceRouteData {
   @override
   Page<void> buildPage(BuildContext context, GoRouterState state) {
     return GSPageTransition.buildTransition(
-      child: UpsertPlacePage(placeId: placeId),
+      child: UpsertPlacePage(
+        placeId: placeId,
+        initialExtra: state.extra as Map<String, Object?>?,
+      ),
     );
   }
 }

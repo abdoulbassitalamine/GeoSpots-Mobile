@@ -40,12 +40,12 @@ class CollectionsLocalDatasourceImpl implements ICollectionsLocalDatasource {
   Future<List<SharedAccessTokenEntity>> _readTokens(String key) async {
     final raw = await _secureStorage.read(key: key);
     if (raw == null || raw.trim().isEmpty) {
-      return const <SharedAccessTokenEntity>[];
+      return <SharedAccessTokenEntity>[];
     }
 
     final decoded = jsonDecode(raw);
     if (decoded is! List) {
-      return const <SharedAccessTokenEntity>[];
+      return <SharedAccessTokenEntity>[];
     }
 
     return decoded
