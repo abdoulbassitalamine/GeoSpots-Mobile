@@ -320,6 +320,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
   Future<bool> importSharedAccess({
     required String baseUrl,
+    required String resourcePath,
     required String token,
   }) async {
     state = state.copyWith(isImportingSharedAccess: true, error: null);
@@ -332,6 +333,7 @@ class CollectionsViewModel extends _$CollectionsViewModel {
 
     final importResult = await importSharedAccess(
       baseUrl: baseUrl,
+      resourcePath: resourcePath,
       token: token,
     );
     if (importResult is Err) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geo_spots/core/utils/extensions/validators_ext.dart';
+import 'package:geo_spots/shared/design_system/design_system.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../view_model/add_shared_access/add_shared_access_view_model.dart';
@@ -59,10 +60,18 @@ class AddSharedAccessHandlers {
     final navigator = Navigator.of(context);
     final collectionsNotifier = ref.read(collectionsViewModelProvider.notifier);
 
+    final uri = Uri.parse(state.url.trim());
+    final baseUrl = uri.origin;
+    final resourcePath = uri.path;
+    final token = state.token.trim();
+
     final success = await collectionsNotifier.importSharedAccess(
-      baseUrl: state.url,
-      token: state.token,
+      baseUrl: baseUrl,
+      resourcePath: resourcePath,
+      token: token,
     );
+
+    controllers.isImporting.value = false;
 
     if (!context.mounted) return;
 
@@ -71,9 +80,11 @@ class AddSharedAccessHandlers {
       return;
     }
 
-    controllers.isImporting.value = false;
-    controllers.submitError.value =
-        ref.read(collectionsViewModelProvider).error ??
-        'Impossible d\'ajouter cet accès partagé';
+    GSTopSnackbar.showError(
+      context,
+      message:
+          ref.read(collectionsViewModelProvider).error ??
+          'Impossible d\'ajouter cet accès partagé. Vérifiez l\'URL et le token.',
+    );
   }
 }

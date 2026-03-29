@@ -37,8 +37,8 @@ class AddSharedAccessView extends HookConsumerWidget {
                   GSTextField(
                     controller: controllers.urlController,
                     focusNode: controllers.urlFocusNode,
-                    label: 'URL du service',
-                    placeholder: 'https://api.exemple.com',
+                    label: 'URL de la ressource',
+                    placeholder: 'http://serveur/api/collections/1',
                     errorMessage: controllers.urlError.value,
                     onValueChange: (value) {
                       controllers.submitError.value = null;

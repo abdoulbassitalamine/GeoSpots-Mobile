@@ -146,12 +146,21 @@ shareCollectionUseCase(Ref ref) {
 @riverpod
 Future<Result<SharedAccessTokenEntity>> Function({
   required String baseUrl,
+  required String resourcePath,
   required String token,
 })
 importSharedAccessUseCase(Ref ref) {
   final repository = ref.read(collectionsRepositoryProvider);
-  return ({required String baseUrl, required String token}) => _execute(
-    () => repository.importSharedAccess(baseUrl: baseUrl, token: token),
+  return ({
+    required String baseUrl,
+    required String resourcePath,
+    required String token,
+  }) => _execute(
+    () => repository.importSharedAccess(
+      baseUrl: baseUrl,
+      resourcePath: resourcePath,
+      token: token,
+    ),
   );
 }
 

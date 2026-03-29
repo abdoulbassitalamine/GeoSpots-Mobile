@@ -65,6 +65,7 @@ abstract interface class CollectionsRepository {
 
   Future<SharedAccessTokenEntity> importSharedAccess({
     required String baseUrl,
+    required String resourcePath,
     required String token,
   });
 
