@@ -3,7 +3,6 @@ import 'package:geo_spots/core/logger/gs_logger.dart';
 import 'package:geo_spots/core/utils/exception/exception.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_local_datasource.dart';
 import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
-import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/collections/data/dto/collections_api_dto.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_import_result_entity.dart';
@@ -14,6 +13,7 @@ import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
 import 'package:geo_spots/features/collections/domain/repository/collections_repository.dart';
+import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/places/data/dto/places_response_dto.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 

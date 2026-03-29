@@ -28,7 +28,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
         hasCenteredOnLocation.value = true;
         final pos = LatLng(state.location!.latitude, state.location!.longitude);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          mapController.move(pos, 15.0);
+          mapController.move(pos, 15);
         });
       }
       return null;
@@ -57,7 +57,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
             mapController: mapController,
             options: MapOptions(
               initialCenter: markerPoint,
-              initialZoom: 5.0,
+              initialZoom: 5,
               onMapReady: () => isMapReady.value = true,
             ),
             children: [
@@ -160,7 +160,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
 
           // Loading overlay (first load only)
           if (state.isLoading && location == null)
-            Container(
+            ColoredBox(
               color: GSColors.neutral000.withValues(alpha: 0.85),
               child: const Center(
                 child: Column(
@@ -176,7 +176,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
 
           // Expired overlay
           if (state.isExpired)
-            Container(
+            ColoredBox(
               color: GSColors.neutral000.withValues(alpha: 0.92),
               child: Center(
                 child: Padding(
@@ -278,7 +278,7 @@ class LiveLocationViewerScreen extends HookConsumerWidget {
                           GestureDetector(
                             onTap: () {
                               if (isMapReady.value) {
-                                mapController.move(markerPoint, 15.0);
+                                mapController.move(markerPoint, 15);
                               }
                             },
                             child: Row(

@@ -2,7 +2,6 @@ import 'package:geo_spots/features/collections/data/datasource/collections_local
 import 'package:geo_spots/features/collections/data/datasource/collections_remote_datasource.dart';
 import 'package:geo_spots/features/collections/data/repository/collections_repository_impl.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_entity.dart';
-import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_import_result_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/collection_share_result_entity.dart';
 import 'package:geo_spots/features/collections/domain/entity/shared_access_token_entity.dart';
@@ -10,6 +9,7 @@ import 'package:geo_spots/features/collections/domain/entity/token_discover_resu
 import 'package:geo_spots/features/collections/domain/enums/export_format.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_access_right.dart';
 import 'package:geo_spots/features/collections/domain/enums/share_resource_type.dart';
+import 'package:geo_spots/features/places/data/datasource/places_remote_datasource.dart';
 import 'package:geo_spots/features/places/domain/entity/place_entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 

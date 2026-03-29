@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/router/route_names.dart';
+import '../add_shared_access/add_shared_access_page.dart';
 import '../collection_details/collection_details_page.dart';
 import '../collections/collections_page.dart';
-import '../add_shared_access/add_shared_access_page.dart';
 
 part 'route_data.g.dart';
 

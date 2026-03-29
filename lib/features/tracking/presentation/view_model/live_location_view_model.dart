@@ -19,7 +19,7 @@ class LiveLocationViewModel extends _$LiveLocationViewModel {
     ref.onDispose(() {
       _pollingTimer?.cancel();
     });
-    Future.microtask(() => _fetchAndStartPolling());
+    Future.microtask(_fetchAndStartPolling);
     return const LiveLocationState(isLoading: true);
   }
 
