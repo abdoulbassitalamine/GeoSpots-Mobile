@@ -75,7 +75,7 @@ Le projet contient deja un modele : [env/template.env](env/template.env)
 Creer ou mettre a jour [env/.env](env/.env) :
 
 ```env
-API_BASE_URL=https://mint-silkworm-optimum.ngrok-free.app
+API_BASE_URL=https://gestion-des-lieux.onrender.com
 ```
 
 Important :
@@ -91,7 +91,7 @@ Exemples utiles pour `API_BASE_URL` :
 - iOS Simulator : `http://127.0.0.1:8080`
 - Android Emulator : `http://10.0.2.2:8080`
 - Appareil physique sur le meme Wi-Fi : `http://192.168.1.42:8080`
-- Backend distant : `https://mint-silkworm-optimum.ngrok-free.app`
+- Backend distant (Render) : `https://gestion-des-lieux.onrender.com`
 
 Par defaut, Spring Boot demarre souvent sur le port `8080`, mais vous devez mettre le port reel de votre service.
 
@@ -116,7 +116,7 @@ Si vous utilisez un appareil physique, le backend doit ecouter sur `0.0.0.0` et 
 
 ## Generation des fichiers (etape obligatoire)
 
-> **Important** : les fichiers generes (`*.g.dart`, `*.freezed.dart`) ne sont **pas inclus dans le code source**. Ils doivent etre generes avant le premier lancement. Sans cette etape, le projet ne compile pas.
+> **Important** : les fichiers generes (`*.g.dart`, `*.freezed.dart`) sont versionnes dans le depot actuel, mais ils doivent etre regeneres apres modification des models, DTOs, providers ou routes. Sans regeneration, certaines evolutions ne compileront pas correctement.
 
 Le projet utilise la generation de code pour 4 librairies :
 
@@ -151,6 +151,11 @@ dart run build_runner watch --delete-conflicting-outputs
 - apres modification d'un DTO avec `@JsonSerializable`
 
 ## Lancer l'application
+
+Backend de demonstration disponible :
+
+- API : [https://gestion-des-lieux.onrender.com/](https://gestion-des-lieux.onrender.com/)
+- Swagger UI : [https://gestion-des-lieux.onrender.com/swagger-ui/index.html](https://gestion-des-lieux.onrender.com/swagger-ui/index.html)
 
 ### Voir les appareils disponibles
 
